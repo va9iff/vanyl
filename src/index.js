@@ -73,7 +73,6 @@ class Mark {
 class Text extends Mark {
 	constructor(text) {
 		super(...arguments)
-		this.text = text
 	}
 	init(Controller, i) {
 		super.init(...arguments)
