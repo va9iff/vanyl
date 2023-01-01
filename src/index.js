@@ -122,6 +122,34 @@ class Attr extends Mark {
 export let attr = (...args) => ({cls:Attr, args:args})
 
 
+class Bool extends Mark {
+	constructor(attributeName, attributeValue) {
+		super(...arguments)
+		this.attributeName = attributeName // it shouldn't change per Attr Mark
+	}
+	init(Controller, i) {
+		super.init(...arguments)
+		this.selectorAttr = uniqueAttribute()
+		return {
+			writes: this.string + this.selectorAttr
+		}
+	}
+	process() {
+		super.process(...arguments)
+		this.element = this.controller.topElement.querySelector(
+			attrSelector(this.selectorAttr)
+		)
+	}
+	refresh(attributeName, attributeValue) {
+		super.refresh(...arguments)
+		if (attributeValue) this.element.setAttribute(this.attributeName, attributeValue)
+		else this.element.removeAttribute(this.attributeName)
+		
+	}
+}
+export let bool = (...args) => ({cls:Bool, args:args})
+
+
 export let v = (strings, ...markNotes) => ({ strings, markNotes })
 
 export let sync = (vFun, topElement) => {
