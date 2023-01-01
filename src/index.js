@@ -9,7 +9,7 @@ class Controller {
 	// permaMarks[]; vResult; ?vFun();
 	constructor(vResult) {
 		this.vResult = vResult
-		this.permaMarks = vResult.marks
+		this.permaMarks = vResult.markNotes.map(markNote=>new markNote.cls(markNote.args))
 	}
 	static fromVFun(vFun) {
 		let controller = new this(vFun())
@@ -27,10 +27,10 @@ class Controller {
 		return result
 	}
 	updateWith(freshResult) {
-		let freshMarks = freshResult.marks
+		let freshMarkNotes = freshResult.markNotes
 		for (let [i, permaMark] of this.permaMarks.entries()) {
-			let freshMark = freshMarks[i]
-			permaMark.refresh(freshMark)
+			let freshMarkNote = freshMarkNotes[i]
+			permaMark.refresh(...freshMarkNote.args)
 		}
 	}
 	update() {
@@ -59,7 +59,7 @@ class Mark {
 		return this.controller.vResult.strings[this.i]
 	}
 	get data() {
-		return this.controller.vResult.marks[this.i]
+		return this.controller.vResult.markNotes[this.i]
 	}
 	init({ controller, i }) {
 		this.controller = controller
@@ -87,15 +87,14 @@ class Text extends Mark {
 			attrSelector(this.selectorAttr)
 		)
 	}
-	refresh(fresh) {
-		this.text = fresh.text
-		this.element.innerHTML = fresh.text
+	refresh(text) {
+		this.element.innerHTML = text
 	}
 }
 
-export let text = (...args) => new Text(...args)
+export let text = (...args) => ({cls:Text, args:args})
 
-export let v = (strings, ...marks) => ({ strings, marks })
+export let v = (strings, ...markNotes) => ({ strings, markNotes })
 
 export let sync = (vFun, topElement) => {
 	let controller = Controller.fromVFun(vFun)
