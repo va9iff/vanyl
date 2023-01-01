@@ -6,10 +6,10 @@ let uniqueAttribute = (() => {
 let attrSelector = attr => `[${attr}]`
 
 class Controller {
-	// permaMarks[]; vResult; ?vFun();
+	// marks[]; vResult; ?vFun();
 	constructor(vResult) {
 		this.vResult = vResult
-		this.permaMarks = vResult.markNotes.map(markNote=>new markNote.cls(markNote.args))
+		this.marks = vResult.markNotes.map(markNote=>new markNote.cls(markNote.args))
 	}
 	static fromVFun(vFun) {
 		let controller = new this(vFun())
@@ -18,7 +18,7 @@ class Controller {
 	}
 	initMarks() {
 		let result = ""
-		for (let [i, permaMark] of this.permaMarks.entries()) {
+		for (let [i, permaMark] of this.marks.entries()) {
 			result += permaMark.init({
 				controller: this,
 				i,
@@ -28,7 +28,7 @@ class Controller {
 	}
 	updateWith(freshResult) {
 		let freshMarkNotes = freshResult.markNotes
-		for (let [i, permaMark] of this.permaMarks.entries()) {
+		for (let [i, permaMark] of this.marks.entries()) {
 			let freshMarkNote = freshMarkNotes[i]
 			permaMark.refresh(...freshMarkNote.args)
 		}
@@ -37,7 +37,7 @@ class Controller {
 		this.updateWith(this.vFun())
 	}
 	processMarks() {
-		for (let permaMark of this.permaMarks) permaMark.process()
+		for (let permaMark of this.marks) permaMark.process()
 	}
 	syncTo(topElement) {
 		this.topElement = topElement
@@ -68,6 +68,8 @@ class Mark {
 			writes: this.string,
 		}
 	}
+	process(){}
+	refresh(){}
 }
 
 class Text extends Mark {
@@ -82,16 +84,18 @@ class Text extends Mark {
 		}
 	}
 	process() {
+		super.process(...arguments)
 		this.element = this.controller.topElement.querySelector(
 			attrSelector(this.selectorAttr)
 		)
 	}
 	refresh(text) {
+		super.refresh(...arguments)
 		this.element.innerHTML = text
 	}
 }
-
 export let text = (...args) => ({cls:Text, args:args})
+
 
 export let v = (strings, ...markNotes) => ({ strings, markNotes })
 
@@ -101,7 +105,9 @@ export let sync = (vFun, topElement) => {
 	return controller
 }
 
-export let render = vFun => {
+// vResult {strings: [string], markNotes: [markNote]}
+// markNote {cls:Mark, args: []}
+export let render = vFun => { // -> [vResult]
 	let controller = Controller.fromVFun(vFun)
 	controller.takeFirstChild()
 	return controller
