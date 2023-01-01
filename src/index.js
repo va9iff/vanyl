@@ -9,7 +9,7 @@ class Controller {
 	// marks[]; vResult; ?vFun();
 	constructor(vResult) {
 		this.vResult = vResult
-		this.marks = vResult.markNotes.map(markNote=>new markNote.cls(markNote.args))
+		this.marks = vResult.markNotes.map(markNote=>new markNote.cls(...markNote.args))
 	}
 	static fromVFun(vFun) {
 		let controller = new this(vFun())
@@ -24,7 +24,7 @@ class Controller {
 				i,
 			}).writes
 		}
-		return result
+		return result + this.vResult.strings.at(-1)
 	}
 	updateWith(freshResult) {
 		let freshMarkNotes = freshResult.markNotes
@@ -95,6 +95,31 @@ class Text extends Mark {
 	}
 }
 export let text = (...args) => ({cls:Text, args:args})
+
+class Attr extends Mark {
+	constructor(attributeName, attributeValue) {
+		super(...arguments)
+		this.attributeName = attributeName // it shouldn't change per Attr Mark
+	}
+	init(Controller, i) {
+		super.init(...arguments)
+		this.selectorAttr = uniqueAttribute()
+		return {
+			writes: this.string + this.selectorAttr
+		}
+	}
+	process() {
+		super.process(...arguments)
+		this.element = this.controller.topElement.querySelector(
+			attrSelector(this.selectorAttr)
+		)
+	}
+	refresh(attributeName, attributeValue) {
+		super.refresh(...arguments)
+		this.element.setAttribute(this.attributeName, attributeValue)
+	}
+}
+export let attr = (...args) => ({cls:Attr, args:args})
 
 
 export let v = (strings, ...markNotes) => ({ strings, markNotes })

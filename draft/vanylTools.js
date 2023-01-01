@@ -31,21 +31,21 @@ class Text extends Mark{
 /*// the first time, args will be the init functions, after they're update
 let myView = ({v, sync ,text, attr, on}) => v`
 	lkjds osjfoa ${mark("text",vvaba+'px')}
-	<button ${mark("on",'click', e=>alert())} ${mark("attr",'disaabled', isDisabled)}></button>
+	<button ${mark("on",'click', e=>alert())} ${mark("attr",'disabled', isDisabled)}></button>
 `*/
 
 
 // the first time, args will be the init functions, after they're update
 let myView = ({v, sync ,text, attr, on}) => v`
 	lkjds osjfoa ${text(vvaba+'px')}
-	<button ${on('click', e=>alert())} ${attr('disaabled', isDisabled)}></button>
+	<button ${on('click', e=>alert())} ${attr('disabled', isDisabled)}></button>
 `
 
 
 // the first time, args will be the init functions, after they're update
 let myView = ({v, sync ,text, attr, on}) => v`
 	lkjds osjfoa ${text(vvaba+'px')}
-	<button ${on.click(e=>alert())} ${attr.disaabled(isDisabled)}></button>
+	<button ${on.click(e=>alert())} ${attr.disabled(isDisabled)}></button>
 `
 
 // when we call sync, a new object is being created. it keeps track of

@@ -11,20 +11,20 @@ let handlers = {
 let newMark = (arg, data) => ({arg,data})
 
 export class Syncer{
-	marks = [],
-	result = "",
+	marks = []
+	result = ""
 	constructor(vFun, el){
 		let { strings, args } = vFun()
 		let stringLast = strings.at(-1)
 		for (let [i, arg] of args.entries()) {
 			let string = strings[i]
 			let mark 
-			marks[i] = newMark(arg)
+			this.marks[i] = newMark(arg)
 
 		}
 	}
 	update(){
-		for
+		// for
 	}
 }
 
