@@ -96,25 +96,31 @@ class Text extends Mark {
 }
 export let text = (...args) => ({cls:Text, args:args})
 
-class Attr extends Mark {
-	constructor(attributeName, attributeValue) {
-		super(...arguments)
-		this.attributeName = attributeName // it shouldn't change per Attr Mark
-	}
+
+
+class InSingleElement extends Mark{
 	init(Controller, i) {
 		super.init(...arguments)
 		this.selectorAttr = uniqueAttribute()
 		return {
 			writes: this.string + this.selectorAttr
 		}
-	}
+	}	
 	process() {
 		super.process(...arguments)
 		this.element = this.controller.topElement.querySelector(
 			attrSelector(this.selectorAttr)
 		)
 	}
-	refresh(attributeName, attributeValue) {
+}
+
+
+class Attr extends InSingleElement {
+	constructor(attributeName, attributeValue) {
+		super(...arguments)
+		this.attributeName = attributeName // it shouldn't change per Attr Mark
+	}
+	refresh(XattributeName, attributeValue) {
 		super.refresh(...arguments)
 		this.element.setAttribute(this.attributeName, attributeValue)
 	}
@@ -122,25 +128,8 @@ class Attr extends Mark {
 export let attr = (...args) => ({cls:Attr, args:args})
 
 
-class Bool extends Mark {
-	constructor(attributeName, attributeValue) {
-		super(...arguments)
-		this.attributeName = attributeName // it shouldn't change per Attr Mark
-	}
-	init(Controller, i) {
-		super.init(...arguments)
-		this.selectorAttr = uniqueAttribute()
-		return {
-			writes: this.string + this.selectorAttr
-		}
-	}
-	process() {
-		super.process(...arguments)
-		this.element = this.controller.topElement.querySelector(
-			attrSelector(this.selectorAttr)
-		)
-	}
-	refresh(attributeName, attributeValue) {
+class Bool extends Attr {
+	refresh(XattributeName, attributeValue) {
 		super.refresh(...arguments)
 		if (attributeValue) this.element.setAttribute(this.attributeName, attributeValue)
 		else this.element.removeAttribute(this.attributeName)
@@ -148,6 +137,29 @@ class Bool extends Mark {
 	}
 }
 export let bool = (...args) => ({cls:Bool, args:args})
+
+class Prop extends Attr {
+	refresh(XattributeName, attributeValue) {
+		super.refresh(...arguments)
+		this.element[this.attributeName] = attributeValue		
+	}
+}
+export let prop = (...args) => ({cls:Prop, args:args})
+
+
+class On extends InSingleElement{
+	constructor(eventType, fun){
+		super(...arguments)
+		this.eventType = eventType
+		this.fun = fun
+	}
+	process(){
+		super.process()
+		this.element.addEventListener(this.eventType, this.fun)
+	}
+	update(){}
+}
+export let on = (...args) => ({cls:On, args:args})
 
 
 export let v = (strings, ...markNotes) => ({ strings, markNotes })
