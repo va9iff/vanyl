@@ -1,4 +1,4 @@
-import {v, sync, text, attr, bool, prop, on} from '/src/index.js'
+import {v, sync, render} from '/src/index.js'
 
 
 let state = {
@@ -7,15 +7,28 @@ let state = {
 	data1: 212
 }
 
+
+
 let myView = ()=> v`
-	that's an ${text(state.data1)} test for ${text(5487)} so yeah
-	and here's an input <input type="text" ${bool('disabled', state.disabled)} ${prop("value", state.value)}>
-	<button ${on('click', ()=>alert())}>alerts</button>
+<div>
+	<p>
+	  that's an ${state.data1} test for ${5487} so yeah
+	</p>
+	and here's an input 
+	<input type="text" 
+	${{'disabled': state.disabled}}
+	${{value: state.value}}>
+	<button ${{'@click': ()=>alert()}}>alerts</button>endendend
+</div>
 `
 
-// let myViewV = ()=> v`that's an ${212} test for ${5487} so yeah`
+// attr.value(state.disabled)
+// bool.disabled(state.disabled)
+// on.click(()=>alert())
 
 let a = sync(myView, document.body)
+
+// let b = render(myView)
 
 a.update()
 
@@ -24,7 +37,7 @@ setInterval(()=>{
 	state.disabled = !state.disabled
 	state.data1++
 	a.update()
-}, 2000)
+}, 1200)
 
 console.log(a)
 

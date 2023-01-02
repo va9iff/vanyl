@@ -1,168 +1,77 @@
-let uniqueAttribute = (() => {
-	let ___uniqueAttribute = 0
-	return () => `um${___uniqueAttribute++}`
+let unique = (() => {
+	let ___u___ = 0
+	return () => `um${___u___++}`
 })()
 
-let attrSelector = attr => `[${attr}]`
-
 class Controller {
-	// marks[]; vResult; ?vFun();
 	constructor(vResult) {
 		this.vResult = vResult
-		this.marks = vResult.markNotes.map(markNote=>new markNote.cls(...markNote.args))
 	}
 	static fromVFun(vFun) {
 		let controller = new this(vFun())
 		controller.vFun = vFun
 		return controller
 	}
-	initMarks() {
+	datas = [] // [{for:"text", element: div}]
+	markProp() {
+		let data = { unique: unique(), for: "props" }
+		this.datas.push(data)
+		console.log(data.unique)
+		return data.unique
+	}
+	markText() {
+		let data = { unique: unique(), for: "text" }
+		this.datas.push(data)
+		console.log(data.unique)
+		return `<b ${data.unique}>${data.unique}</b>`
+	}
+	init() {
 		let result = ""
-		for (let [i, permaMark] of this.marks.entries()) {
-			result += permaMark.init({
-				controller: this,
-				i,
-			}).writes
+		let [lt, gt] = [0, 0]
+		for (let [i, arg] of this.vResult.args.entries()) {
+			let string = this.vResult.strings[i]
+			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
+			result += string + (lt > gt ? this.markProp() : this.markText())
 		}
 		return result + this.vResult.strings.at(-1)
 	}
-	updateWith(freshResult) {
-		let freshMarkNotes = freshResult.markNotes
-		for (let [i, permaMark] of this.marks.entries()) {
-			let freshMarkNote = freshMarkNotes[i]
-			permaMark.refresh(...freshMarkNote.args)
+	updateWith(freshVResult) {
+		let args = freshVResult.args
+		for (let [i, data] of this.datas.entries()) {
+			let arg = args[i]
+			if (data.for == "text") {
+				data.element.innerHTML = arg
+			} else if (data.for == "props") {
+				for (let [key, value] of Object.entries(arg)) data.element[key] = value
+			}
 		}
 	}
 	update() {
 		this.updateWith(this.vFun())
 	}
 	processMarks() {
-		for (let permaMark of this.marks) permaMark.process()
+		for (let data of this.datas)
+			data.element = this.topElement.querySelector(`[${data.unique}]`)
 	}
 	syncTo(topElement) {
 		this.topElement = topElement
-		this.topElement.innerHTML = this.initMarks() //~
+		this.topElement.innerHTML = this.init() //~
 		this.processMarks()
 	}
-	takeFirstChild() {
-		this.fragment = this?.createDocumentFragment() // ? for linter
-		this.fragment.innerHTML = this.initMarks()
-		if ([...this.fragment.childNodes].length > 3)
-			throw `more than text, node, text`
-		this.topElement = this.fragment.firstChild()
-	}
+	/*takeFirstChild() {
+		// this.fragment = new DocumentFragment();
+		// this.fragment.innerHTML = this.init()
+		this.parser = new DOMParser();
+		// const htmlString = "<strong>Beware of the leopard</strong>";
+		const htmlString = this.init();
+		this.domik = this.parser.parseFromString(htmlString, "text/html");
+		console.log(this.domik)
+		this.topElement = this.domik.body.firstChild
+		console.log(this.topElement)
+	}*/
 }
 
-class Mark {
-	constructor(){}
-	get string() {
-		return this.controller.vResult.strings[this.i]
-	}
-	get data() {
-		return this.controller.vResult.markNotes[this.i]
-	}
-	init({ controller, i }) {
-		this.controller = controller
-		this.i = i
-		return {
-			writes: this.string,
-		}
-	}
-	process(){}
-	refresh(){}
-}
-
-class Text extends Mark {
-	constructor(text) {
-		super(...arguments)
-	}
-	init(Controller, i) {
-		super.init(...arguments)
-		this.selectorAttr = uniqueAttribute()
-		return {
-			writes: this.string + `<b ${this.selectorAttr}>${this.selectorAttr}</b>`,
-		}
-	}
-	process() {
-		super.process(...arguments)
-		this.element = this.controller.topElement.querySelector(
-			attrSelector(this.selectorAttr)
-		)
-	}
-	refresh(text) {
-		super.refresh(...arguments)
-		this.element.innerHTML = text
-	}
-}
-export let text = (...args) => ({cls:Text, args:args})
-
-
-
-class InSingleElement extends Mark{
-	init(Controller, i) {
-		super.init(...arguments)
-		this.selectorAttr = uniqueAttribute()
-		return {
-			writes: this.string + this.selectorAttr
-		}
-	}	
-	process() {
-		super.process(...arguments)
-		this.element = this.controller.topElement.querySelector(
-			attrSelector(this.selectorAttr)
-		)
-	}
-}
-
-
-class Attr extends InSingleElement {
-	constructor(attributeName, attributeValue) {
-		super(...arguments)
-		this.attributeName = attributeName // it shouldn't change per Attr Mark
-	}
-	refresh(XattributeName, attributeValue) {
-		super.refresh(...arguments)
-		this.element.setAttribute(this.attributeName, attributeValue)
-	}
-}
-export let attr = (...args) => ({cls:Attr, args:args})
-
-
-class Bool extends Attr {
-	refresh(XattributeName, attributeValue) {
-		super.refresh(...arguments)
-		if (attributeValue) this.element.setAttribute(this.attributeName, attributeValue)
-		else this.element.removeAttribute(this.attributeName)
-		
-	}
-}
-export let bool = (...args) => ({cls:Bool, args:args})
-
-class Prop extends Attr {
-	refresh(XattributeName, attributeValue) {
-		super.refresh(...arguments)
-		this.element[this.attributeName] = attributeValue		
-	}
-}
-export let prop = (...args) => ({cls:Prop, args:args})
-
-
-class On extends InSingleElement{
-	constructor(eventType, fun){
-		super(...arguments)
-		this.eventType = eventType
-		this.fun = fun
-	}
-	process(){
-		super.process()
-		this.element.addEventListener(this.eventType, this.fun)
-	}
-	update(){}
-}
-export let on = (...args) => ({cls:On, args:args})
-
-
-export let v = (strings, ...markNotes) => ({ strings, markNotes })
+export let v = (strings, ...args) => ({ strings, args })
 
 export let sync = (vFun, topElement) => {
 	let controller = Controller.fromVFun(vFun)
@@ -170,9 +79,10 @@ export let sync = (vFun, topElement) => {
 	return controller
 }
 
-// vResult {strings: [string], markNotes: [markNote]}
-// markNote {cls:Mark, args: []}
-export let render = vFun => { // -> [vResult]
+// arg: any
+// vResult: {strings: [''], args: [arg]}
+export let render = vFun => {
+	// -> [vResult]
 	let controller = Controller.fromVFun(vFun)
 	controller.takeFirstChild()
 	return controller
