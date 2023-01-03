@@ -1,33 +1,21 @@
-let [___u___, unique] = [0, () => `um${___u___++}`]
-
-let handlers = {
-	text: {
-		init(controller, i){
-
-		}
-	}
-}
-
-class Controller {
+export class Vanyl {
+	unique = ((counter = 0) => () => `um${counter++}`)()
 	constructor(vResult) {
 		this.vResult = vResult
 	}
 	datas = [] // [{handleType:"text", element: div}]
 	initProp() {
-		let data = { id: unique(), handleType: "props" }
+		let data = { selector: this.unique(), handleType: "props" }
 		this.datas.push(data)
-		console.log(data.id)
-		return data.id
+		return `${data.selector}`
 	}
 	initText() {
-		let data = { id: unique(), handleType: "text" }
+		let data = { selector: this.unique(), handleType: "text" }
 		this.datas.push(data)
-		console.log(data.id)
-		return `<b ${data.id}>${data.id}</b>`
+		return `<b ${data.selector}>${data.selector}</b>`
 	}
 	init() {
-		let result = ""
-		let [lt, gt] = [0, 0]
+		let [result, lt, gt] = ["", 0, 0]
 		for (let [i, arg] of this.vResult.args.entries()) {
 			let string = this.vResult.strings[i]
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
@@ -36,59 +24,51 @@ class Controller {
 		return result + this.vResult.strings.at(-1)
 	}
 	updateWith(freshVResult) {
-		let args = freshVResult.args
 		for (let [i, data] of this.datas.entries()) {
-			let arg = args[i]
+			let arg = freshVResult.args[i]
 			if (data.handleType == "text") {
 				data.element.innerHTML = arg
 			} else if (data.handleType == "props") {
 				for (let [key, value] of Object.entries(arg)) data.element[key] = value
 			}
 		}
+		return this
 	}
 	update() {
-		this.updateWith(this.vFun())
+		return this.updateWith(this.vFun())
 	}
 	processData() {
 		for (let data of this.datas)
-			data.element = this.topElement.querySelector(`[${data.id}]`)
+			data.element = this.topElement.querySelector(`[${data.selector}]`)
 	}
 	static fromVFun(vFun) {
-		let controller = new this(vFun())
-		controller.vFun = vFun
-		return controller
+		let vanyl = new Vanyl(vFun())
+		vanyl.vFun = vFun
+		return vanyl
 	}
-	syncTo(topElement) {
-		this.topElement = topElement
-		this.topElement.innerHTML = this.init() //~
-		this.processData()
-	}
-	/*takeFirstChild() {
-		// this.fragment = new DocumentFragment();
-		// this.fragment.innerHTML = this.init()
-		this.parser = new DOMParser();
-		// const htmlString = "<strong>Beware of the leopard</strong>";
-		const htmlString = this.init();
-		this.domik = this.parser.parseFromString(htmlString, "text/html");
-		console.log(this.domik)
+	takeFirstChild() {
+		this.domik = new DOMParser().parseFromString(this.init(), "text/html")
 		this.topElement = this.domik.body.firstChild
 		console.log(this.topElement)
-	}*/
-}
-
-export let v = (strings, ...args) => ({ strings, args })
-
-export let sync = (vFun, topElement) => {
-	let controller = Controller.fromVFun(vFun)
-	controller.syncTo(topElement)
-	return controller
-}
-
-// arg: any
-// vResult: {strings: [''], args: [arg]}
-export let render = vFun => {
-	// -> [vResult]
-	let controller = Controller.fromVFun(vFun)
-	controller.takeFirstChild()
-	return controller
+	}
+	// static vResult = class {} // to check if typeof vResult
+	static v = (strings, ...args) => ({ strings, args }) // -> [{strings: [''], args: [any]}]
+	static sync(vFun, topElement) {
+		let vanyl = Vanyl.fromVFun(vFun)
+		vanyl.topElement = topElement
+		vanyl.topElement.innerHTML = vanyl.init() //~
+		vanyl.processData()
+		return vanyl
+	}
+	static create(vFun) {
+		let vanyl = Vanyl.fromVFun(vFun)
+		vanyl.takeFirstChild()
+		vanyl.processData()
+		return vanyl
+	}
+	addTo(element) {
+		this.topElement.remove()
+		element.appendChild(this.topElement)
+		return this
+	}
 }

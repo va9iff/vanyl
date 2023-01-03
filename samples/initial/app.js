@@ -1,15 +1,17 @@
-import {v, sync, render} from '/src/index.js'
+import {Vanyl} from '/src/index.js'
 
+let {v, create} = Vanyl
 
 let state = {
-	value: "rf ref",
+	value: "goes like ",
 	disabled: false,
 	data1: 212
 }
 
+// props isn't useful at the time. but we will implement a way to render from 
+// vResult. so it will be usable like v`<a>${myView(props)}</a>`
 
-
-let myView = ()=> v`
+let myView = props => v`
 <div>
 	<p>
 	  that's an ${state.data1} test for ${5487} so yeah
@@ -18,27 +20,22 @@ let myView = ()=> v`
 	<input type="text" 
 	${{'disabled': state.disabled}}
 	${{value: state.value}}>
-	<button ${{'@click': ()=>alert()}}>alerts</button>endendend
+	<button ${{onclick: ()=>alert()}}>alerts</button>endendend
+	this will be displayed, but,
 </div>
+<i>this won't</i>
+and yes it works
 `
 
-// attr.value(state.disabled)
-// bool.disabled(state.disabled)
-// on.click(()=>alert())
-
-let a = sync(myView, document.body)
-
-// let b = render(myView)
-
-a.update()
+let div = create(myView)
+div.addTo(document.body)
+document.body.appendChild(div.topElement)
+div.update()
 
 setInterval(()=>{
-	state.value += "8888"
+	state.value += (Math.random()+'')[3]
 	state.disabled = !state.disabled
 	state.data1++
-	a.update()
+	div.update()
 }, 1200)
-
-console.log(a)
-
 
