@@ -1,29 +1,29 @@
-let unique = (() => {
-	let ___u___ = 0
-	return () => `um${___u___++}`
-})()
+let [___u___, unique] = [0, () => `um${___u___++}`]
+
+let handlers = {
+	text: {
+		init(controller, i){
+
+		}
+	}
+}
 
 class Controller {
 	constructor(vResult) {
 		this.vResult = vResult
 	}
-	static fromVFun(vFun) {
-		let controller = new this(vFun())
-		controller.vFun = vFun
-		return controller
-	}
-	datas = [] // [{for:"text", element: div}]
-	markProp() {
-		let data = { unique: unique(), for: "props" }
+	datas = [] // [{handleType:"text", element: div}]
+	initProp() {
+		let data = { id: unique(), handleType: "props" }
 		this.datas.push(data)
-		console.log(data.unique)
-		return data.unique
+		console.log(data.id)
+		return data.id
 	}
-	markText() {
-		let data = { unique: unique(), for: "text" }
+	initText() {
+		let data = { id: unique(), handleType: "text" }
 		this.datas.push(data)
-		console.log(data.unique)
-		return `<b ${data.unique}>${data.unique}</b>`
+		console.log(data.id)
+		return `<b ${data.id}>${data.id}</b>`
 	}
 	init() {
 		let result = ""
@@ -31,7 +31,7 @@ class Controller {
 		for (let [i, arg] of this.vResult.args.entries()) {
 			let string = this.vResult.strings[i]
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
-			result += string + (lt > gt ? this.markProp() : this.markText())
+			result += string + (lt > gt ? this.initProp() : this.initText())
 		}
 		return result + this.vResult.strings.at(-1)
 	}
@@ -39,9 +39,9 @@ class Controller {
 		let args = freshVResult.args
 		for (let [i, data] of this.datas.entries()) {
 			let arg = args[i]
-			if (data.for == "text") {
+			if (data.handleType == "text") {
 				data.element.innerHTML = arg
-			} else if (data.for == "props") {
+			} else if (data.handleType == "props") {
 				for (let [key, value] of Object.entries(arg)) data.element[key] = value
 			}
 		}
@@ -49,14 +49,19 @@ class Controller {
 	update() {
 		this.updateWith(this.vFun())
 	}
-	processMarks() {
+	processData() {
 		for (let data of this.datas)
-			data.element = this.topElement.querySelector(`[${data.unique}]`)
+			data.element = this.topElement.querySelector(`[${data.id}]`)
+	}
+	static fromVFun(vFun) {
+		let controller = new this(vFun())
+		controller.vFun = vFun
+		return controller
 	}
 	syncTo(topElement) {
 		this.topElement = topElement
 		this.topElement.innerHTML = this.init() //~
-		this.processMarks()
+		this.processData()
 	}
 	/*takeFirstChild() {
 		// this.fragment = new DocumentFragment();
