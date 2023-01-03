@@ -7,6 +7,23 @@
 </head>
 <body style="background-color: #222; color: #fff;">
 	<script src="./app.js" type="module"></script>
+	<style>
+		@keyframes bring {
+			from{
+				transform: translateX(-180px);
+			}
+			to{
+				transform: translateX(0);
+			}
+		}
+
+		li{
+			animation-name: bring;
+			animation-duration: 200ms;
+			margin: 0.1rem;
+			background-color: #a33;
+		}
+	</style>
 	some little text
 </body>
 </html>

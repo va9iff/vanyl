@@ -1,6 +1,5 @@
-import {Vanyl} from '/src/index.js'
+import {Vanyl, v, create, sync} from '/src/index.js'
 
-let {v, create} = Vanyl
 
 let state = {
 	value: "goes like ",
@@ -10,6 +9,8 @@ let state = {
 
 // props isn't useful at the time. but we will implement a way to render from 
 // vResult. so it will be usable like v`<a>${myView(props)}</a>`
+
+let arr= [1,213,Math.random(),124,124]
 
 let myView = props => v`
 <div>
@@ -21,6 +22,12 @@ let myView = props => v`
 	${{'disabled': state.disabled}}
 	${{value: state.value}}>
 	<button ${{onclick: ()=>alert()}}>alerts</button>endendend
+	lets put a list
+	<ul>
+		WEIRD BUG - WE CAN'T USE DYNAMIC PROPERTIES ON FIRST ELEMENT BECAUSE OF .grabFirstChild()
+		it will query the element and won't know that it has in it. so we need to add it too.
+		${arr.map(prop=>v`<li><i ${{key: prop}}>${prop}</i></li>`)}
+	</ul>
 	this will be displayed, but,
 </div>
 <i>this won't</i>
@@ -37,5 +44,7 @@ setInterval(()=>{
 	state.disabled = !state.disabled
 	state.data1++
 	div.update()
+	arr.shift()
+	arr.push(Math.random())
 }, 1200)
 
