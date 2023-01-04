@@ -1,8 +1,30 @@
 let unique = ((counter = 0) => () => `um${counter++}`)()
+let keyOf = vResult => vResult.args[0].key
 
 export class Vanyl {
 	constructor(vResult) {
 		this.vResult = vResult
+		let [html, lt, gt, inTag] = ["", 0, 0, ()=>lt>gt]
+		for (let [i, arg] of this.vResult.args.entries()) {
+			let string = this.vResult.strings[i]
+			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
+
+			if (inTag()){
+				html += string + this.initProp()
+			}
+			else if(!inTag() && Array.isArray(arg) && arg[0] instanceof Vanyl.vResult){
+				html+=string + this.initList()
+				console.log('vResuluut')
+			}
+			else if (!inTag()){
+				html += string + (lt > gt ? this.initProp() : this.initText())
+			}
+		}
+		this.html = html + this.vResult.strings.at(-1)
+		console.log(html)
+	}
+	vFun(){
+		return v`V~`
 	}
 	datas = [] // [{handleType:"text", element: div}]
 	initProp() {
@@ -20,25 +42,8 @@ export class Vanyl {
 		this.datas.push(data)
 		return `<b ${data.selector}>${data.selector}</b>`
 	}
-	init() {
-		let [result, lt, gt, inTag] = ["", 0, 0, ()=>lt>gt]
-		for (let [i, arg] of this.vResult.args.entries()) {
-			let string = this.vResult.strings[i]
-			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
-
-			if (inTag()){
-				result += string + this.initProp()
-			}
-			else if(!inTag() && Array.isArray(arg) && arg[0] instanceof Vanyl.vResult){
-				result+=string + this.initList()
-				console.log('vResuluut')
-			}
-			else if (!inTag()){
-				result += string + (lt > gt ? this.initProp() : this.initText())
-			}
-		}
-		return result + this.vResult.strings.at(-1)
-	}
+	// init() {
+	// }
 	updateWith(freshVResult) {
 		for (let [i, data] of this.datas.entries()) {
 			let arg = freshVResult.args[i]
@@ -49,27 +54,16 @@ export class Vanyl {
 					data.element[key] = value
 				}
 			} else if (data.handleType == "list"){
-				// console.log(data)
-				// for (let [key, vanylInDisplay] of Object.entries(data.vanyls)){
-					// if (arg.includes(vanylInDisplay)) {
-						// vanylInDisplay.updateWith(arg)
-					// }
-				// }
-				let keyedArg = {}					  //obj.vreslult.arr.{key}.key 
-				for (let vResult of arg) keyedArg[vResult.args[0].key] = vResult
-
 					//////////////////////////////////////
-
+				let keyedArg = {}
+				for (let vResult of arg) keyedArg[keyOf(vResult)] = vResult
 				for (let vResult of arg){
-					let dataVanyl = data.vanyls[vResult.args[0].key]
+					let dataVanyl = data.vanyls[keyOf(vResult)]
 					if (!dataVanyl){
-						// console.log(data.vanyls)
 						let vanylToAdd = new Vanyl(vResult)
 						vanylToAdd.grabFirstChild()
 						vanylToAdd.addTo(this.topElement)
-						// console.log('set',vanylToAdd.vResult.args[0].key, vanylToAdd)
-						// console.log(vanylToAdd.vResult.args[0].key)
-						data.vanyls[vanylToAdd.vResult.args[0].key] = vanylToAdd
+						data.vanyls[keyOf(vanylToAdd.vResult)] = vanylToAdd
 						vanylToAdd.updateWith(vResult)
 					}
 					else {
@@ -108,7 +102,7 @@ export class Vanyl {
 		vanyl.vFun = vFun
 		return vanyl
 	}
-		processData() {
+		process() {
 		for (let data of this.datas)
 			{
 				data.element = this.topElement.querySelector(`[${data.selector}]`)
@@ -119,9 +113,9 @@ export class Vanyl {
 				}
 	}
 	grabFirstChild() {
-		this.domik = new DOMParser().parseFromString(this.init(), "text/html")
+		this.domik = new DOMParser().parseFromString(this.html, "text/html")
 		this.topElement = this.domik.body.firstChild
-		this.processData()
+		this.process()
 		// console.log(this.topElement)
 	}
 	static vResult = class vResult {

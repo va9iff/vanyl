@@ -43,8 +43,8 @@ setInterval(()=>{
 	state.value += (Math.random()+'')[3]
 	state.disabled = !state.disabled
 	state.data1++
-	div.update()
 	arr.shift()
 	arr.push(Math.random())
+	div.update()
 }, 1200)
 
