@@ -36,15 +36,14 @@ and yes it works
 
 let div = create(myView)
 div.addTo(document.body)
-document.body.appendChild(div.topElement)
 div.update()
 
 setInterval(()=>{
-	state.value += (Math.random()+'')[3]
+setTimeout(()=>{	state.value += (Math.random()+'')[3]
+arr.push(Math.random())
 	state.disabled = !state.disabled
 	state.data1++
 	arr.shift()
-	arr.push(Math.random())
 	div.update()
-}, 1200)
+},Math.random()*1500)}, 300)
 

@@ -1,4 +1,4 @@
-let unique = ((counter = 0) => () => `um${counter++}`)()
+let unique = ((counter = 0) => () => `V${counter++}`)()
 let keyOf = vResult => vResult.args[0].key
 
 export class Vanyl {
@@ -21,7 +21,7 @@ export class Vanyl {
 			}
 		}
 		this.html = html + this.vResult.strings.at(-1)
-		console.log(html)
+		// console.log(html)
 	}
 	vFun(){
 		return v`V~`
@@ -138,10 +138,10 @@ export const create = (vFun) => {
 	return vanyl
 }
 
-export const sync = (vFun, topElement) => {
+export const sync = (vFun, syncElement) => {
 		let vanyl = Vanyl.fromVFun(vFun)
-		vanyl.topElement = topElement
-		vanyl.topElement.innerHTML = vanyl.init() //~
+		vanyl.topElement = syncElement
+		vanyl.topElement.innerHTML = vanyl.html //~
 		return vanyl
 	}
 
