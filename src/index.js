@@ -56,17 +56,19 @@ export class Vanyl {
 			} else if (data.handleType == "list"){
 					//////////////////////////////////////
 				let keyedArg = {}
+				let frag = document.createDocumentFragment()
 				for (let vResult of arg) keyedArg[keyOf(vResult)] = vResult
 				for (let vResult of arg){
-					let dataVanyl = data.vanyls[keyOf(vResult)]
+					let dataVanyl = data.vanyls[keyOf(vResult)] // take vResult in display
 					if (!dataVanyl){
 						let vanylToAdd = new Vanyl(vResult)
 						vanylToAdd.grabFirstChild()
-						vanylToAdd.addTo(this.topElement)
+						vanylToAdd.addTo(frag)
 						data.vanyls[keyOf(vanylToAdd.vResult)] = vanylToAdd
 						vanylToAdd.updateWith(vResult)
 					}
 					else {
+						dataVanyl.addTo(frag)
 						dataVanyl.updateWith(vResult)
 					}
 				}
@@ -74,6 +76,15 @@ export class Vanyl {
 					if (!keyedArg[vanylKey]) vanyl.topElement.remove()
 					// console.log(vanyl)
 				}
+
+				// let dataVanylArr = Object.entries(data.vanyls).map(([_,vanyl])=>vanyl)
+				for (let [i, vResult] of arg.entries()){
+
+					// console.log(i, vResult)
+
+				}
+
+				this.topElement.appendChild(frag)
 
 				// for (let [key, vResult] of Object.entries(keyedArg)){
 				// 	if (data.vanyls[key]) {
@@ -124,7 +135,6 @@ export class Vanyl {
 		}
 	} // to check if typeof vResult
 	addTo(element) {
-		this.topElement.remove()
 		element.appendChild(this.topElement)
 		return this
 	}

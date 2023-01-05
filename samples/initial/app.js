@@ -1,5 +1,33 @@
 import {Vanyl, v, create, sync} from '/src/index.js'
 
+let query = (..._)=>document.querySelector(..._)
+
+let
+	ctn = query('[ctn]'),
+	idx = query('[idx]'),
+	add = query('[add]'),
+	del = query('[del]'),
+	arr= [
+		{val:1, key:1},
+		{val:213, key:213},
+		{val:Math.random(), key:Math.random()},
+		{val:124, key:124},
+		{val:1, key:12}
+		]
+
+add.onclick = e => {
+	ctn.value += '1'
+	arr.splice(idx.value, 0, {val:ctn.value, key:ctn.value}).value
+	div.update()
+	console.log(arr)
+}
+del.onclick = e => {
+	arr.splice(idx.value, 1).value; 
+	div.update()
+	console.log(arr)
+}
+
+
 
 let state = {
 	value: "goes like ",
@@ -10,7 +38,6 @@ let state = {
 // props isn't useful at the time. but we will implement a way to render from 
 // vResult. so it will be usable like v`<a>${myView(props)}</a>`
 
-let arr= [1,213,Math.random(),124,124]
 
 let myView = props => v`
 <div>
@@ -26,7 +53,7 @@ let myView = props => v`
 	<ul>
 		WEIRD BUG - WE CAN'T USE DYNAMIC PROPERTIES ON FIRST ELEMENT BECAUSE OF .grabFirstChild()
 		it will query the element and won't know that it has in it. so we need to add it too.
-		${arr.map(prop=>v`<li><i ${{key: prop}}>${prop}</i></li>`)}
+		${arr.map((prop,i)=>v`<li><i ${{key: prop.key}}><u>${i}-</u>${prop.val}</i></li>`)}
 	</ul>
 	this will be displayed, but,
 </div>
@@ -39,11 +66,10 @@ div.addTo(document.body)
 div.update()
 
 setInterval(()=>{
-setTimeout(()=>{	state.value += (Math.random()+'')[3]
-arr.push(Math.random())
+	state.value += (Math.random()+'')[3]
 	state.disabled = !state.disabled
 	state.data1++
-	arr.shift()
+	// console.log(arr)
 	div.update()
-},Math.random()*1500)}, 300)
+}, 500)
 
