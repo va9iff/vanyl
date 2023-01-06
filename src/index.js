@@ -4,19 +4,20 @@ export class Vanyl {
 	constructor(vResult) {
 		this.vResult = vResult
 		let [html, lt, gt, inTag] = ["", 0, 0, ()=>lt>gt]
-		for (let [i, arg] of this.vResult.args.entries()) {
-			let string = this.vResult.strings[i]
+		for (let [i, arg] of vResult.args.entries()) {
+			let string = vResult.strings[i]
+			html+=string
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
 
 			if (inTag()){
-				html += string + this.initProp()
+				html += this.initProp()
 			}
 			else if(!inTag() && Array.isArray(arg) && arg[0] instanceof Vanyl.vResult){
-				html+=string + this.initList()
+				html += this.initList()
 				console.log('vResuluut')
 			}
 			else if (!inTag()){
-				html += string + (lt > gt ? this.initProp() : this.initText())
+				html += this.initText()
 			}
 		}
 		this.html = html + this.vResult.strings.at(-1)
@@ -34,15 +35,13 @@ export class Vanyl {
 	initText() {
 		let data = { selector: unique(), handleType: "text" }
 		this.datas.push(data)
-		return `<b ${data.selector}>${data.selector}</b>`
+		return `<b ${data.selector}>${data.selector}text</b>`
 	}
 	initList() {
 		let data = { selector: unique(), handleType: "list", vanyls:{} }
 		this.datas.push(data)
-		return `<b ${data.selector}>${data.selector}</b>`
+		return `${data.selector+'list'}<wbr ${data.selector}>`
 	}
-	// init() {
-	// }
 	updateWith(freshVResult) {
 		for (let [i, data] of this.datas.entries()) {
 			let arg = freshVResult.args[i]
@@ -72,38 +71,12 @@ export class Vanyl {
 					}
 					if (!arg.some(aVResult=>aVResult.key==vResult.key)) data.vanyls[vResult.key].topElement.remove()
 				}
-				for (let [vanylKey, vanyl] of Object.entries(data.vanyls)){
+				for (let [vanylKey, vanyl] of Object.entries(data.vanyls))
 					if (!keyedArg[vanylKey]) vanyl.topElement.remove()
-					// console.log(vanyl)
-				}
 
-
-				// let dataVanylArr = Object.entries(data.vanyls).map(([_,vanyl])=>vanyl)
-				for (let [i, vResult] of arg.entries()){
-
-					// console.log(i, vResult)
-
-				}
-
-
-				data.element.appendChild(frag)
+				data.element.after(frag)
 				console.log(data.element)
 
-				// for (let [key, vResult] of Object.entries(keyedArg)){
-				// 	if (data.vanyls[key]) {
-				// 		// console.log(data.va)
-				// 		data.vanyls[key].updateWith(vResult)
-				// 		console.log('update',key)
-				// 	}
-				// 	else{
-				// 		let vanyl = new Vanyl(vResult)		
-				// 		vanyl.grabFirstChild()
-				// 		vanyl.addTo(this.topElement)
-				// 		data.vanyls[key] = vanyl
-				// 		vanyl.updateWith(vResult)
-				// 		console.log(vanyl)
-				// 	}
-				// }
 			}
 		}
 		return this
