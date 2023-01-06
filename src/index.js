@@ -1,5 +1,4 @@
 let unique = ((counter = 0) => () => `V${counter++}`)()
-let keyOf = vResult => vResult.args[0].key
 
 export class Vanyl {
 	constructor(vResult) {
@@ -57,25 +56,27 @@ export class Vanyl {
 					//////////////////////////////////////
 				let keyedArg = {}
 				let frag = document.createDocumentFragment()
-				for (let vResult of arg) keyedArg[keyOf(vResult)] = vResult
+				for (let vResult of arg) keyedArg[vResult.key] = vResult
 				for (let vResult of arg){
-					let dataVanyl = data.vanyls[keyOf(vResult)] // take vResult in display
+					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
 					if (!dataVanyl){
 						let vanylToAdd = new Vanyl(vResult)
 						vanylToAdd.grabFirstChild()
 						vanylToAdd.addTo(frag)
-						data.vanyls[keyOf(vanylToAdd.vResult)] = vanylToAdd
+						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
 						vanylToAdd.updateWith(vResult)
 					}
 					else {
 						dataVanyl.addTo(frag)
 						dataVanyl.updateWith(vResult)
 					}
+					if (!arg.some(aVResult=>aVResult.key==vResult.key)) data.vanyls[vResult.key].topElement.remove()
 				}
 				for (let [vanylKey, vanyl] of Object.entries(data.vanyls)){
 					if (!keyedArg[vanylKey]) vanyl.topElement.remove()
 					// console.log(vanyl)
 				}
+
 
 				// let dataVanylArr = Object.entries(data.vanyls).map(([_,vanyl])=>vanyl)
 				for (let [i, vResult] of arg.entries()){
@@ -132,6 +133,9 @@ export class Vanyl {
 	static vResult = class vResult {
 		constructor(strings, ...args) {
 			;[this.strings, this.args] = [strings, args]
+		}
+		get key(){
+			return this.args[0].key
 		}
 	} // to check if typeof vResult
 	addTo(element) {

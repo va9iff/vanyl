@@ -53,7 +53,7 @@ let myView = props => v`
 	<ul>
 		WEIRD BUG - WE CAN'T USE DYNAMIC PROPERTIES ON FIRST ELEMENT BECAUSE OF .grabFirstChild()
 		it will query the element and won't know that it has in it. so we need to add it too.
-		${arr.map((prop,i)=>v`<li><i ${{key: prop.key}}><u>${i}-</u>${prop.val}</i></li>`)}
+		${arr.map((prop,i)=>v`<li><i ${{key: prop.key}}><u>${i}-</u>${prop.val} <input type="text"></i></li>`)}
 	</ul>
 	this will be displayed, but,
 </div>
