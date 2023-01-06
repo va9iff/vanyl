@@ -59,16 +59,16 @@ export class Vanyl {
 				for (let vResult of arg) keyedArg[vResult.key] = vResult
 				for (let vResult of arg){
 					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
-					if (!dataVanyl){
+					if (dataVanyl){
+						dataVanyl.addTo(frag)
+						dataVanyl.updateWith(vResult)
+					}
+					else {
 						let vanylToAdd = new Vanyl(vResult)
 						vanylToAdd.grabFirstChild()
 						vanylToAdd.addTo(frag)
 						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
 						vanylToAdd.updateWith(vResult)
-					}
-					else {
-						dataVanyl.addTo(frag)
-						dataVanyl.updateWith(vResult)
 					}
 					if (!arg.some(aVResult=>aVResult.key==vResult.key)) data.vanyls[vResult.key].topElement.remove()
 				}
