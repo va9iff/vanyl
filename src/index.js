@@ -85,7 +85,9 @@ export class Vanyl {
 
 				}
 
-				this.topElement.appendChild(frag)
+
+				data.element.appendChild(frag)
+				console.log(data.element)
 
 				// for (let [key, vResult] of Object.entries(keyedArg)){
 				// 	if (data.vanyls[key]) {
