@@ -1,4 +1,4 @@
-let unique = ((counter = 0) => () => `V${counter++}`)()
+export let unique = ((counter = 0) => () => `V${counter++}`)()
 
 class VResult {
 		constructor(strings, ...args) {
@@ -6,6 +6,9 @@ class VResult {
 		}
 		get key() {
 			return this.args[0].key
+		}
+		isSame(_vResult){
+			return this.strings.length == _vResult.strings.length && this.strings.every((s,i)=>this.strings[i]==_vResult.strings[i])
 		}
 	} // to check if typeof vResult
 
@@ -21,6 +24,12 @@ export class Vanyl {
 			if (inTag()) {
 				html += this.initProp()
 			} else if (
+				arg instanceof VResult &&
+				this.vResult.isSame(vResult)
+				){
+				html += this.initVResult()
+			}
+			else if (
 				!inTag() &&
 				Array.isArray(arg) &&
 				arg[0] instanceof VResult
@@ -53,6 +62,11 @@ export class Vanyl {
 		this.datas.push(data)
 		return `${data.selector + "list"}<wbr ${data.selector}>`
 	}
+	initVResult(){
+		let data = { selector: unique(), handleType: "__VRESULT__", vanyl: new Vanyl(v``) }
+		this.datas.push(data)
+		return `${data.selector + "vresult"}<wbr ${data.selector}>`		
+	}
 	updateWith(vResultFresh) {
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
@@ -60,7 +74,17 @@ export class Vanyl {
 				data.element.innerHTML = arg
 			else if (data.handleType == "__PROPS__") 
 				for (let key in arg) data.element[key] = arg[key]
-			 else if (data.handleType == "__LIST__") {
+			else if (data.handleType == "__VRESULT__") {
+				if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
+				else {
+					data.vanyl.topElement?.remove()
+					data.vanyl = new Vanyl(arg)
+					data.vanyl.grabFirstChild()
+					data.element.after(data.vanyl.topElement)
+					data.vanyl.updateWith(arg)
+				}
+			}
+			else if (data.handleType == "__LIST__") {
 				let frag = document.createDocumentFragment()
 				for (let vResult of arg) {
 					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
@@ -114,9 +138,3 @@ export const create = vFun => {
 	return vanyl
 }
 
-export const sync = (vFun, syncElement) => {
-	let vanyl = Vanyl.fromVFun(vFun)
-	vanyl.topElement = syncElement
-	vanyl.topElement.innerHTML = vanyl.html //~
-	return vanyl
-}

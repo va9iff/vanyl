@@ -1,4 +1,12 @@
-import {Vanyl, v, create, sync} from '/src/index.js'
+import {Vanyl, v, create, unique} from '/src/index.js'
+
+let a1 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
+let a2 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
+let b1 = v`<div>hi it's not ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
+
+// console.log(a1.isSame(a2))
+// console.log(a1.isSame(b1))
+
 
 let query = (..._)=>document.querySelector(..._)
 
@@ -39,7 +47,11 @@ let state = {
 // vResult. so it will be usable like v`<a>${myView(props)}</a>`
 
 
-let myView = props => v`
+let myView = props => {
+	let vicka = Math.random()>0.5 ? v`<span><b>prr</b><i>prr</i><u>${Math.random()}</u></span>` : v`<span>bip bop</span>`
+	console.log(vicka.strings[0])
+
+	return v`
 <div ${{j:9}}>
 	<p>
 	  that's an ${state.data1} test for ${5487} so yeah
@@ -50,6 +62,7 @@ let myView = props => v`
 	${{value: state.value}}>
 	<button ${{onclick: ()=>alert()}}>alerts</button>endendend
 	lets put a list
+	nested vresult ${vicka}
 	<ol>
 		WEIRD BUG - WE CAN'T USE DYNAMIC PROPERTIES ON FIRST ELEMENT BECAUSE OF .grabFirstChild()
 		it will query the element and won't know that it has in it. so we need to add it too.
@@ -60,6 +73,7 @@ let myView = props => v`
 <i>this won't</i>
 and yes it works
 `
+}
 
 let div = create(myView)
 div.addTo(document.body)
@@ -71,5 +85,5 @@ setInterval(()=>{
 	state.data1++
 	// console.log(arr)
 	div.update()
-}, 200000)
+}, 1000)
 
