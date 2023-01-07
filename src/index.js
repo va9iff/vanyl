@@ -1,67 +1,60 @@
 let unique = ((counter = 0) => () => `V${counter++}`)()
-
 export class Vanyl {
 	constructor(vResult) {
 		this.vResult = vResult
-		let [html, lt, gt, inTag] = ["", 0, 0, ()=>lt>gt]
+		let [html, lt, gt, inTag] = ["", 0, 0, () => lt > gt]
 		for (let [i, arg] of vResult.args.entries()) {
 			let string = vResult.strings[i]
-			html+=string
+			html += string
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
 
-			if (inTag()){
+			if (inTag()) {
 				html += this.initProp()
-			}
-			else if(!inTag() && Array.isArray(arg) && arg[0] instanceof Vanyl.vResult){
+			} else if (
+				!inTag() &&
+				Array.isArray(arg) &&
+				arg[0] instanceof Vanyl.vResult
+			) {
 				html += this.initList()
-				console.log('vResuluut')
-			}
-			else if (!inTag()){
+				console.log("vResuluut")
+			} else if (!inTag()) {
 				html += this.initText()
 			}
 		}
 		this.html = html + this.vResult.strings.at(-1)
 		// console.log(html)
 	}
-	vFun(){
+	vFun() {
 		return v`V~`
 	}
 	datas = [] // [{handleType:"text", element: div}]
 	initProp() {
-		let data = { selector: unique(), handleType: "props" }
+		let data = { selector: unique(), handleType: "__PROPS__" }
 		this.datas.push(data)
 		return `${data.selector}`
 	}
 	initText() {
-		let data = { selector: unique(), handleType: "text" }
+		let data = { selector: unique(), handleType: "__TEXT__" }
 		this.datas.push(data)
 		return `<b ${data.selector}>${data.selector}text</b>`
 	}
 	initList() {
-		let data = { selector: unique(), handleType: "list", vanyls:{} }
+		let data = { selector: unique(), handleType: "__LIST__", vanyls: {} }
 		this.datas.push(data)
-		return `${data.selector+'list'}<wbr ${data.selector}>`
+		return `${data.selector + "list"}<wbr ${data.selector}>`
 	}
 	updateWith(freshVResult) {
 		for (let [i, data] of this.datas.entries()) {
 			let arg = freshVResult.args[i]
-			if (data.handleType == "text") {
+			if (data.handleType == "__TEXT__") 
 				data.element.innerHTML = arg
-			} else if (data.handleType == "props") {
-				for (let [key, value] of Object.entries(arg)) {
-					data.element[key] = value
-				}
-			} else if (data.handleType == "list"){
-					//////////////////////////////////////
-				let keyedArg = {}
+			else if (data.handleType == "__PROPS__") 
+				for (let key in arg) data.element[key] = arg[key]
+			 else if (data.handleType == "__LIST__") {
 				let frag = document.createDocumentFragment()
-				for (let vResult of arg) keyedArg[vResult.key] = vResult
-				for (let vResult of arg){
+				for (let vResult of arg) {
 					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
-					if (dataVanyl){
-						dataVanyl.addTo(frag)
-						dataVanyl.updateWith(vResult)
-					}
+					if (dataVanyl) dataVanyl.addTo(frag).updateWith(vResult)
 					else {
 						let vanylToAdd = new Vanyl(vResult)
 						vanylToAdd.grabFirstChild()
@@ -69,14 +62,10 @@ export class Vanyl {
 						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
 						vanylToAdd.updateWith(vResult)
 					}
-					if (!arg.some(aVResult=>aVResult.key==vResult.key)) data.vanyls[vResult.key].topElement.remove()
+					if (!arg.some(aVResult => aVResult.key == vResult.key))
+						data.vanyls[vResult.key].topElement.remove()
 				}
-				for (let [vanylKey, vanyl] of Object.entries(data.vanyls))
-					if (!keyedArg[vanylKey]) vanyl.topElement.remove()
-
 				data.element.after(frag)
-				console.log(data.element)
-
 			}
 		}
 		return this
@@ -89,15 +78,11 @@ export class Vanyl {
 		vanyl.vFun = vFun
 		return vanyl
 	}
-		process() {
-		for (let data of this.datas)
-			{
-				data.element = this.topElement.querySelector(`[${data.selector}]`)
-				// console.log(data.element,data.selector)
-				// don't add dynamic prop to top element. it won't find itself
-				// console.log(`[${data.selector}]`, this.topElement)
-				if (data.element == null) throw new Error('daaa')
-				}
+	process() {
+		for (let data of this.datas) {
+			data.element = this.topElement.hasAttribute(data.selector) ? this.topElement : this.topElement.querySelector(`[${data.selector}]`)
+			if (data.element == null) throw new Error("couldn't find "+data.selector)
+		}
 	}
 	grabFirstChild() {
 		this.domik = new DOMParser().parseFromString(this.html, "text/html")
@@ -109,7 +94,7 @@ export class Vanyl {
 		constructor(strings, ...args) {
 			;[this.strings, this.args] = [strings, args]
 		}
-		get key(){
+		get key() {
 			return this.args[0].key
 		}
 	} // to check if typeof vResult
@@ -121,16 +106,15 @@ export class Vanyl {
 
 export const v = (...argums) => new Vanyl.vResult(...argums) // -> [{strings: [''], args: [any]}]
 
-export const create = (vFun) => {
+export const create = vFun => {
 	let vanyl = Vanyl.fromVFun(vFun)
 	vanyl.grabFirstChild()
 	return vanyl
 }
 
 export const sync = (vFun, syncElement) => {
-		let vanyl = Vanyl.fromVFun(vFun)
-		vanyl.topElement = syncElement
-		vanyl.topElement.innerHTML = vanyl.html //~
-		return vanyl
-	}
-
+	let vanyl = Vanyl.fromVFun(vFun)
+	vanyl.topElement = syncElement
+	vanyl.topElement.innerHTML = vanyl.html //~
+	return vanyl
+}

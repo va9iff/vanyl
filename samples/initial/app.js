@@ -40,7 +40,7 @@ let state = {
 
 
 let myView = props => v`
-<div>
+<div ${{j:9}}>
 	<p>
 	  that's an ${state.data1} test for ${5487} so yeah
 	</p>
@@ -50,11 +50,11 @@ let myView = props => v`
 	${{value: state.value}}>
 	<button ${{onclick: ()=>alert()}}>alerts</button>endendend
 	lets put a list
-	<ul>
+	<ol>
 		WEIRD BUG - WE CAN'T USE DYNAMIC PROPERTIES ON FIRST ELEMENT BECAUSE OF .grabFirstChild()
 		it will query the element and won't know that it has in it. so we need to add it too.
-		${arr.map((prop,i)=>v`<li><i ${{key: prop.key}}><u>${i}-</u>${prop.val} <input type="text"></i></li>`)}
-	</ul>
+		${arr.map((prop,i)=>v`<li ${{key: prop.key}}><u>${i}-</u>${prop.val} <input type="text"></li>`)}
+	</ol>
 	this will be displayed, but,
 </div>
 <i>this won't</i>
@@ -71,5 +71,5 @@ setInterval(()=>{
 	state.data1++
 	// console.log(arr)
 	div.update()
-}, 500)
+}, 200000)
 
