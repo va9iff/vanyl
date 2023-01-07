@@ -36,6 +36,14 @@ del.onclick = e => {
 }
 
 
+setTimeout(()=>{
+	add.click()	
+	add.click()	
+	add.click()	
+	del.click()
+	del.click()
+	del.click()
+}, 300)
 
 let state = {
 	value: "goes like ",
@@ -76,7 +84,7 @@ and yes it works
 }
 
 let div = create(myView)
-div.addTo(document.body)
+document.body.appendChild(div.topElement)
 // div.update()
 
 setInterval(()=>{

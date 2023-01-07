@@ -88,13 +88,16 @@ export class Vanyl {
 				let frag = document.createDocumentFragment()
 				for (let vResult of arg) {
 					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
-					if (dataVanyl) dataVanyl.addTo(frag).updateWith(vResult)
+					if (dataVanyl) {
+						frag.appendChild(dataVanyl.topElement)
+						dataVanyl.updateWith(vResult)
+					}
 					else {
 						let vanylToAdd = new Vanyl(vResult)
 						vanylToAdd.grabFirstChild()
-						vanylToAdd.addTo(frag)
-						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
 						vanylToAdd.updateWith(vResult)
+						frag.appendChild(vanylToAdd.topElement)
+						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
 					}
 					if (!arg.some(_vResult => _vResult.key == vResult.key))
 						data.vanyls[vResult.key].topElement.remove()
@@ -128,10 +131,6 @@ export class Vanyl {
 		this.topElement = this.domik.body.firstChild
 		this.process()
 		// console.log(this.topElement)
-	}
-	addTo(element) {
-		element.appendChild(this.topElement)
-		return this
 	}
 }
 
