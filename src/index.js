@@ -99,8 +99,11 @@ export class Vanyl {
 						frag.appendChild(vanylToAdd.topElement)
 						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
 					}
-					if (!arg.some(_vResult => _vResult.key == vResult.key))
-						data.vanyls[vResult.key].topElement.remove()
+					// remove old data vanyl that's not in arg. (identified with key)
+					for (let [_,vanyl] of Object.entries(data.vanyls)){
+						////// if (!arg.map(vr=>vr.key).includes(vanyl.vResult.key)) vanyl.topElement.remove() // also works and more basic but .some is performant
+						if (!arg.some(vr=>vr.key==vanyl.vResult.key)) vanyl.topElement.remove()
+					}
 				}
 				data.element.after(frag)
 			}

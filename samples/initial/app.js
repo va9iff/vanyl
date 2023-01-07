@@ -26,12 +26,12 @@ let
 add.onclick = e => {
 	ctn.value += '1'
 	arr.splice(idx.value, 0, {val:ctn.value, key:ctn.value}).value
-	div.update()
+	// div.update()
 	// console.log(arr)
 }
 del.onclick = e => {
 	arr.splice(idx.value, 1).value; 
-	div.update()
+	// div.update()
 	// console.log(arr)
 }
 
@@ -43,7 +43,7 @@ setTimeout(()=>{
 	del.click()
 	del.click()
 	del.click()
-}, 300)
+}, 30)
 
 let state = {
 	value: "goes like ",
@@ -74,7 +74,7 @@ let myView = props => {
 	<ol>
 		WEIRD BUG - WE CAN'T USE DYNAMIC PROPERTIES ON FIRST ELEMENT BECAUSE OF .grabFirstChild()
 		it will query the element and won't know that it has in it. so we need to add it too.
-		${arr.map((prop,i)=>v`<li ${{key: prop.key}}><u>${i}-</u>${prop.val} <input type="text"></li>`)}
+		${arr.map((prop,i)=>v`<li ${{key: prop.key}}><u>${i}-</u>${prop.key}~${prop.val} <input type="text"></li>`)}
 	</ol>
 	this will be displayed, but,
 </div>
@@ -85,7 +85,7 @@ and yes it works
 
 let div = create(myView)
 document.body.appendChild(div.topElement)
-// div.update()
+div.update()
 
 setInterval(()=>{
 	state.value += (Math.random()+'')[3]
