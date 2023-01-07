@@ -41,7 +41,9 @@ export class Vanyl {
 			}
 		}
 		this.html = html + this.vResult.strings.at(-1)
-		// console.log(html)
+		// maybe grab the first child already and process right here.
+		// so can have a fully displayable element once you have a vResult.
+		// but will require new data to be inserted with hand .updateWith()
 	}
 	vFun() {
 		return v`V~`
@@ -60,12 +62,12 @@ export class Vanyl {
 	initList() {
 		let data = { selector: unique(), handleType: "__LIST__", vanyls: {} }
 		this.datas.push(data)
-		return `${data.selector + "list"}<wbr ${data.selector}>`
+		return `${data.selector + "list:"}<wbr ${data.selector}>`
 	}
 	initVResult(){
 		let data = { selector: unique(), handleType: "__VRESULT__", vanyl: new Vanyl(v``) }
 		this.datas.push(data)
-		return `${data.selector + "vresult"}<wbr ${data.selector}>`		
+		return `${data.selector + "vresult:"}<wbr ${data.selector}>`		
 	}
 	updateWith(vResultFresh) {
 		for (let [i, data] of this.datas.entries()) {

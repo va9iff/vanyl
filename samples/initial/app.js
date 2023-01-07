@@ -26,12 +26,12 @@ let
 add.onclick = e => {
 	ctn.value += '1'
 	arr.splice(idx.value, 0, {val:ctn.value, key:ctn.value}).value
-	// div.update()
+	div.update()
 	// console.log(arr)
 }
 del.onclick = e => {
 	arr.splice(idx.value, 1).value; 
-	// div.update()
+	div.update()
 	// console.log(arr)
 }
 
@@ -55,8 +55,23 @@ let state = {
 // vResult. so it will be usable like v`<a>${myView(props)}</a>`
 
 
+let users = [
+	{key:'1', username: 'asf', password: '42323'},
+	{key:'2', username: 'jhon', password: 'jj'},
+	{key:'3', username: 'aslfdjk', password: 'ljadklfajlfdsk'},
+	{key:'4', username: '', password: '5'},
+
+]
+
+let userComponent = props => v`
+	<div ${{key: props.key}}>
+		<input type="text" ${{value:props.username}}>
+		password: <u>${props.password}</u>
+	</div>
+`
+
 let myView = props => {
-	let vicka = Math.random()>0.5 ? v`<span><b>prr</b><i>prr</i><u>${Math.random()}</u></span>` : v`<span>bip bop</span>`
+	let vicka = Math.random()>0.5 ? v`<span><input type="text"><b>prr</b><i>prr</i><u>${Math.random()}</u></span>` : v`<span>bip bop ${Math.random()}<input type="text"></span>`
 	// console.log(vicka.strings[0])
 
 	return v`
@@ -68,14 +83,13 @@ let myView = props => {
 	<input type="text" 
 	${{'disabled': state.disabled}}
 	${{value: state.value}}>
-	<button ${{onclick: ()=>alert()}}>alerts</button>endendend
+	<button ${{onclick: ()=>alert()}}>alerts</button>
+	nested ${vicka}
 	lets put a list
-	nested vresult ${vicka}
 	<ol>
-		WEIRD BUG - WE CAN'T USE DYNAMIC PROPERTIES ON FIRST ELEMENT BECAUSE OF .grabFirstChild()
-		it will query the element and won't know that it has in it. so we need to add it too.
 		${arr.map((prop,i)=>v`<li ${{key: prop.key}}><u>${i}-</u>${prop.key}~${prop.val} <input type="text"></li>`)}
 	</ol>
+	${users.map(props=>userComponent(props))}
 	this will be displayed, but,
 </div>
 <i>this won't</i>
