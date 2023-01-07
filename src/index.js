@@ -1,4 +1,14 @@
 let unique = ((counter = 0) => () => `V${counter++}`)()
+
+class VResult {
+		constructor(strings, ...args) {
+			;[this.strings, this.args] = [strings, args]
+		}
+		get key() {
+			return this.args[0].key
+		}
+	} // to check if typeof vResult
+
 export class Vanyl {
 	constructor(vResult) {
 		this.vResult = vResult
@@ -13,7 +23,7 @@ export class Vanyl {
 			} else if (
 				!inTag() &&
 				Array.isArray(arg) &&
-				arg[0] instanceof Vanyl.vResult
+				arg[0] instanceof VResult
 			) {
 				html += this.initList()
 				console.log("vResuluut")
@@ -43,9 +53,9 @@ export class Vanyl {
 		this.datas.push(data)
 		return `${data.selector + "list"}<wbr ${data.selector}>`
 	}
-	updateWith(freshVResult) {
+	updateWith(vResultFresh) {
 		for (let [i, data] of this.datas.entries()) {
-			let arg = freshVResult.args[i]
+			let arg = vResultFresh.args[i]
 			if (data.handleType == "__TEXT__") 
 				data.element.innerHTML = arg
 			else if (data.handleType == "__PROPS__") 
@@ -62,7 +72,7 @@ export class Vanyl {
 						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
 						vanylToAdd.updateWith(vResult)
 					}
-					if (!arg.some(aVResult => aVResult.key == vResult.key))
+					if (!arg.some(_vResult => _vResult.key == vResult.key))
 						data.vanyls[vResult.key].topElement.remove()
 				}
 				data.element.after(frag)
@@ -90,21 +100,13 @@ export class Vanyl {
 		this.process()
 		// console.log(this.topElement)
 	}
-	static vResult = class vResult {
-		constructor(strings, ...args) {
-			;[this.strings, this.args] = [strings, args]
-		}
-		get key() {
-			return this.args[0].key
-		}
-	} // to check if typeof vResult
 	addTo(element) {
 		element.appendChild(this.topElement)
 		return this
 	}
 }
 
-export const v = (...argums) => new Vanyl.vResult(...argums) // -> [{strings: [''], args: [any]}]
+export const v = (...argums) => new VResult(...argums) // -> [{strings: [''], args: [any]}]
 
 export const create = vFun => {
 	let vanyl = Vanyl.fromVFun(vFun)
