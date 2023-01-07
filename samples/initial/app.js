@@ -27,12 +27,12 @@ add.onclick = e => {
 	ctn.value += '1'
 	arr.splice(idx.value, 0, {val:ctn.value, key:ctn.value}).value
 	div.update()
-	console.log(arr)
+	// console.log(arr)
 }
 del.onclick = e => {
 	arr.splice(idx.value, 1).value; 
 	div.update()
-	console.log(arr)
+	// console.log(arr)
 }
 
 
@@ -49,7 +49,7 @@ let state = {
 
 let myView = props => {
 	let vicka = Math.random()>0.5 ? v`<span><b>prr</b><i>prr</i><u>${Math.random()}</u></span>` : v`<span>bip bop</span>`
-	console.log(vicka.strings[0])
+	// console.log(vicka.strings[0])
 
 	return v`
 <div ${{j:9}}>
@@ -77,7 +77,7 @@ and yes it works
 
 let div = create(myView)
 div.addTo(document.body)
-div.update()
+// div.update()
 
 setInterval(()=>{
 	state.value += (Math.random()+'')[3]

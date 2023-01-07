@@ -71,7 +71,7 @@ export class Vanyl {
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
 			if (data.handleType == "__TEXT__") 
-				data.element.innerHTML = arg
+				data.element.nodeValue = arg
 			else if (data.handleType == "__PROPS__") 
 				for (let key in arg) data.element[key] = arg[key]
 			else if (data.handleType == "__VRESULT__") {
@@ -116,6 +116,11 @@ export class Vanyl {
 		for (let data of this.datas) {
 			data.element = this.topElement.hasAttribute(data.selector) ? this.topElement : this.topElement.querySelector(`[${data.selector}]`)
 			if (data.element == null) throw new Error("couldn't find "+data.selector)
+			if (data.handleType == "__TEXT__") {
+				let textNode = document.createTextNode(data.selector)
+				data.element.replaceWith(textNode)
+				data.element = textNode
+			}
 		}
 	}
 	grabFirstChild() {
