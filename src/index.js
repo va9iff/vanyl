@@ -57,7 +57,7 @@ export class Vanyl {
 	initProp() {
 		let data = { selector: unique(), handleType: "__PROPS__" }
 		this.datas.push(data)
-		return `${data.selector}`
+		return ` ${data.selector} ` // fixing v`<li${{key:some}}></li>` bug
 	}
 	initText() {
 		let data = { selector: unique(), handleType: "__TEXT__" }
