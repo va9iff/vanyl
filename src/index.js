@@ -67,7 +67,7 @@ export class Vanyl {
 	initList() {
 		let data = { selector: unique(), handleType: "__LIST__", vanyls: {} }
 		this.datas.push(data)
-		return `${data.selector + "list:"}<wbr ${data.selector}>`
+		return `<wbr ${data.selector}>`
 	}
 	initVResult(){
 		let data = { selector: unique(), handleType: "__VRESULT__", vanyl: new Vanyl(v``) }
@@ -78,27 +78,13 @@ export class Vanyl {
 		if (!this.vResult.isSame(vResultFresh)) throw new Error(`.updateWith() got not same vResult`)
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
-			if (data.handleType == "__TEXT__") 
-				data.element.nodeValue = arg
-			else if (data.handleType == "__PROPS__") 
-				for (let key in arg) data.element[key] = arg[key]
-			else if (data.handleType == "__VRESULT__") {
-				if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
-				else {
-					data.vanyl.topElement?.remove()
-					data.vanyl = new Vanyl(arg)
-					//!1 data.vanyl.grabFirstChild()
-					data.element.after(data.vanyl.topElement)
-					data.vanyl.updateWith(arg)
-				}
-			}
-			else if (data.handleType == "__LIST__") {
+			if (data.handleType == "__LIST__") {
 				let frag = document.createDocumentFragment()
 				for (let vResult of arg) {
 					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
 					if (dataVanyl) {
 						frag.appendChild(dataVanyl.topElement)
-						dataVanyl.updateWith(vResult)
+						setTimeout(()=>dataVanyl.updateWith(vResult), 4) // needs a better solution
 					}
 					else {
 						let vanylToAdd = new Vanyl(vResult)
@@ -115,7 +101,20 @@ export class Vanyl {
 				}
 				data.element.after(frag)
 			}
-		}
+			else if (data.handleType == "__TEXT__") 
+				data.element.nodeValue = arg
+			else if (data.handleType == "__PROPS__") 
+				for (let key in arg) data.element[key] = arg[key]
+			else if (data.handleType == "__VRESULT__") {
+				if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
+				else {
+					data.vanyl.topElement?.remove()
+					data.vanyl = new Vanyl(arg)
+					//!1 data.vanyl.grabFirstChild()
+					data.element.after(data.vanyl.topElement)
+					data.vanyl.updateWith(arg)
+				}
+			}		}
 		return this
 	}
 	update() {

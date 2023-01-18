@@ -104,7 +104,6 @@ setInterval(()=>{
 	state.value += (Math.random()+'')[3]
 	state.disabled = !state.disabled
 	state.data1++
-	div.updateWith(v`<div><span ${{j:'s'}}></span></div>`)
 	// console.log(arr)
 	div.update()
 }, 1000)
