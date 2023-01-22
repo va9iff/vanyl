@@ -1,22 +1,25 @@
 export let unique = ((counter = 0) => () => `V${counter++}`)()
 
 class VResult {
-		constructor(strings, ...args) {
-			;[this.strings, this.args] = [strings, args]
-		}
-		get key() {
-			return this.args[0].key
-		}
-		isSame(_vResult){
-			return this.strings.length == _vResult.strings.length && this.strings.every((s,i)=>this.strings[i]==_vResult.strings[i])
-		}
+	constructor(strings, ...args) {
+		;[this.strings, this.args] = [strings, args]
 	}
+	get key() {
+		return this.args[0].key
+	}
+	isSame(_vResult) {
+		return (
+			this.strings.length == _vResult.strings.length &&
+			this.strings.every((s, i) => this.strings[i] == _vResult.strings[i])
+		)
+	}
+}
 
 export class Vanyl {
 	constructor(vResult) {
 		this.vResult = vResult
 		this.html = this.initHTML()
-		this.topElement = this.grabFirstChild() //1: Vanyls can have only 1 top 
+		this.topElement = this.grabFirstChild() //1: Vanyls can have only 1 top
 		// but it's okay cuz now we can have full working Vanyl just after construct
 		this.process()
 		this.updateWith(vResult)
@@ -24,7 +27,7 @@ export class Vanyl {
 	vFun() {
 		return v`V~${this.constructor.name}`
 	}
-	initHTML(){
+	initHTML() {
 		let [html, lt, gt, inTag] = ["", 0, 0, () => lt > gt]
 		for (let [i, arg] of this.vResult.args.entries()) {
 			let string = this.vResult.strings[i]
@@ -33,17 +36,9 @@ export class Vanyl {
 
 			if (inTag()) {
 				html += this.initProp()
-			} else if (
-				arg instanceof VResult &&
-				this.vResult.isSame(this.vResult)
-				){
+			} else if (arg instanceof VResult && this.vResult.isSame(this.vResult)) {
 				html += this.initVResult()
-			}
-			else if (
-				!inTag() &&
-				Array.isArray(arg) &&
-				arg[0] instanceof VResult
-			) {
+			} else if (!inTag() && Array.isArray(arg) && arg[0] instanceof VResult) {
 				html += this.initList()
 			} else if (!inTag()) {
 				html += this.initText()
@@ -51,7 +46,6 @@ export class Vanyl {
 		}
 		html += this.vResult.strings.at(-1)
 		return html
-
 	}
 	datas = [] // [{handleType:"text", element: div}]
 	initProp() {
@@ -69,24 +63,31 @@ export class Vanyl {
 		this.datas.push(data)
 		return `<wbr ${data.selector}>`
 	}
-	initVResult(){
-		let data = { selector: unique(), handleType: "__VRESULT__", vanyl: new Vanyl(v``) }
+	initVResult() {
+		let data = {
+			selector: unique(),
+			handleType: "__VRESULT__",
+			vanyl: new Vanyl(v``),
+		}
 		this.datas.push(data)
-		return `${data.selector + "vresult:"}<wbr ${data.selector}>`		
+		return `${data.selector + "vresult:"}<wbr ${data.selector}>`
 	}
 	updateWith(vResultFresh) {
-		if (!this.vResult.isSame(vResultFresh)) throw new Error(`.updateWith() got not same vResult`)
+		if (!this.vResult.isSame(vResultFresh))
+			throw new Error(`.updateWith() got not same vResult`)
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
-			if (data.handleType == "__LIST__") {
+			
+			switch (data.handleType) {
+
+			case "__LIST__": 
 				let frag = document.createDocumentFragment()
 				for (let vResult of arg) {
 					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
 					if (dataVanyl) {
 						frag.appendChild(dataVanyl.topElement)
-						setTimeout(()=>dataVanyl.updateWith(vResult), 4) // needs a better solution
-					}
-					else {
+						setTimeout(() => dataVanyl.updateWith(vResult), 4) // needs a better solution
+					} else {
 						let vanylToAdd = new Vanyl(vResult)
 						//!1 vanylToAdd.grabFirstChild()
 						vanylToAdd.updateWith(vResult)
@@ -94,18 +95,24 @@ export class Vanyl {
 						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
 					}
 					// remove old data vanyl that's not in arg. (identified with key)
-					for (let vanyl of Object.values(data.vanyls)){
+					for (let vanyl of Object.values(data.vanyls)) {
 						////// if (!arg.map(vr=>vr.key).includes(vanyl.vResult.key)) vanyl.topElement.remove() // also works and is more basic but .some is performant
-						if (!arg.some(vr=>vanyl.vResult.key==vr.key)) vanyl.topElement.remove()
+						if (!arg.some(vr => vanyl.vResult.key == vr.key))
+							vanyl.topElement.remove()
 					}
 				}
 				data.element.after(frag)
-			}
-			else if (data.handleType == "__TEXT__") 
+				break
+
+			case "__TEXT__": 
 				data.element.nodeValue = arg
-			else if (data.handleType == "__PROPS__") 
+				break
+
+			case "__PROPS__":
 				for (let key in arg) data.element[key] = arg[key]
-			else if (data.handleType == "__VRESULT__") {
+				break
+			
+			case "__VRESULT__": 
 				if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
 				else {
 					data.vanyl.topElement?.remove()
@@ -114,7 +121,9 @@ export class Vanyl {
 					data.element.after(data.vanyl.topElement)
 					data.vanyl.updateWith(arg)
 				}
-			}		}
+				break
+			}
+		}
 		return this
 	}
 	update() {
@@ -127,8 +136,11 @@ export class Vanyl {
 	}
 	process() {
 		for (let data of this.datas) {
-			data.element = this.topElement.hasAttribute(data.selector) ? this.topElement : this.topElement.querySelector(`[${data.selector}]`)
-			if (data.element == null) throw new Error("couldn't find "+data.selector)
+			data.element = this.topElement.hasAttribute(data.selector)
+				? this.topElement
+				: this.topElement.querySelector(`[${data.selector}]`)
+			if (data.element == null)
+				throw new Error("couldn't find " + data.selector)
 			if (data.handleType == "__TEXT__") {
 				let textNode = document.createTextNode(data.selector)
 				data.element.replaceWith(textNode)
@@ -150,4 +162,3 @@ export const create = vFun => {
 	//!1 vanyl.grabFirstChild()
 	return vanyl
 }
-
