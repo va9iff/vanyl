@@ -7,6 +7,9 @@ class VResult {
 	get key() {
 		return this.args[0].key
 	}
+	get keep() {
+		return this.args[0].keep
+	}
 	isSame(_vResult) {
 		return (
 			this.strings.length == _vResult.strings.length &&
@@ -77,7 +80,7 @@ export class Vanyl {
 			throw new Error(`.updateWith() got not same vResult`)
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
-			
+
 			switch (data.handleType) {
 
 			case "__LIST__": 
@@ -85,8 +88,9 @@ export class Vanyl {
 				for (let vResult of arg) {
 					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
 					if (dataVanyl) {
-						frag.appendChild(dataVanyl.topElement)
-						setTimeout(() => dataVanyl.updateWith(vResult), 4) // needs a better solution
+						console.log(vResult.keep)
+						if (!vResult.keep) frag.appendChild(dataVanyl.topElement)
+						dataVanyl.updateWith(vResult) // I want it synchronous. so, we do a way around (look up)
 					} else {
 						let vanylToAdd = new Vanyl(vResult)
 						//!1 vanylToAdd.grabFirstChild()
