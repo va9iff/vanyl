@@ -1,4 +1,4 @@
-import {Vanyl, v, create, unique} from '/src/index.js'
+import {Vanyl, v, create, Lazy, unique} from '/src/index.js'
 
 let a1 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
 let a2 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
@@ -70,8 +70,19 @@ let userComponent = props => v`
 	</div>
 `
 
+let inputText = new Lazy("isn't set")
+
+/*
+	or maybe 
+	let inputText = new Lazy("isn't set yet")
+	v`<input ${{"~value":inputText}} type="text">
+	<div>${inputText.now}</div>
+	<button ${{"@click": e=> inputText.now = ""}}>reset</button>`
+
+*/
+
 let myView = props => {
-	let vicka = Math.random()>0.5 ? v`<span><input type="text"><b>prr</b><i>prr</i><u>${Math.random()}</u></span>` : v`<span>bip bop ${Math.random()}<input type="text"></span>`
+	let vicka = Math.random()>0.5 ? v`<span><input ${{"~value":inputText}} type="text"><b>prr</b><i>prr</i><u>-${inputText.now}-${Math.random()}</u></span>` : v`<span>bip bop ${Math.random()}<input type="text"></span>`
 	// console.log(vicka.strings[0])
 
 	return v`

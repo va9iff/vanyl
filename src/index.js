@@ -18,6 +18,28 @@ class VResult {
 	}
 }
 
+/* isn't implemented yet */
+/* we have to implement:
+	@eventListener
+	.className
+	~lazy
+*/
+export class Lazy {
+	constructor(initialValue){
+		this.initialValue = initialValue
+	}
+	sync(element, prop){
+		this.element = element
+		this.prop = prop
+	}
+	get now () {
+		if(this.element) return this.element[this.prop]
+	}
+	set now (newValue) {
+		this.element[this.prop] = newValue
+	}
+}
+
 export class Vanyl {
 	constructor(vResult) {
 		this.vResult = vResult
