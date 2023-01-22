@@ -94,7 +94,7 @@ export class Vanyl {
 						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
 					}
 					// remove old data vanyl that's not in arg. (identified with key)
-					for (let [_,vanyl] of Object.entries(data.vanyls)){
+					for (let vanyl of Object.values(data.vanyls)){
 						////// if (!arg.map(vr=>vr.key).includes(vanyl.vResult.key)) vanyl.topElement.remove() // also works and is more basic but .some is performant
 						if (!arg.some(vr=>vanyl.vResult.key==vr.key)) vanyl.topElement.remove()
 					}
