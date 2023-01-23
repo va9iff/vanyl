@@ -146,20 +146,20 @@ export class Vanyl {
 			case "__PROPS__": // arg is dynamic props object
 				for (let [key, val] of Object.entries(arg)) {
 					let $key = key.slice(1)
-					switch (key[0]){
-						case ".":
-							if (val) data.element.classList.add($key)
-							else data.element.classList.remove($key)
-							break
-						case "~":
-							// val is Lazy instance
-							val.element = data.element
-							val.prop = $key
-							val.now = val.initialValue
-							break
-						default:
-							data.element[key] = val
+					if (key[0]=="."){
+						if (val) data.element.classList.add($key)
+						else data.element.classList.remove($key)
 					}
+					else if (val instanceof Lazy){
+						// val is Lazy instance
+						val.element = data.element
+						val.prop = key
+						console.log(val)
+					}
+					else {
+						data.element[key] = val
+					}
+					
 				}
 				break
 			

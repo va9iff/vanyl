@@ -5,7 +5,7 @@ let b = true
 
 let mainView = (props = "main") => v`
 	<div>
-		<input type="text" ${{"~value": text}}>
+		<input type="text" ${{value: text}}>
 		${text.now}
 		<button ${{onclick: e=>{
 			main.update()
