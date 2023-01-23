@@ -76,7 +76,7 @@ let myView = props => {
 	nested ${vicka}
 	lets put a list
 	<ol>
-		${arr.map((prop,i)=>v`<li ${{key: prop.key, keep:prop.keep || Math.random()>0.5}}><u>${i}-</u>${prop.key}~${prop.val} <input type="text"></li>`)}
+		${arr.map((prop,i)=>v`<li ${{key: prop.key, keep:prop.keep || Math.random()>0.5, ".highlight": Math.random()>0.7}}><u>${i}-</u>${prop.key}~${prop.val} <input type="text"></li>`)}
 	</ol>
 	${users.map(props=>userComponent(props))}
 	this will be displayed, but,

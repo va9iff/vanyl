@@ -106,12 +106,12 @@ export class Vanyl {
 
 			switch (data.handleType) {
 
-			case "__LIST__": 
+			case "__LIST__": // arg is the array of vResults
 				let frag = document.createDocumentFragment()
 				for (let vResult of arg) {
 					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
 					if (dataVanyl) {
-						console.log(vResult.keep)
+						// console.log(vResult.keep)
 						if (!vResult.keep) frag.appendChild(dataVanyl.topElement)
 						dataVanyl.updateWith(vResult) // I want it synchronous. so, we do a way around (look up)
 					} else {
@@ -131,15 +131,24 @@ export class Vanyl {
 				data.element.after(frag)
 				break
 
-			case "__TEXT__": 
+			case "__TEXT__":  // arg is the dynamic text
 				data.element.nodeValue = arg
 				break
 
-			case "__PROPS__":
-				for (let key in arg) data.element[key] = arg[key]
+			case "__PROPS__": // arg is dynamic props object
+				for (let key in arg) {
+					switch (key[0]){
+						case ".":
+							if (arg[key]) data.element.classList.add(key.slice(1))
+							else data.element.classList.remove(key.slice(1))
+							break
+						default:
+							data.element[key] = arg[key]
+					}
+				}
 				break
 			
-			case "__VRESULT__": 
+			case "__VRESULT__": // arg is a vResult
 				if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
 				else {
 					data.vanyl.topElement?.remove()
