@@ -152,9 +152,11 @@ export class Vanyl {
 					}
 					else if (val instanceof Lazy){
 						// val is Lazy instance
-						val.element = data.element
-						val.prop = key
-						console.log(val)
+						if (!val.element) {
+							val.element = data.element
+							val.prop = key
+							val.element[val.prop] = val.initialValue
+						}
 					}
 					else {
 						data.element[key] = val
