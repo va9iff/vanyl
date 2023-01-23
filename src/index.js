@@ -53,19 +53,20 @@ export class Vanyl {
 		return v`V~${this.constructor.name}`
 	}
 	initHTML() {
-		let [html, lt, gt, inTag] = ["", 0, 0, () => lt > gt]
+		let [html, lt, gt] = ["", 0, 0]
 		for (let [i, arg] of this.vResult.args.entries()) {
 			let string = this.vResult.strings[i]
 			html += string
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
+			let inTag = lt > gt
 
-			if (inTag()) {
+			if (inTag) {
 				html += this.initProp()
 			} else if (arg instanceof VResult && this.vResult.isSame(this.vResult)) {
 				html += this.initVResult()
-			} else if (!inTag() && Array.isArray(arg) && arg[0] instanceof VResult) {
+			} else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
 				html += this.initList()
-			} else if (!inTag()) {
+			} else if (!inTag) {
 				html += this.initText()
 			}
 		}
@@ -182,6 +183,14 @@ export class Vanyl {
 }
 
 export const v = (...argums) => new VResult(...argums)
+
+export class vanyl extends Vanyl {
+	constructor(vFun) {
+		let vResult = vFun()
+		super(vResult)
+		this.vFun = vFun
+	}
+}
 
 export const create = vFun => {
 	let vanyl = Vanyl.fromVFun(vFun)

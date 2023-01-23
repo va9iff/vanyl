@@ -1,4 +1,4 @@
-import {Vanyl, v, create, Lazy, unique} from '/src/index.js'
+import {Vanyl, vanyl, v, create, Lazy, unique} from '/src/index.js'
 
 let a1 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
 let a2 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
@@ -22,28 +22,6 @@ let
 		{val:124, key:"joooooooooo", keep: true},
 		{val:1, key:12}
 		]
-
-add.onclick = e => {
-	ctn.value += '1'
-	arr.splice(idx.value, 0, {val:ctn.value, key:ctn.value}).value
-	div.update()
-	// console.log(arr)
-}
-del.onclick = e => {
-	arr.splice(idx.value, 1).value; 
-	div.update()
-	// console.log(arr)
-}
-
-
-setTimeout(()=>{
-	add.click()	
-	add.click()	
-	add.click()	
-	del.click()
-	del.click()
-	del.click()
-}, 30)
 
 let state = {
 	value: "goes like ",
@@ -118,4 +96,28 @@ setInterval(()=>{
 	// console.log(arr)
 	div.update()
 }, 1000)
+
+
+
+add.onclick = e => {
+	ctn.value += '1'
+	arr.splice(idx.value, 0, {val:ctn.value, key:ctn.value}).value
+	div.update()
+	// console.log(arr)
+}
+del.onclick = e => {
+	arr.splice(idx.value, 1).value; 
+	div.update()
+	// console.log(arr)
+}
+
+
+setTimeout(()=>{
+	add.click()	
+	add.click()	
+	add.click()	
+	del.click()
+	del.click()
+	del.click()
+}, 30)
 
