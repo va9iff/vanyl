@@ -21,9 +21,16 @@ class VResult {
 /* isn't implemented yet */
 /* we have to implement:
 	@eventListener
-	.className
+	.className // done
 	~lazy
 */
+
+/* 	MAYBE WE DON'T NEED "~" PREFIX FOR LAZY
+	WHEN A VALUE OF A PROPERTY IS LAZY, LIKE:
+	let text = new Lazy("")
+	${{value: text}}
+	THEN WE CAN JUST USE THE VALUE STRING.
+  */
 export class Lazy {
 	constructor(initialValue){
 		this.initialValue = initialValue
@@ -34,6 +41,7 @@ export class Lazy {
 	}
 	get now () {
 		if(this.element) return this.element[this.prop]
+		return this.initialValue
 	}
 	set now (newValue) {
 		this.element[this.prop] = newValue
@@ -136,14 +144,21 @@ export class Vanyl {
 				break
 
 			case "__PROPS__": // arg is dynamic props object
-				for (let key in arg) {
+				for (let [key, val] of Object.entries(arg)) {
+					let $key = key.slice(1)
 					switch (key[0]){
 						case ".":
-							if (arg[key]) data.element.classList.add(key.slice(1))
-							else data.element.classList.remove(key.slice(1))
+							if (val) data.element.classList.add($key)
+							else data.element.classList.remove($key)
+							break
+						case "~":
+							// val is Lazy instance
+							val.element = data.element
+							val.prop = $key
+							val.now = val.initialValue
 							break
 						default:
-							data.element[key] = arg[key]
+							data.element[key] = val
 					}
 				}
 				break
