@@ -29,10 +29,15 @@ class VResult {
 
 /* isn't implemented yet */
 /* we have to implement:
-	@eventListener
+	@eventListener // done
 	.className // done
 	~lazy // done
 	keyless list
+
+	(classnames being in quote ".className" is okay but I don't want event
+	types to be wrapped in quotes "@click". finding something better would be great.
+	if could do something like { click(e){} } and know that it wasn't a property.
+	different than { click: function(e){} } but { "@click": function(e){} } stays)
 */
 
 /* 	MAYBE WE DON'T NEED "~" PREFIX FOR LAZY
@@ -102,7 +107,7 @@ export class Vanyl {
 		return `<b ${data.selector}>${data.selector}text</b>`
 	}
 	initList() {
-		let data = { selector: unique(), handleType: "__LIST__", vanyls: {} }
+		let data = { selector: unique(), handleType: "__LIST__", vanyls: {}, keylessVanyls: [] }
 		this.datas.push(data)
 		return `<wbr ${data.selector}>`
 	}
@@ -124,15 +129,21 @@ export class Vanyl {
 
 				case "__LIST__": // arg is the array of vResults
 					let frag = document.createDocumentFragment()
+					data.keylessVanyls.forEach(vanyl=>vanyl.topElement.remove())
+
 					for (let vResult of arg) {
 						let dataVanyl = data.vanyls[vResult.key] // take vResult in display
 						if (dataVanyl) {
-							if (!vResult.keep) frag.appendChild(dataVanyl.topElement)
+							if (vResult.key && !vResult.keep) frag.appendChild(dataVanyl.topElement)
 							dataVanyl.updateWith(vResult) // I want it synchronous. so, we do a way around (look up)
-						} else {
+						} else if(vResult.key) {
 							let vanylToAdd = new Vanyl(vResult)
 							frag.appendChild(vanylToAdd.topElement)
 							data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
+						} else{
+							let vanylToAddKeyless = new Vanyl(vResult)
+							frag.appendChild(vanylToAddKeyless.topElement)
+							data.keylessVanyls.push(vanylToAddKeyless)
 						}
 						// remove old data vanyl that's not in arg. (identified with key)
 						// (once a vanyl was added it'll every time check to remove)
@@ -200,7 +211,6 @@ export class Vanyl {
 				for (let [key, val] of Object.entries(this.vResult.args[i])){
 					let $key = key.slice(1)
 					if (key[0]=='@'){
-						console.log(key, val)
 						data.element.addEventListener($key, val)
 					}
 				}

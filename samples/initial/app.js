@@ -59,6 +59,8 @@ let inputText = new Lazy("isn't set")
 
 */
 
+let r = ()=>Math.random()
+
 let myView = props => {
 	let vicka = Math.random()>0.5 ? v`<span><input ${{"~value":inputText}} type="text"><b>prr</b><i>prr</i><u>-${inputText.now}-${Math.random()}</u></span>` : v`<span>bip bop ${Math.random()}<input type="text"></span>`
 	// console.log(vicka.strings[0])
@@ -72,11 +74,20 @@ let myView = props => {
 	<input type="text" 
 	${{'disabled': state.disabled}}
 	${{value: state.value}}>
-	<button ${{"@click": ()=>alert("alerteddd")}}>alerts</button>
+	<button ${{
+		"@click"(){
+			alert("alerteddd")
+		}
+	}}>alerts</button>
 	nested ${vicka}
 	lets put a list
+	keyless <br>${[r(),r(),r(),r(),r(),r()].map(i=>v`<i>${parseInt(i*100)+';'}</i>`)}
 	<ol>
-		${arr.map((prop,i)=>v`<li ${{key: prop.key, keep:prop.keep || Math.random()>0.5, ".highlight": Math.random()>0.7}}><u>${i}-</u>${prop.key}~${prop.val} <input type="text"></li>`)}
+		${arr.map((prop,i)=>v`<li ${{
+			key: prop.key, 
+			keep:prop.keep || Math.random()>0.5, 
+			".highlight": Math.random()>0.7
+		}}><u>${i}-</u>${prop.key}~${prop.val} <input type="text"></li>`)}
 	</ol>
 	${users.map(props=>userComponent(props))}
 	this will be displayed, but,
