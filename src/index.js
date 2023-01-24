@@ -59,27 +59,27 @@ export class Lazy {
 }
 
 export class Vanyl {
-	constructor(vResult) {
+	constructor(vResult = v`<b>empty v</b>`) {
 		this.vResult = vResult
-		this.html = this.initHTML()
-		this.topElement = this.grabFirstChild()
+		this.html = this.initHTML(vResult)
+		this.topElement = this.grabFirstChild(this.html)
 		this.process()
 		this.updateWith(vResult)
 	}
 	vFun() {
 		return v`V~${this.constructor.name}`
 	}
-	initHTML() {
+	initHTML(vResult) {
 		let [html, lt, gt] = ["", 0, 0]
-		for (let [i, arg] of this.vResult.args.entries()) {
-			let string = this.vResult.strings[i]
+		for (let [i, arg] of vResult.args.entries()) {
+			let string = vResult.strings[i]
 			html += string
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
 			let inTag = lt > gt
 
 			if (inTag) {
 				html += this.initProp()
-			} else if (arg instanceof VResult && this.vResult.isSame(this.vResult)) {
+			} else if (arg instanceof VResult && vResult.isSame(vResult)) {
 				html += this.initVResult()
 			} else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
 				html += this.initList()
@@ -87,7 +87,7 @@ export class Vanyl {
 				html += this.initText()
 			}
 		}
-		html += this.vResult.strings.at(-1)
+		html += vResult.strings.at(-1)
 		return html
 	}
 	datas = [] // [{handleType:"text", element: div}]
@@ -117,10 +117,11 @@ export class Vanyl {
 	}
 	updateWith(vResultFresh) {
 		should.sameVResult(this.vResult, vResultFresh)
+		this.vResult = vResultFresh
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
-
 			switch (data.handleType) {
+
 				case "__LIST__": // arg is the array of vResults
 					let frag = document.createDocumentFragment()
 					for (let vResult of arg) {
@@ -197,8 +198,8 @@ export class Vanyl {
 			}
 		}
 	}
-	grabFirstChild() {
-		this.domik = new DOMParser().parseFromString(this.html, "text/html")
+	grabFirstChild(htmlString) {
+		this.domik = new DOMParser().parseFromString(htmlString, "text/html")
 		let topElement = this.domik.body.firstChild
 		return topElement
 	}
@@ -219,3 +220,6 @@ export const create = vFun => {
 	//!1 vanyl.grabFirstChild()
 	return vanyl
 }
+
+
+console.log(new Vanyl().initHTML(v`<b ${{color: "red"}}>that's ${"dynamo"} part</b>`))
