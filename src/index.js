@@ -1,5 +1,14 @@
 export let unique = ((counter = 0) => () => `V${counter++}`)()
 
+let should = {
+	sameVResult(vResult1, vResult2) {
+		if (!vResult1.isSame(vResult2)) throw new Error(`should be same vResult`)
+	},
+	notNull(val) {
+		if (val == null) throw new Error("couldn't find " + data.selector)
+	},
+}
+
 class VResult {
 	constructor(strings, ...args) {
 		;[this.strings, this.args] = [strings, args]
@@ -22,7 +31,8 @@ class VResult {
 /* we have to implement:
 	@eventListener
 	.className // done
-	~lazy
+	~lazy // done
+	keyless list
 */
 
 /* 	MAYBE WE DON'T NEED "~" PREFIX FOR LAZY
@@ -32,18 +42,18 @@ class VResult {
 	THEN WE CAN JUST USE THE VALUE STRING.
   */
 export class Lazy {
-	constructor(initialValue){
+	constructor(initialValue) {
 		this.initialValue = initialValue
 	}
-	sync(element, prop){
+	sync(element, prop) {
 		this.element = element
 		this.prop = prop
 	}
-	get now () {
-		if(this.element) return this.element[this.prop]
+	get now() {
+		if (this.element) return this.element[this.prop]
 		return this.initialValue
 	}
-	set now (newValue) {
+	set now(newValue) {
 		this.element[this.prop] = newValue
 	}
 }
@@ -52,8 +62,7 @@ export class Vanyl {
 	constructor(vResult) {
 		this.vResult = vResult
 		this.html = this.initHTML()
-		this.topElement = this.grabFirstChild() //1: Vanyls can have only 1 top
-		// but it's okay cuz now we can have full working Vanyl just after construct
+		this.topElement = this.grabFirstChild()
 		this.process()
 		this.updateWith(vResult)
 	}
@@ -107,74 +116,62 @@ export class Vanyl {
 		return `${data.selector + "vresult:"}<wbr ${data.selector}>`
 	}
 	updateWith(vResultFresh) {
-		if (!this.vResult.isSame(vResultFresh))
-			throw new Error(`.updateWith() got not same vResult`)
+		should.sameVResult(this.vResult, vResultFresh)
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
 
 			switch (data.handleType) {
-
-			case "__LIST__": // arg is the array of vResults
-				let frag = document.createDocumentFragment()
-				for (let vResult of arg) {
-					let dataVanyl = data.vanyls[vResult.key] // take vResult in display
-					if (dataVanyl) {
-						// console.log(vResult.keep)
-						if (!vResult.keep) frag.appendChild(dataVanyl.topElement)
-						dataVanyl.updateWith(vResult) // I want it synchronous. so, we do a way around (look up)
-					} else {
-						let vanylToAdd = new Vanyl(vResult)
-						//!1 vanylToAdd.grabFirstChild()
-						vanylToAdd.updateWith(vResult)
-						frag.appendChild(vanylToAdd.topElement)
-						data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
+				case "__LIST__": // arg is the array of vResults
+					let frag = document.createDocumentFragment()
+					for (let vResult of arg) {
+						let dataVanyl = data.vanyls[vResult.key] // take vResult in display
+						if (dataVanyl) {
+							if (!vResult.keep) frag.appendChild(dataVanyl.topElement)
+							dataVanyl.updateWith(vResult) // I want it synchronous. so, we do a way around (look up)
+						} else {
+							let vanylToAdd = new Vanyl(vResult)
+							frag.appendChild(vanylToAdd.topElement)
+							data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
+						}
+						// remove old data vanyl that's not in arg. (identified with key)
+						// (once a vanyl was added it'll every time check to remove)
+						for (let vanyl of Object.values(data.vanyls))
+							if (!arg.some(vr => vanyl.vResult.key == vr.key))
+								vanyl.topElement.remove()
 					}
-					// remove old data vanyl that's not in arg. (identified with key)
-					for (let vanyl of Object.values(data.vanyls)) {
-						////// if (!arg.map(vr=>vr.key).includes(vanyl.vResult.key)) vanyl.topElement.remove() // also works and is more basic but .some is performant
-						if (!arg.some(vr => vanyl.vResult.key == vr.key))
-							vanyl.topElement.remove()
-					}
-				}
-				data.element.after(frag)
-				break
+					data.element.after(frag)
+					break
 
-			case "__TEXT__":  // arg is the dynamic text
-				data.element.nodeValue = arg
-				break
+				case "__TEXT__": // arg is the dynamic text
+					data.element.nodeValue = arg
+					break
 
-			case "__PROPS__": // arg is dynamic props object
-				for (let [key, val] of Object.entries(arg)) {
-					let $key = key.slice(1)
-					if (key[0]=="."){
-						if (val) data.element.classList.add($key)
-						else data.element.classList.remove($key)
-					}
-					else if (val instanceof Lazy){
-						// val is Lazy instance
-						if (!val.element) {
-							val.element = data.element
-							val.prop = key
-							val.element[val.prop] = val.initialValue
+				case "__PROPS__": // arg is dynamic props object
+					for (let [key, val] of Object.entries(arg)) {
+						let $key = key.slice(1)
+						if (key[0] == ".")
+							if (val) data.element.classList.add($key)
+							else data.element.classList.remove($key)
+						else if (val instanceof Lazy) {
+							if (!val.element) {
+								val.element = data.element
+								val.prop = key
+								val.element[val.prop] = val.initialValue
+							}
+						} else {
+							data.element[key] = val
 						}
 					}
+					break
+
+				case "__VRESULT__": // arg is a vResult
+					if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
 					else {
-						data.element[key] = val
+						data.vanyl.topElement?.remove()
+						data.vanyl = new Vanyl(arg)
+						data.element.after(data.vanyl.topElement)
 					}
-					
-				}
-				break
-			
-			case "__VRESULT__": // arg is a vResult
-				if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
-				else {
-					data.vanyl.topElement?.remove()
-					data.vanyl = new Vanyl(arg)
-					//!1 data.vanyl.grabFirstChild()
-					data.element.after(data.vanyl.topElement)
-					data.vanyl.updateWith(arg)
-				}
-				break
+					break
 			}
 		}
 		return this
@@ -192,8 +189,7 @@ export class Vanyl {
 			data.element = this.topElement.hasAttribute(data.selector)
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
-			if (data.element == null)
-				throw new Error("couldn't find " + data.selector)
+			should.notNull(data.element)
 			if (data.handleType == "__TEXT__") {
 				let textNode = document.createTextNode(data.selector)
 				data.element.replaceWith(textNode)
