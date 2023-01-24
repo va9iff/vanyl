@@ -186,7 +186,7 @@ export class Vanyl {
 		return vanyl
 	}
 	process() {
-		for (let data of this.datas) {
+		for (let [i, data] of this.datas.entries()) {
 			data.element = this.topElement.hasAttribute(data.selector)
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
@@ -195,6 +195,15 @@ export class Vanyl {
 				let textNode = document.createTextNode(data.selector)
 				data.element.replaceWith(textNode)
 				data.element = textNode
+			}
+			else if (data.handleType == "__PROPS__") {
+				for (let [key, val] of Object.entries(this.vResult.args[i])){
+					let $key = key.slice(1)
+					if (key[0]=='@'){
+						console.log(key, val)
+						data.element.addEventListener($key, val)
+					}
+				}
 			}
 		}
 	}

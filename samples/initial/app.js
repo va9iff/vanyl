@@ -72,7 +72,7 @@ let myView = props => {
 	<input type="text" 
 	${{'disabled': state.disabled}}
 	${{value: state.value}}>
-	<button ${{onclick: ()=>alert()}}>alerts</button>
+	<button ${{"@click": ()=>alert("alerteddd")}}>alerts</button>
 	nested ${vicka}
 	lets put a list
 	<ol>
