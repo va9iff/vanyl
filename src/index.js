@@ -50,10 +50,6 @@ export class Lazy {
 	constructor(initialValue) {
 		this.initialValue = initialValue
 	}
-	sync(element, prop) {
-		this.element = element
-		this.prop = prop
-	}
 	get now() {
 		if (this.element) return this.element[this.prop]
 		return this.initialValue
@@ -171,13 +167,14 @@ export class Vanyl {
 						if (key[0] == ".")
 							if (val) data.element.classList.add($key)
 							else data.element.classList.remove($key)
-						else if (val instanceof Lazy) {
-							if (!val.element) {
-								val.element = data.element
-								val.prop = key
-								val.element[val.prop] = val.initialValue
-							}
-						} else {
+						// else if (val instanceof Lazy) {
+							// if (!val.element) {
+								// val.element = data.element
+								// val.prop = key
+								// val.element[val.prop] = val.initialValue
+							// }
+						// } 
+						else {
 							data.element[key] = val
 						}
 					}
@@ -222,6 +219,11 @@ export class Vanyl {
 					}
 					else if (key=='ref'){
 						val.element = data.element
+					}
+					else if(val instanceof Lazy){
+						val.element = data.element
+						val.prop = key
+						val.element[val.prop] = val.initialValue
 					}
 				}
 			}
