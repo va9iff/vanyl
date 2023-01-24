@@ -51,6 +51,9 @@ let userComponent = props => v`
 let inputText = new Lazy("isn't set")
 let ol = ref()
 
+console.log(ol())
+setTimeout(function() {console.log(ol())}, 10);
+
 /*
 	or maybe 
 	let inputText = new Lazy("isn't set yet")

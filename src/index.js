@@ -65,7 +65,7 @@ export class Lazy {
 
 export const ref = () => {
 	let result = function() {
-		return result.element
+		return result.element ?? null
 	}
 	return result
 }
