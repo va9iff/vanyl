@@ -167,16 +167,6 @@ export class Vanyl {
 						if (key[0] == ".")
 							if (val) data.element.classList.add($key)
 							else data.element.classList.remove($key)
-						// else if (val instanceof Lazy) {
-							// if (!val.element) {
-								// val.element = data.element
-								// val.prop = key
-								// val.element[val.prop] = val.initialValue
-							// }
-						// } 
-						else {
-							data.element[key] = val
-						}
 					}
 					break
 
