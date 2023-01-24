@@ -63,6 +63,13 @@ export class Lazy {
 	}
 }
 
+export const ref = () => {
+	let result = function() {
+		return result.element
+	}
+	return result
+}
+
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
 		this.vResult = vResult
@@ -212,6 +219,9 @@ export class Vanyl {
 					let $key = key.slice(1)
 					if (key[0]=='@'){
 						data.element.addEventListener($key, val)
+					}
+					else if (key=='ref'){
+						val.element = data.element
 					}
 				}
 			}
