@@ -110,7 +110,7 @@ export class Vanyl {
 		return `<b ${data.selector}>${data.selector}text</b>`
 	}
 	initList() {
-		let data = { selector: unique(), handleType: "__LIST__", vanyls: {}, keylessVanyls: [] }
+		let data = { selector: unique(), handleType: "__LIST__", vanyls: {}, vanylsKeyless: [] }
 		this.datas.push(data)
 		return `<wbr ${data.selector}>`
 	}
@@ -132,7 +132,7 @@ export class Vanyl {
 
 				case "__LIST__": // arg is the array of vResults
 					let frag = document.createDocumentFragment()
-					data.keylessVanyls.forEach(vanyl=>vanyl.topElement.remove())
+					data.vanylsKeyless.forEach(vanyl=>vanyl.topElement.remove())
 
 					for (let vResult of arg) {
 						let dataVanyl = data.vanyls[vResult.key] // take vResult in display
@@ -146,13 +146,13 @@ export class Vanyl {
 						} else{
 							let vanylToAddKeyless = new Vanyl(vResult)
 							frag.appendChild(vanylToAddKeyless.topElement)
-							data.keylessVanyls.push(vanylToAddKeyless)
+							data.vanylsKeyless.push(vanylToAddKeyless)
 						}
 						// remove old data vanyl that's not in arg. (identified with key)
 						// (once a vanyl was added it'll every time check to remove)
-						for (let vanyl of Object.values(data.vanyls))
-							if (!arg.some(vr => vanyl.vResult.key == vr.key))
-								vanyl.topElement.remove()
+						for (let dataVanylKey in data.vanyls)
+							if (!arg.some(vr => dataVanylKey == vr.key))
+								data.vanyls[dataVanylKey].topElement.remove()
 					}
 					data.element.after(frag)
 					break
@@ -164,9 +164,12 @@ export class Vanyl {
 				case "__PROPS__": // arg is dynamic props object
 					for (let [key, val] of Object.entries(arg)) {
 						let $key = key.slice(1)
-						if (key[0] == ".")
+						if (val instanceof Lazy) null // just stop
+						else if (key[0] == ".")
 							if (val) data.element.classList.add($key)
 							else data.element.classList.remove($key)
+						else 
+							data.element[key] = val
 					}
 					break
 
