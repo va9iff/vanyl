@@ -2,11 +2,14 @@ export let unique = ((counter = 0) => () => `V${counter++}`)()
 
 let should = {
 	sameVResult(vResult1, vResult2) {
-		if (!vResult1.isSame(vResult2)) throw new Error(`should be same vResult`)
+		if (!vResult1.isSame(vResult2)) throw new Error(`V~ should be same vResult`)
 	},
 	notNull(val) {
-		if (val == null) throw new Error("couldn't find " + data.selector)
+		if (val == null) throw new Error("V~ should not be null")
 	},
+	instanceof(instance, cls){
+		if (! (instance instanceof cls)) throw new Error(`V~ expected an instance of ${cls.name}`)
+	}
 }
 
 class VResult {
@@ -115,7 +118,7 @@ export class Vanyl {
 		let data = {
 			selector: unique(),
 			handleType: "__VRESULT__",
-			vanyl: new Vanyl(v``),
+			vanyl: new Vanyl(v`<wbr>`),
 		}
 		this.datas.push(data)
 		return `${data.selector + "vresult:"}<wbr ${data.selector}>`
@@ -161,8 +164,7 @@ export class Vanyl {
 				case "__PROPS__": // arg is dynamic props object
 					for (let [key, val] of Object.entries(arg)) {
 						let $key = key.slice(1)
-						if (val instanceof Lazy) null
-						// just stop
+						if (val instanceof Lazy) "just stop"
 						else if (key[0] == ".")
 							if (val) data.element.classList.add($key)
 							else data.element.classList.remove($key)
@@ -174,8 +176,10 @@ export class Vanyl {
 					if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
 					else {
 						data.vanyl.topElement?.remove()
-						data.vanyl = new Vanyl(arg)
-						data.element.after(data.vanyl.topElement)
+						if (arg instanceof VResult) {
+							data.vanyl = new Vanyl(arg)
+							data.element.after(data.vanyl.topElement)
+						}
 					}
 					break
 			}
@@ -219,6 +223,7 @@ export class Vanyl {
 	grabFirstChild(htmlString) {
 		this.domik = new DOMParser().parseFromString(htmlString, "text/html")
 		let topElement = this.domik.body.firstChild
+		should.notNull(topElement)
 		return topElement
 	}
 }
