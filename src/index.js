@@ -31,8 +31,8 @@ class VResult {
 /* we have to implement:
 	@eventListener // done
 	.className // done
-	~lazy // done
-	keyless list
+	lazy // done
+	keyless list // done
 
 	(classnames being in quote ".className" is okay but I don't want event
 	types to be wrapped in quotes "@click". finding something better would be great.
@@ -40,12 +40,6 @@ class VResult {
 	different than { click: function(e){} } but { "@click": function(e){} } stays)
 */
 
-/* 	MAYBE WE DON'T NEED "~" PREFIX FOR LAZY
-	WHEN A VALUE OF A PROPERTY IS LAZY, LIKE:
-	let text = new Lazy("")
-	${{value: text}}
-	THEN WE CAN JUST USE THE VALUE STRING.
-  */
 export class Lazy {
 	constructor(initialValue) {
 		this.initialValue = initialValue
@@ -60,10 +54,8 @@ export class Lazy {
 }
 
 export const ref = () => {
-	let result = function() {
-		return result.element ?? null
-	}
-	return result
+	let fun = () => fun.element ?? null
+	return fun
 }
 
 export class Vanyl {
@@ -110,7 +102,12 @@ export class Vanyl {
 		return `<b ${data.selector}>${data.selector}text</b>`
 	}
 	initList() {
-		let data = { selector: unique(), handleType: "__LIST__", vanyls: {}, vanylsKeyless: [] }
+		let data = {
+			selector: unique(),
+			handleType: "__LIST__",
+			vanyls: {},
+			vanylsKeyless: [],
+		}
 		this.datas.push(data)
 		return `<wbr ${data.selector}>`
 	}
@@ -129,21 +126,21 @@ export class Vanyl {
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
 			switch (data.handleType) {
-
 				case "__LIST__": // arg is the array of vResults
 					let frag = document.createDocumentFragment()
-					data.vanylsKeyless.forEach(vanyl=>vanyl.topElement.remove())
+					data.vanylsKeyless.forEach(vanyl => vanyl.topElement.remove())
 
 					for (let vResult of arg) {
 						let dataVanyl = data.vanyls[vResult.key] // take vResult in display
 						if (dataVanyl) {
-							if (vResult.key && !vResult.keep) frag.appendChild(dataVanyl.topElement)
+							if (vResult.key && !vResult.keep)
+								frag.appendChild(dataVanyl.topElement)
 							dataVanyl.updateWith(vResult) // I want it synchronous. so, we do a way around (look up)
-						} else if(vResult.key) {
+						} else if (vResult.key) {
 							let vanylToAdd = new Vanyl(vResult)
 							frag.appendChild(vanylToAdd.topElement)
 							data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
-						} else{
+						} else {
 							let vanylToAddKeyless = new Vanyl(vResult)
 							frag.appendChild(vanylToAddKeyless.topElement)
 							data.vanylsKeyless.push(vanylToAddKeyless)
@@ -164,12 +161,12 @@ export class Vanyl {
 				case "__PROPS__": // arg is dynamic props object
 					for (let [key, val] of Object.entries(arg)) {
 						let $key = key.slice(1)
-						if (val instanceof Lazy) null // just stop
+						if (val instanceof Lazy) null
+						// just stop
 						else if (key[0] == ".")
 							if (val) data.element.classList.add($key)
 							else data.element.classList.remove($key)
-						else 
-							data.element[key] = val
+						else data.element[key] = val
 					}
 					break
 
@@ -203,17 +200,14 @@ export class Vanyl {
 				let textNode = document.createTextNode(data.selector)
 				data.element.replaceWith(textNode)
 				data.element = textNode
-			}
-			else if (data.handleType == "__PROPS__") {
-				for (let [key, val] of Object.entries(this.vResult.args[i])){
+			} else if (data.handleType == "__PROPS__") {
+				for (let [key, val] of Object.entries(this.vResult.args[i])) {
 					let $key = key.slice(1)
-					if (key[0]=='@'){
+					if (key[0] == "@") {
 						data.element.addEventListener($key, val)
-					}
-					else if (key=='ref'){
+					} else if (key == "ref") {
 						val.element = data.element
-					}
-					else if(val instanceof Lazy){
+					} else if (val instanceof Lazy) {
 						val.element = data.element
 						val.prop = key
 						val.element[val.prop] = val.initialValue
@@ -245,5 +239,6 @@ export const create = vFun => {
 	return vanyl
 }
 
-
-console.log(new Vanyl().initHTML(v`<b ${{color: "red"}}>that's ${"dynamo"} part</b>`))
+console.log(
+	new Vanyl().initHTML(v`<b ${{ color: "red" }}>that's ${"dynamo"} part</b>`)
+)
