@@ -16,7 +16,7 @@ let
 	add = query('[add]'),
 	del = query('[del]'),
 	arr= [
-		{val:1, key:1},
+		{val:1, key:1, keep: true},
 		{val:213, key:213},
 		{val:Math.random(), key:Math.random()},
 		{val:124, key:"joooooooooo", keep: true},
@@ -117,7 +117,12 @@ setInterval(()=>{
 
 add.onclick = e => {
 	ctn.value += '1'
-	arr.splice(idx.value, 0, {val:ctn.value, key:ctn.value}).value
+	arr.splice(idx.value, 0, {
+		val: ctn.value, 
+		key: ctn.value, 
+		keep: Math.random()>0.5, 
+
+}).value
 	div.update()
 	// console.log(arr)
 }

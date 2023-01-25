@@ -129,33 +129,6 @@ export class Vanyl {
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
 			switch (data.handleType) {
-				case "__LIST__": // arg is the array of vResults
-					let frag = document.createDocumentFragment()
-					data.vanylsKeyless.forEach(vanyl => vanyl.topElement.remove())
-
-					for (let vResult of arg) {
-						let dataVanyl = data.vanyls[vResult.key] // take vResult in display
-						if (dataVanyl) {
-							if (vResult.key && !vResult.keep)
-								frag.appendChild(dataVanyl.topElement)
-							dataVanyl.updateWith(vResult) // I want it synchronous. so, we do a way around (look up)
-						} else if (vResult.key) {
-							let vanylToAdd = new Vanyl(vResult)
-							frag.appendChild(vanylToAdd.topElement)
-							data.vanyls[vanylToAdd.vResult.key] = vanylToAdd
-						} else {
-							let vanylToAddKeyless = new Vanyl(vResult)
-							frag.appendChild(vanylToAddKeyless.topElement)
-							data.vanylsKeyless.push(vanylToAddKeyless)
-						}
-						// remove old data vanyl that's not in arg. (identified with key)
-						// (once a vanyl was added it'll every time check to remove)
-						for (let dataVanylKey in data.vanyls)
-							if (!arg.some(vr => dataVanylKey == vr.key))
-								data.vanyls[dataVanylKey].topElement.remove()
-					}
-					data.element.after(frag)
-					break
 
 				case "__TEXT__": // arg is the dynamic text
 					data.element.nodeValue = arg
@@ -182,6 +155,37 @@ export class Vanyl {
 						}
 					}
 					break
+
+				case "__LIST__": // arg is the array of vResults
+					let frag = document.createDocumentFragment()
+					data.vanylsKeyless.forEach(vanyl => vanyl.topElement.remove())
+
+					for (let vResult of arg) {
+						let vanyl = data.vanyls[vResult.key] // take vResult in display
+						if (vanyl){
+							vanyl.updateWith(vResult)
+						} else if (vResult.key) {
+							vanyl = new Vanyl(vResult)
+							data.vanyls[vanyl.vResult.key] = vanyl
+							if (!vResult.keep) frag.appendChild(vanyl.topElement)
+						} 
+						else {
+							vanyl = new Vanyl(vResult)
+							data.vanylsKeyless.push(vanyl)
+							frag.appendChild(vanyl.topElement)						
+						} // cleaner version for list
+						
+						// if (!vResult.keep) frag.appendChild(vanyl.topElement)
+
+						// remove old data vanyl that's not in arg. (identified with key)
+						// (once a vanyl was added it'll every time check to remove)
+						for (let dataVanylKey in data.vanyls)
+							if (!arg.some(vr => dataVanylKey == vr.key))
+								data.vanyls[dataVanylKey].topElement.remove()
+					}
+					data.element.after(frag)
+					break
+
 			}
 		}
 		return this
