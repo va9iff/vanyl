@@ -1,17 +1,17 @@
-export let unique = ((counter = 0) => () => `V${counter++}`)()
+export const unique = ((counter = 0) => () => `V${counter++}`)()
 
-let should = {
+const should = new (class Sould {
 	sameVResult(vResult1, vResult2) {
 		if (!vResult1.isSame(vResult2)) throw new Error(`should be same vResult ~V`)
-	},
+	}
 	notNull(val) {
 		if (val == null) throw new Error("should not be null ~V")
-	},
+	}
 	instanceof(instance, cls) {
 		if (!(instance instanceof cls))
 			throw new Error(`expected an instance of ${cls.name} ~V`)
-	},
-}
+	}
+})()
 
 class VResult {
 	constructor(strings, ...args) {
@@ -46,7 +46,7 @@ export class Lazy {
 }
 
 export const ref = () => {
-	let fun = () => fun.element ?? null
+	const fun = () => fun.element ?? null
 	return fun
 }
 
@@ -64,11 +64,11 @@ export class Vanyl {
 	datas = []
 	initHTML(vResult) {
 		let [html, lt, gt, data] = ["", 0, 0, null]
-		for (let [i, arg] of vResult.args.entries()) {
-			let string = vResult.strings[i]
+		for (const [i, arg] of vResult.args.entries()) {
+			const string = vResult.strings[i]
 			html += string
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
-			let inTag = lt > gt
+			const inTag = lt > gt
 			if (inTag) {
 				data = {
 					handleType: "__PROPS__",
@@ -80,7 +80,7 @@ export class Vanyl {
 					handleType: "__VRESULT__",
 					selector: unique(),
 					vanyl: new Vanyl(v`<wbr>`),
-					vanyls: []
+					vanyls: [],
 				}
 				html += `${data.selector + "vresult:"}<wbr ${data.selector}>`
 			} else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
@@ -109,16 +109,16 @@ export class Vanyl {
 	updateWith(vResultFresh) {
 		should.sameVResult(this.vResult, vResultFresh)
 		this.vResult = vResultFresh
-		for (let [i, data] of this.datas.entries()) {
-			let arg = vResultFresh.args[i]
+		for (const [i, data] of this.datas.entries()) {
+			const arg = vResultFresh.args[i]
 			switch (data.handleType) {
 				case "__TEXT__": // arg is the dynamic text
 					data.element.nodeValue = arg
 					break
 
 				case "__PROPS__": // arg is dynamic props object
-					for (let [key, val] of Object.entries(arg)) {
-						let $key = key.slice(1)
+					for (const [key, val] of Object.entries(arg)) {
+						const $key = key.slice(1)
 						if (val instanceof Lazy) "just stop"
 						else if (key[0] == ".")
 							if (val) data.element.classList.add($key)
@@ -128,32 +128,32 @@ export class Vanyl {
 					break
 
 				case "__VRESULT__": // arg is a vResult
-					console.log(data.vanyls.map(a=>a.topElement))
 					if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
 					else {
-						data.vanyl.topElement?.remove()
-						let seenVanyl = data.vanyls.find(dataVanyl => dataVanyl.vResult.isSame(arg))
-						if (seenVanyl) data.vanyl = seenVanyl
-						else {
-							if (arg instanceof VResult) data.vanyl = new Vanyl(arg)
-							else data.vanyl = new Vanyl(v`${arg}`)
+						data.vanyl.topElement.remove() // changed from ?.remove() as we use {vanyl: new Vanyl(v``)}
+						data.vanyl = data.vanyls.find(vanyl => vanyl.vResult.isSame(arg))
+						if (!data.vanyl) {
+							data.vanyl =
+								arg instanceof VResult
+									? new Vanyl(arg)
+									: new Vanyl(v`${arg + ""}`)
 							data.vanyls.push(data.vanyl)
-						}						
+						}
 						data.element.after(data.vanyl.topElement)
 					}
 					break
 
 				case "__LIST__": // arg is the array of vResults
-					let frag = document.createDocumentFragment()
+					const frag = document.createDocumentFragment()
 					while (data.vanylsKeyless.length > 0)
 						data.vanylsKeyless.pop().topElement.remove()
 
 					// (once a vanyl with a key was added it'll check every time to remove)
-					for (let dataVanylKey in data.vanyls)
+					for (const dataVanylKey in data.vanyls)
 						if (!arg.some(_vResult => dataVanylKey == _vResult.key))
 							data.vanyls[dataVanylKey].topElement.remove()
 
-					for (let vResult of arg) {
+					for (const vResult of arg) {
 						let vanyl = data.vanyls[vResult.key] // take vResult in display
 						if (vanyl) {
 							vanyl.updateWith(vResult)
@@ -176,23 +176,23 @@ export class Vanyl {
 		return this.updateWith(this.vFun())
 	}
 	static fromVFun(vFun) {
-		let vanyl = new Vanyl(vFun())
+		const vanyl = new Vanyl(vFun())
 		vanyl.vFun = vFun
 		return vanyl
 	}
 	process() {
-		for (let data of this.datas) {
+		for (const data of this.datas) {
 			data.element = this.topElement.hasAttribute(data.selector)
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
 			should.notNull(data.element)
 			if (data.handleType == "__TEXT__") {
-				let textNode = document.createTextNode(data.selector)
+				const textNode = document.createTextNode(data.selector)
 				data.element.replaceWith(textNode)
 				data.element = textNode
 			} else if (data.handleType == "__PROPS__") {
-				for (let [key, val] of Object.entries(this.vResult.args[data.i])) {
-					let $key = key.slice(1)
+				for (const [key, val] of Object.entries(this.vResult.args[data.i])) {
+					const $key = key.slice(1)
 					if (key[0] == "@") {
 						data.element.addEventListener($key, val)
 					} else if (key == "ref") {
@@ -207,8 +207,8 @@ export class Vanyl {
 		}
 	}
 	grabFirstChild(htmlString) {
-		this.domik = new DOMParser().parseFromString(htmlString, "text/html")
-		let topElement = this.domik.body.firstChild
+		const domik = new DOMParser().parseFromString(htmlString, "text/html")
+		const topElement = domik.body.firstChild
 		should.notNull(topElement)
 		return topElement
 	}
@@ -216,7 +216,7 @@ export class Vanyl {
 
 export class vanyl extends Vanyl {
 	constructor(vFun) {
-		let vResult = vFun()
+		const vResult = vFun()
 		super(vResult)
 		this.vFun = vFun
 	}
