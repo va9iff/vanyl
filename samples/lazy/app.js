@@ -8,8 +8,12 @@ let mainView = (props = "main") => v`
 		<input type="text" ${{value: text}}>
 		${c++} ${text.now}
 		<button ${{onclick: e=>{
-			main.update()
+			text.now += "CLICK!"
+			// main.update()
 		}}}>a</button>
+		<button ${{onclick: e=>{
+			main.update()
+		}}}>update now</button>
 
 	</div>
 `

@@ -2,14 +2,15 @@ export let unique = ((counter = 0) => () => `V${counter++}`)()
 
 let should = {
 	sameVResult(vResult1, vResult2) {
-		if (!vResult1.isSame(vResult2)) throw new Error(`V~ should be same vResult`)
+		if (!vResult1.isSame(vResult2)) throw new Error(`should be same vResult ~V`)
 	},
 	notNull(val) {
-		if (val == null) throw new Error("V~ should not be null")
+		if (val == null) throw new Error("should not be null ~V")
 	},
-	instanceof(instance, cls){
-		if (! (instance instanceof cls)) throw new Error(`V~ expected an instance of ${cls.name}`)
-	}
+	instanceof(instance, cls) {
+		if (!(instance instanceof cls))
+			throw new Error(`expected an instance of ${cls.name} ~V`)
+	},
 }
 
 class VResult {
@@ -29,19 +30,7 @@ class VResult {
 		)
 	}
 }
-
-/* isn't implemented yet */
-/* we have to implement:
-	@eventListener // done
-	.className // done
-	lazy // done
-	keyless list // done
-
-	(classnames being in quote ".className" is okay but I don't want event
-	types to be wrapped in quotes "@click". finding something better would be great.
-	if could do something like { click(e){} } and know that it wasn't a property.
-	different than { click: function(e){} } but { "@click": function(e){} } stays)
-*/
+export const v = (...argums) => new VResult(...argums)
 
 export class Lazy {
 	constructor(initialValue) {
@@ -72,47 +61,49 @@ export class Vanyl {
 	vFun() {
 		return v`V~${this.constructor.name}`
 	}
+	datas = []
 	initHTML(vResult) {
-		let [html, lt, gt] = ["", 0, 0]
+		let [html, lt, gt, data] = ["", 0, 0, null]
 		for (let [i, arg] of vResult.args.entries()) {
 			let string = vResult.strings[i]
 			html += string
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
 			let inTag = lt > gt
-
 			if (inTag) {
-				html += this.initData("__PROPS__")
+				data = {
+					handleType: "__PROPS__",
+					selector: unique(),
+				}
+				html += ` ${data.selector} `
 			} else if (arg instanceof VResult && vResult.isSame(vResult)) {
-				html += this.initData("__VRESULT__")
+				data = {
+					handleType: "__VRESULT__",
+					selector: unique(),
+					vanyl: new Vanyl(v`<wbr>`),
+				}
+				html += `${data.selector + "vresult:"}<wbr ${data.selector}>`
 			} else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
-				html += this.initData("__LIST__")
+				data = {
+					handleType: "__LIST__",
+					selector: unique(),
+					vanyls: {},
+					vanylsKeyless: [],
+				}
+				html += `<wbr ${data.selector}>`
 			} else if (!inTag) {
-				html += this.initData("__TEXT__")
+				data = {
+					handleType: "__TEXT__",
+					selector: unique(),
+				}
+				html += `<b ${data.selector}>${data.selector}text</b>`
 			}
+			else {
+				throw new Error("?? ~V")
+			}
+			this.datas.push(data)
 		}
 		html += vResult.strings.at(-1)
 		return html
-	}
-	datas = [] // [{handleType:"text", element: div}]
-	initData(handleType){
-		let data = { handleType, selector: unique() }
-		switch (handleType){
-			case "__PROPS__":
-				this.datas.push(data)
-				return ` ${data.selector} `
-			case "__TEXT__":
-				this.datas.push(data)
-				return `<b ${data.selector}>${data.selector}text</b>`
-			case "__LIST__":
-				this.datas.push({
-					...data, 
-					vanyls: {},
-					vanylsKeyless: []})
-				return `<wbr ${data.selector}>`
-			case "__VRESULT__":
-				this.datas.push({...data, vanyl: new Vanyl(v`<wbr>`),})
-				return `${data.selector + "vresult:"}<wbr ${data.selector}>`
-		}
 	}
 	updateWith(vResultFresh) {
 		should.sameVResult(this.vResult, vResultFresh)
@@ -120,7 +111,6 @@ export class Vanyl {
 		for (let [i, data] of this.datas.entries()) {
 			let arg = vResultFresh.args[i]
 			switch (data.handleType) {
-
 				case "__TEXT__": // arg is the dynamic text
 					data.element.nodeValue = arg
 					break
@@ -153,19 +143,18 @@ export class Vanyl {
 
 					for (let vResult of arg) {
 						let vanyl = data.vanyls[vResult.key] // take vResult in display
-						if (vanyl){
+						if (vanyl) {
 							vanyl.updateWith(vResult)
 						} else if (vResult.key) {
 							vanyl = new Vanyl(vResult)
 							data.vanyls[vanyl.vResult.key] = vanyl
 							if (!vResult.keep) frag.appendChild(vanyl.topElement)
-						} 
-						else {
+						} else {
 							vanyl = new Vanyl(vResult)
 							data.vanylsKeyless.push(vanyl)
-							frag.appendChild(vanyl.topElement)						
+							frag.appendChild(vanyl.topElement)
 						} // cleaner version for list
-						
+
 						// if (!vResult.keep) frag.appendChild(vanyl.topElement)
 
 						// remove old data vanyl that's not in arg. (identified with key)
@@ -176,7 +165,6 @@ export class Vanyl {
 					}
 					data.element.after(frag)
 					break
-
 			}
 		}
 		return this
@@ -223,7 +211,6 @@ export class Vanyl {
 	}
 }
 
-export const v = (...argums) => new VResult(...argums)
 
 export class vanyl extends Vanyl {
 	constructor(vFun) {
@@ -233,12 +220,9 @@ export class vanyl extends Vanyl {
 	}
 }
 
-export const create = vFun => {
-	let vanyl = Vanyl.fromVFun(vFun)
-	//!1 vanyl.grabFirstChild()
-	return vanyl
-}
+export const create = vFun => Vanyl.fromVFun(vFun)
 
 console.log(
-	new Vanyl().initHTML(v`<b ${{ color: "red" }}>that's ${"dynamo"} part</b>`)
+	new Vanyl().initHTML(v`<span ${{ color: "red" }}>that's ${"dynamo"} part</span>`), "\n",
+	new Vanyl(v`<span ${{ color: "red" }}>that's ${"dynamo"} part</span>`).topElement.outerHTML
 )
