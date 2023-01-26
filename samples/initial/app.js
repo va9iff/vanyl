@@ -16,10 +16,10 @@ let
 	add = query('[add]'),
 	del = query('[del]'),
 	arr= [
-		{val:1, key:1, keep: true},
+		// {val:1, key:1, keep: true},
 		{val:213, key:213},
 		{val:Math.random(), key:Math.random()},
-		{val:124, key:"joooooooooo", keep: true},
+		// {val:124, key:"joooooooooo", keep: true},
 		{val:1, key:12}
 		]
 
@@ -90,7 +90,7 @@ let myView = props => {
 	<ol ${{ref:ol}}>
 		${arr.map((prop,i)=>v`<li ${{
 			key: prop.key, 
-			keep:prop.keep || Math.random()>0.5, 
+			// keep:prop.keep || Math.random()>0.5, 
 			".highlight": Math.random()>0.7
 		}}><u>${i}-</u>${prop.key}~${prop.val} <input type="text"></li>`)}
 	</ol>
@@ -120,7 +120,7 @@ add.onclick = e => {
 	arr.splice(idx.value, 0, {
 		val: ctn.value, 
 		key: ctn.value, 
-		keep: Math.random()>0.5, 
+		// keep: Math.random()>0.5, 
 
 }).value
 	div.update()

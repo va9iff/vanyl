@@ -81,47 +81,38 @@ export class Vanyl {
 			let inTag = lt > gt
 
 			if (inTag) {
-				html += this.initProp()
+				html += this.initData("__PROPS__")
 			} else if (arg instanceof VResult && vResult.isSame(vResult)) {
-				html += this.initVResult()
+				html += this.initData("__VRESULT__")
 			} else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
-				html += this.initList()
+				html += this.initData("__LIST__")
 			} else if (!inTag) {
-				html += this.initText()
+				html += this.initData("__TEXT__")
 			}
 		}
 		html += vResult.strings.at(-1)
 		return html
 	}
 	datas = [] // [{handleType:"text", element: div}]
-	initProp() {
-		let data = { selector: unique(), handleType: "__PROPS__" }
-		this.datas.push(data)
-		return ` ${data.selector} ` // fixing v`<li${{key:some}}></li>` bug
-	}
-	initText() {
-		let data = { selector: unique(), handleType: "__TEXT__" }
-		this.datas.push(data)
-		return `<b ${data.selector}>${data.selector}text</b>`
-	}
-	initList() {
-		let data = {
-			selector: unique(),
-			handleType: "__LIST__",
-			vanyls: {},
-			vanylsKeyless: [],
+	initData(handleType){
+		let data = { handleType, selector: unique() }
+		switch (handleType){
+			case "__PROPS__":
+				this.datas.push(data)
+				return ` ${data.selector} `
+			case "__TEXT__":
+				this.datas.push(data)
+				return `<b ${data.selector}>${data.selector}text</b>`
+			case "__LIST__":
+				this.datas.push({
+					...data, 
+					vanyls: {},
+					vanylsKeyless: []})
+				return `<wbr ${data.selector}>`
+			case "__VRESULT__":
+				this.datas.push({...data, vanyl: new Vanyl(v`<wbr>`),})
+				return `${data.selector + "vresult:"}<wbr ${data.selector}>`
 		}
-		this.datas.push(data)
-		return `<wbr ${data.selector}>`
-	}
-	initVResult() {
-		let data = {
-			selector: unique(),
-			handleType: "__VRESULT__",
-			vanyl: new Vanyl(v`<wbr>`),
-		}
-		this.datas.push(data)
-		return `${data.selector + "vresult:"}<wbr ${data.selector}>`
 	}
 	updateWith(vResultFresh) {
 		should.sameVResult(this.vResult, vResultFresh)
