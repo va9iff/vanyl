@@ -119,7 +119,7 @@ export class Vanyl {
 				case "__PROPS__": // arg is dynamic props object
 					for (const [key, val] of Object.entries(arg)) {
 						const $key = key.slice(1)
-						if (val instanceof Lazy) "just stop"
+						if (val instanceof Lazy || key == "ref") "just stop"
 						else if (key[0] == ".")
 							if (val) data.element.classList.add($key)
 							else data.element.classList.remove($key)
