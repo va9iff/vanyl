@@ -80,6 +80,7 @@ export class Vanyl {
 					handleType: "__VRESULT__",
 					selector: unique(),
 					vanyl: new Vanyl(v`<wbr>`),
+					vanyls: []
 				}
 				html += `${data.selector + "vresult:"}<wbr ${data.selector}>`
 			} else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
@@ -126,17 +127,19 @@ export class Vanyl {
 					}
 					break
 
-				// !!!!!! REMOVES VRESULT
 				case "__VRESULT__": // arg is a vResult
+					console.log(data.vanyls.map(a=>a.topElement))
 					if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
 					else {
-						// let seenVanyl = dataVanyl.vanyls.find(dataVanyl => dataVanyl.vResult.isSame(arg))
-						// if (seenVanyl) data.element.after(seenVanyl.topElement)
 						data.vanyl.topElement?.remove()
-						if (arg instanceof VResult) {
-							data.vanyl = new Vanyl(arg)
-							data.element.after(data.vanyl.topElement)
-						}
+						let seenVanyl = data.vanyls.find(dataVanyl => dataVanyl.vResult.isSame(arg))
+						if (seenVanyl) data.vanyl = seenVanyl
+						else {
+							if (arg instanceof VResult) data.vanyl = new Vanyl(arg)
+							else data.vanyl = new Vanyl(v`${arg}`)
+							data.vanyls.push(data.vanyl)
+						}						
+						data.element.after(data.vanyl.topElement)
 					}
 					break
 

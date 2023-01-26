@@ -66,8 +66,16 @@ setTimeout(function() {console.log(ol())}, 10);
 let r = ()=>Math.random()
 
 let myView = props => {
-	let vicka = Math.random()>0.5 ? v`<span><input ${{"~value":inputText}} type="text"><b>prr</b><i>prr</i><u>-${inputText.now}-${Math.random()}</u></span>` : v`<span>bip bop ${Math.random()}<input type="text"></span>`
-	// console.log(vicka.strings[0])
+	let vicka = Math.random()>0.5 ? v`
+	<span>1<br>
+		<input ${{"~value":inputText}} type="text">
+		<b>prr</b><i>prr</i> <br>
+		<u> -${inputText.now} - ${Math.random()}</u> <br>
+	</span>` : Math.random()>0.5 ? v`<b>2<br>AAAAAAAAAA</b>` : v`<span>3<br>bip bop ${Math.random()}<input type="text"></span>`
+	// let vicka = 
+		// Math.random()>0.5 ? v`<b>1</b>` : 
+		// Math.random()>0.5 ? v`<b>2</b>` :
+							// v`<b>3</b>`
 
 	return v`
 <div ${{j:9}}>
