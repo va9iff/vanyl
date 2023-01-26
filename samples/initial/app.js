@@ -76,7 +76,7 @@ let myView = props => {
 	</p>
 	and here's an input 
 	<input type="text" 
-	${{'disabled': state.disabled}}
+	${{disabled: state.disabled}}
 	${{value: state.value}}>
 	<button ${{
 		"@click"(){

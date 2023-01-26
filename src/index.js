@@ -99,6 +99,7 @@ export class Vanyl {
 			} else {
 				throw new Error("?? ~V")
 			}
+			data.i = i
 			this.datas.push(data)
 		}
 		html += vResult.strings.at(-1)
@@ -125,9 +126,12 @@ export class Vanyl {
 					}
 					break
 
+				// !!!!!! REMOVES VRESULT
 				case "__VRESULT__": // arg is a vResult
 					if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
 					else {
+						// let seenVanyl = dataVanyl.vanyls.find(dataVanyl => dataVanyl.vResult.isSame(arg))
+						// if (seenVanyl) data.element.after(seenVanyl.topElement)
 						data.vanyl.topElement?.remove()
 						if (arg instanceof VResult) {
 							data.vanyl = new Vanyl(arg)
@@ -174,7 +178,7 @@ export class Vanyl {
 		return vanyl
 	}
 	process() {
-		for (let [i, data] of this.datas.entries()) {
+		for (let data of this.datas) {
 			data.element = this.topElement.hasAttribute(data.selector)
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
@@ -184,7 +188,7 @@ export class Vanyl {
 				data.element.replaceWith(textNode)
 				data.element = textNode
 			} else if (data.handleType == "__PROPS__") {
-				for (let [key, val] of Object.entries(this.vResult.args[i])) {
+				for (let [key, val] of Object.entries(this.vResult.args[data.i])) {
 					let $key = key.slice(1)
 					if (key[0] == "@") {
 						data.element.addEventListener($key, val)
