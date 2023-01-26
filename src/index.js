@@ -96,8 +96,7 @@ export class Vanyl {
 					selector: unique(),
 				}
 				html += `<b ${data.selector}>${data.selector}text</b>`
-			}
-			else {
+			} else {
 				throw new Error("?? ~V")
 			}
 			this.datas.push(data)
@@ -139,7 +138,13 @@ export class Vanyl {
 
 				case "__LIST__": // arg is the array of vResults
 					let frag = document.createDocumentFragment()
-					data.vanylsKeyless.forEach(vanyl => vanyl.topElement.remove())
+					while (data.vanylsKeyless.length > 0)
+						data.vanylsKeyless.pop().topElement.remove()
+
+					// (once a vanyl with a key was added it'll check every time to remove)
+					for (let dataVanylKey in data.vanyls)
+						if (!arg.some(_vResult => dataVanylKey == _vResult.key))
+							data.vanyls[dataVanylKey].topElement.remove()
 
 					for (let vResult of arg) {
 						let vanyl = data.vanyls[vResult.key] // take vResult in display
@@ -148,20 +153,11 @@ export class Vanyl {
 						} else if (vResult.key) {
 							vanyl = new Vanyl(vResult)
 							data.vanyls[vanyl.vResult.key] = vanyl
-							if (!vResult.keep) frag.appendChild(vanyl.topElement)
 						} else {
 							vanyl = new Vanyl(vResult)
 							data.vanylsKeyless.push(vanyl)
-							frag.appendChild(vanyl.topElement)
-						} // cleaner version for list
-
-						// if (!vResult.keep) frag.appendChild(vanyl.topElement)
-
-						// remove old data vanyl that's not in arg. (identified with key)
-						// (once a vanyl was added it'll every time check to remove)
-						for (let dataVanylKey in data.vanyls)
-							if (!arg.some(vr => dataVanylKey == vr.key))
-								data.vanyls[dataVanylKey].topElement.remove()
+						}
+						frag.appendChild(vanyl.topElement)
 					}
 					data.element.after(frag)
 					break
@@ -211,7 +207,6 @@ export class Vanyl {
 	}
 }
 
-
 export class vanyl extends Vanyl {
 	constructor(vFun) {
 		let vResult = vFun()
@@ -221,8 +216,3 @@ export class vanyl extends Vanyl {
 }
 
 export const create = vFun => Vanyl.fromVFun(vFun)
-
-console.log(
-	new Vanyl().initHTML(v`<span ${{ color: "red" }}>that's ${"dynamo"} part</span>`), "\n",
-	new Vanyl(v`<span ${{ color: "red" }}>that's ${"dynamo"} part</span>`).topElement.outerHTML
-)
