@@ -29,6 +29,9 @@ class VResult {
 			this.strings.every((s, i) => this.strings[i] == _vResult.strings[i])
 		)
 	}
+	static ish(arg) {
+		return arg instanceof VResult ? arg : v`${arg}`
+	}
 }
 export const v = (...argums) => new VResult(...argums)
 
@@ -49,6 +52,40 @@ export const ref = () => {
 	const fun = () => fun.element ?? null
 	return fun
 }
+
+// WE MAY NOT NEED __TEXT__ __PROPS__ __LIST__
+// JUST USE A LOGIC TO SWAP BETWEEN
+// obviously props will be different as it's in tag
+
+// each data will have 'element' prop to know the location in the dom (with wbr)
+// @process
+// if intag: data = {element: element, now: props} // `now` will also assigned to `remembers`
+
+//
+// if arg is array: data.now=arg
+// elif arg instanceof VResult: data.now = "__VRESULT__"
+// else data.now = "text"
+//
+// if data.remembers == data.now:
+//
+
+// __VRESULT__ __LIST__ __TEXT__
+
+// idk maybe use switch's not breaking cases
+
+// NO NO NO THIS ALL 3 IS 1!! 
+// IN PROCESS, TAKE THE WBR AND CONVERT IT TO A TEXT NODE IN ALL 3.
+// USE THIS TEXT NODE TO USE `.after` FOR LISTS AND VRESULTS
+// USE THIS ITSELF FOR _TEXT_
+// WE DON'T HAVE TO SPLIT THEM.
+// if arg is array of vResults:
+// do the same thing. we got element, we got arg, just add few arrays in data object. not a problem.
+
+// so, initing a data will be same for all none-in-tag datas.
+// switch statement will be replaced with the conditionals in the init.
+// it will give the flexibility to switch args from list to single vResult to string.
+// they all need the same stuff to work.
+
 
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
@@ -112,9 +149,6 @@ export class Vanyl {
 		for (const [i, data] of this.datas.entries()) {
 			const arg = vResultFresh.args[i]
 			switch (data.handleType) {
-				case "__TEXT__": // arg is the dynamic text
-					data.element.nodeValue = arg
-					break
 
 				case "__PROPS__": // arg is dynamic props object
 					for (const [key, val] of Object.entries(arg)) {
@@ -128,19 +162,22 @@ export class Vanyl {
 					break
 
 				case "__VRESULT__": // arg is a vResult
-					if (data.vanyl.vResult.isSame(arg)) data.vanyl.updateWith(arg)
+					const vResult = VResult.ish(arg)
+					if (data.vanyl.vResult.isSame(vResult)) data.vanyl.updateWith(vResult)
 					else {
 						data.vanyl.topElement.remove() // changed from ?.remove() as we use {vanyl: new Vanyl(v``)}
-						data.vanyl = data.vanyls.find(vanyl => vanyl.vResult.isSame(arg))
+						data.vanyl = data.vanyls.find(vanyl => vanyl.vResult.isSame(vResult))
 						if (!data.vanyl) {
 							data.vanyl =
-								arg instanceof VResult
-									? new Vanyl(arg)
-									: new Vanyl(v`${arg + ""}`)
+								vResult instanceof VResult
+									? new Vanyl(vResult)
+									: new Vanyl(v`${vResult}`)
 							data.vanyls.push(data.vanyl)
 						}
 						data.element.after(data.vanyl.topElement)
 					}
+				case "__TEXT__": // arg is the dynamic text
+					data.element.nodeValue = arg
 					break
 
 				case "__LIST__": // arg is the array of vResults
@@ -153,7 +190,8 @@ export class Vanyl {
 						if (!arg.some(_vResult => dataVanylKey == _vResult.key))
 							data.vanyls[dataVanylKey].topElement.remove()
 
-					for (const vResult of arg) {
+					for (let vResult of arg) {
+						vResult = VResult.ish(vResult)
 						let vanyl = data.vanyls[vResult.key] // take vResult in display
 						if (vanyl) {
 							vanyl.updateWith(vResult)

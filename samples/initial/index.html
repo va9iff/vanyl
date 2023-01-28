@@ -20,6 +20,14 @@
 				transform: translateX(0);
 			}
 		}
+		@keyframes appear {
+			from{
+				transform: scale(0.4);
+			}
+			to{
+				transform: scale(1.0);
+			}
+		}
 		.highlight{
 			border: 8px solid navy;
 		}
@@ -29,8 +37,12 @@
 			margin: 0.1rem;
 			background-color: #a33;
 		}
-		li.highlight{
-			transition: border 200ms;
+		*.highlight{
+			transition: border 2000ms;
+		}
+		input{
+			animation-name: appear;
+			animation-duration: 500ms;
 		}
 	</style>
 	some little text

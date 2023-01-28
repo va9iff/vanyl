@@ -71,7 +71,7 @@ let myView = props => {
 		<input ${{"~value":inputText}} type="text">
 		<b>prr</b><i>prr</i> <br>
 		<u> -${inputText.now} - ${Math.random()}</u> <br>
-	</span>` : Math.random()>0.5 ? v`<b>2<br>AAAAAAAAAA</b>` : v`<span>3<br>bip bop ${Math.random()}<input type="text"></span>`
+	</span>` : `<span>3<br>bip bop ${Math.random()}<input type="text"></span>`
 	// let vicka = 
 		// Math.random()>0.5 ? v`<b>1</b>` : 
 		// Math.random()>0.5 ? v`<b>2</b>` :
@@ -95,7 +95,7 @@ let myView = props => {
 	nested ${vicka}
 	lets put a list
 	keyless <br>${[r(),r(),r(),r(),r(),r()].map(i=>v`<i>${parseInt(i*100)+';'}</i>`)}
-	<ol ${{ref:ol}}>
+	<ol ${{ref:ol, ".highlight": Math.random()>0.5}}>
 		${arr.map((prop,i)=>v`<li ${{
 			key: prop.key, 
 			// keep:prop.keep || Math.random()>0.5, 
