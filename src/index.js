@@ -162,7 +162,7 @@ export class Vanyl {
 					break
 
 				case "__VRESULT__": // arg is a vResult
-					const vResult = VResult.ish(arg)
+					const vResult = /*VResult.ish*/(arg)
 					if (data.vanyl.vResult.isSame(vResult)) data.vanyl.updateWith(vResult)
 					else {
 						data.vanyl.topElement.remove() // changed from ?.remove() as we use {vanyl: new Vanyl(v``)}
@@ -191,7 +191,7 @@ export class Vanyl {
 							data.vanyls[dataVanylKey].topElement.remove()
 
 					for (let vResult of arg) {
-						vResult = VResult.ish(vResult)
+						vResult = /*VResult.ish*/(vResult)
 						let vanyl = data.vanyls[vResult.key] // take vResult in display
 						if (vanyl) {
 							vanyl.updateWith(vResult)

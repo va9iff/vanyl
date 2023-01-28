@@ -71,7 +71,7 @@ let myView = props => {
 		<input ${{"~value":inputText}} type="text">
 		<b>prr</b><i>prr</i> <br>
 		<u> -${inputText.now} - ${Math.random()}</u> <br>
-	</span>` : `<span>3<br>bip bop ${Math.random()}<input type="text"></span>`
+	</span>` : v`<span>3<br>bip bop ${Math.random()}<input type="text"></span>`
 	// let vicka = 
 		// Math.random()>0.5 ? v`<b>1</b>` : 
 		// Math.random()>0.5 ? v`<b>2</b>` :
