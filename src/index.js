@@ -120,12 +120,9 @@ export class Vanyl {
 				// }
 				// html += `${data.selector + "vresult:"}<wbr ${data.selector}>`
 			// }
-			 else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
+			 else if (true){ 
+			 // if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
 				data = {
-					_LIST_: {
-						vanyls: {},
-						vanylsKeyless: [],
-					},
 					selector: unique(),
 				}
 				html += `<wbr ${data.selector}>`
@@ -187,7 +184,11 @@ export class Vanyl {
 					data.element.nodeValue = arg
 					}
 
-				else if (data._LIST_){ // arg is the array of vResults
+				else if (Array.isArray(arg)){ // arg is the array of vResults
+					data._LIST_ ??=	{
+						vanyls: {},
+						vanylsKeyless: [],
+					}
 					const frag = document.createDocumentFragment()
 					while (data._LIST_.vanylsKeyless.length > 0)
 						data._LIST_.vanylsKeyless.pop().topElement.remove()
