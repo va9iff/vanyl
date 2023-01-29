@@ -109,6 +109,7 @@ export class Vanyl {
 			if (inTag) {
 				data = {
 					handleType: "__PROPS__",
+					_PROPS_: true,
 					selector: unique(),
 				}
 				html += ` ${data.selector} `
@@ -224,11 +225,7 @@ export class Vanyl {
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
 			should.notNull(data.element)
-			if (data.handleType == "__TEXT__") {
-				const textNode = document.createTextNode(data.selector)
-				data.element.replaceWith(textNode)
-				data.element = textNode
-			} else if (data.handleType == "__PROPS__") {
+			 if (data._PROPS_) {
 				for (const [key, val] of Object.entries(this.vResult.args[data.i])) {
 					const $key = key.slice(1)
 					if (key[0] == "@") {
@@ -241,7 +238,11 @@ export class Vanyl {
 						val.element[val.prop] = val.initialValue
 					}
 				}
-			}
+			} else {
+				const textNode = document.createTextNode(data.selector)
+				data.element.replaceWith(textNode)
+				data.element = textNode
+			} 
 		}
 	}
 	grabFirstChild(htmlString) {
