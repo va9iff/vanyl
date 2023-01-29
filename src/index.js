@@ -114,18 +114,20 @@ export class Vanyl {
 				html += ` ${data.selector} `
 			} else if (arg instanceof VResult && vResult.isSame(vResult)) {
 				data = {
-					_VRESULT_: true,
+					_VRESULT_: {
+						vanyl: new Vanyl(v`<wbr>`),
+						vanyls: [],
+					},
 					selector: unique(),
-					vanyl: new Vanyl(v`<wbr>`),
-					vanyls: [],
 				}
 				html += `${data.selector + "vresult:"}<wbr ${data.selector}>`
 			} else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
 				data = {
-					_LIST_: true,
+					_LIST_: {
+						vanyls: {},
+						vanylsKeyless: [],
+					},
 					selector: unique(),
-					vanyls: {},
-					vanylsKeyless: [],
 				}
 				html += `<wbr ${data.selector}>`
 			} else if (!inTag) {
@@ -164,18 +166,18 @@ export class Vanyl {
 				/* this 3 can alter tho. once arg is list, then string */
 				if (data._VRESULT_){ // arg is a vResult
 					const vResult = /*VResult.ish*/(arg)
-					if (data.vanyl.vResult.isSame(vResult)) data.vanyl.updateWith(vResult)
+					if (data._VRESULT_.vanyl.vResult.isSame(vResult)) data._VRESULT_.vanyl.updateWith(vResult)
 					else {
-						data.vanyl.topElement.remove() // changed from ?.remove() as we use {vanyl: new Vanyl(v``)}
-						data.vanyl = data.vanyls.find(vanyl => vanyl.vResult.isSame(vResult))
-						if (!data.vanyl) {
-							data.vanyl =
+						data._VRESULT_.vanyl.topElement.remove() // changed from ?.remove() as we use {vanyl: new Vanyl(v``)}
+						data._VRESULT_.vanyl = data._VRESULT_.vanyls.find(vanyl => vanyl.vResult.isSame(vResult))
+						if (!data._VRESULT_.vanyl) {
+							data._VRESULT_.vanyl =
 								vResult instanceof VResult
 									? new Vanyl(vResult)
 									: new Vanyl(v`${vResult}`)
-							data.vanyls.push(data.vanyl)
+							data._VRESULT_.vanyls.push(data._VRESULT_.vanyl)
 						}
-						data.element.after(data.vanyl.topElement)
+						data.element.after(data._VRESULT_.vanyl.topElement)
 					}
 				}
 				if (data._TEXT_){ // arg is the dynamic text
@@ -184,25 +186,25 @@ export class Vanyl {
 
 				if (data._LIST_){ // arg is the array of vResults
 					const frag = document.createDocumentFragment()
-					while (data.vanylsKeyless.length > 0)
-						data.vanylsKeyless.pop().topElement.remove()
+					while (data._LIST_.vanylsKeyless.length > 0)
+						data._LIST_.vanylsKeyless.pop().topElement.remove()
 
 					// (once a vanyl with a key was added it'll check every time to remove)
-					for (const dataVanylKey in data.vanyls)
+					for (const dataVanylKey in data._LIST_.vanyls)
 						if (!arg.some(_vResult => dataVanylKey == _vResult.key))
-							data.vanyls[dataVanylKey].topElement.remove()
+							data._LIST_.vanyls[dataVanylKey].topElement.remove()
 
 					for (let vResult of arg) {
 						vResult = /*VResult.ish*/(vResult)
-						let vanyl = data.vanyls[vResult.key] // take vResult in display
+						let vanyl = data._LIST_.vanyls[vResult.key] // take vResult in display
 						if (vanyl) {
 							vanyl.updateWith(vResult)
 						} else if (vResult.key) {
 							vanyl = new Vanyl(vResult)
-							data.vanyls[vanyl.vResult.key] = vanyl
+							data._LIST_.vanyls[vanyl.vResult.key] = vanyl
 						} else {
 							vanyl = new Vanyl(vResult)
-							data.vanylsKeyless.push(vanyl)
+							data._LIST_.vanylsKeyless.push(vanyl)
 						}
 						frag.appendChild(vanyl.topElement)
 					}
