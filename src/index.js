@@ -48,10 +48,7 @@ export class Lazy {
 	}
 }
 
-export const ref = () => {
-	const fun = () => fun.element ?? null
-	return fun
-}
+export const ref = (fun = () => fun.element ?? null) => fun
 
 // WE MAY NOT NEED __TEXT__ __PROPS__ __LIST__
 // JUST USE A LOGIC TO SWAP BETWEEN
