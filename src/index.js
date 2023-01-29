@@ -149,9 +149,8 @@ export class Vanyl {
 		this.vResult = vResultFresh
 		for (const [i, data] of this.datas.entries()) {
 			const arg = vResultFresh.args[i]
-			switch (data.handleType) {
 
-				case "__PROPS__": // arg is dynamic props object
+				if (data.handleType=="__PROPS__"){ // arg is dynamic props object
 					for (const [key, val] of Object.entries(arg)) {
 						const $key = key.slice(1)
 						if (val instanceof Lazy || key == "ref") "just stop"
@@ -160,9 +159,9 @@ export class Vanyl {
 							else data.element.classList.remove($key)
 						else data.element[key] = val
 					}
-					break
+					}
 
-				case "__VRESULT__": // arg is a vResult
+				if (data.handleType=="__VRESULT__"){ // arg is a vResult
 					const vResult = /*VResult.ish*/(arg)
 					if (data.vanyl.vResult.isSame(vResult)) data.vanyl.updateWith(vResult)
 					else {
@@ -177,11 +176,12 @@ export class Vanyl {
 						}
 						data.element.after(data.vanyl.topElement)
 					}
-				case "__TEXT__": // arg is the dynamic text
+				}
+				if (data.handleType=="__TEXT__"){ // arg is the dynamic text
 					data.element.nodeValue = arg
-					break
+					}
 
-				case "__LIST__": // arg is the array of vResults
+				if (data.handleType=="__LIST__"){ // arg is the array of vResults
 					const frag = document.createDocumentFragment()
 					while (data.vanylsKeyless.length > 0)
 						data.vanylsKeyless.pop().topElement.remove()
@@ -206,8 +206,8 @@ export class Vanyl {
 						frag.appendChild(vanyl.topElement)
 					}
 					data.element.after(frag)
-					break
-			}
+					}
+			
 		}
 		return this
 	}
