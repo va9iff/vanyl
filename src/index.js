@@ -108,14 +108,13 @@ export class Vanyl {
 			const inTag = lt > gt
 			if (inTag) {
 				data = {
-					handleType: "__PROPS__",
 					_PROPS_: true,
 					selector: unique(),
 				}
 				html += ` ${data.selector} `
 			} else if (arg instanceof VResult && vResult.isSame(vResult)) {
 				data = {
-					handleType: "__VRESULT__",
+					_VRESULT_: true,
 					selector: unique(),
 					vanyl: new Vanyl(v`<wbr>`),
 					vanyls: [],
@@ -123,7 +122,7 @@ export class Vanyl {
 				html += `${data.selector + "vresult:"}<wbr ${data.selector}>`
 			} else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
 				data = {
-					handleType: "__LIST__",
+					_LIST_: true,
 					selector: unique(),
 					vanyls: {},
 					vanylsKeyless: [],
@@ -131,7 +130,7 @@ export class Vanyl {
 				html += `<wbr ${data.selector}>`
 			} else if (!inTag) {
 				data = {
-					handleType: "__TEXT__",
+					_TEXT_: true,
 					selector: unique(),
 				}
 				html += `<b ${data.selector}>${data.selector}text</b>`
@@ -150,7 +149,8 @@ export class Vanyl {
 		for (const [i, data] of this.datas.entries()) {
 			const arg = vResultFresh.args[i]
 
-				if (data.handleType=="__PROPS__"){ // arg is dynamic props object
+				/* this won't alter as you can't go to outside of a tag and inside, there's only _PROPS_*/
+				if (data._PROPS_){ // arg is dynamic props object
 					for (const [key, val] of Object.entries(arg)) {
 						const $key = key.slice(1)
 						if (val instanceof Lazy || key == "ref") "just stop"
@@ -161,7 +161,8 @@ export class Vanyl {
 					}
 					}
 
-				if (data.handleType=="__VRESULT__"){ // arg is a vResult
+				/* this 3 can alter tho. once arg is list, then string */
+				if (data._VRESULT_){ // arg is a vResult
 					const vResult = /*VResult.ish*/(arg)
 					if (data.vanyl.vResult.isSame(vResult)) data.vanyl.updateWith(vResult)
 					else {
@@ -177,11 +178,11 @@ export class Vanyl {
 						data.element.after(data.vanyl.topElement)
 					}
 				}
-				if (data.handleType=="__TEXT__"){ // arg is the dynamic text
+				if (data._TEXT_){ // arg is the dynamic text
 					data.element.nodeValue = arg
 					}
 
-				if (data.handleType=="__LIST__"){ // arg is the array of vResults
+				if (data._LIST_){ // arg is the array of vResults
 					const frag = document.createDocumentFragment()
 					while (data.vanylsKeyless.length > 0)
 						data.vanylsKeyless.pop().topElement.remove()
