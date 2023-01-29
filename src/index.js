@@ -112,16 +112,15 @@ export class Vanyl {
 					selector: unique(),
 				}
 				html += ` ${data.selector} `
-			} else if (arg instanceof VResult && vResult.isSame(vResult)) {
-				data = {
-					_VRESULT_: {
-						vanyl: new Vanyl(v`<wbr>`),
-						vanyls: [],
-					},
-					selector: unique(),
-				}
-				html += `${data.selector + "vresult:"}<wbr ${data.selector}>`
-			} else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
+			} 
+			// else if (arg instanceof VResult && vResult.isSame(vResult)) {
+				// data = {
+					// 
+					// selector: unique(),
+				// }
+				// html += `${data.selector + "vresult:"}<wbr ${data.selector}>`
+			// }
+			 else if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
 				data = {
 					_LIST_: {
 						vanyls: {},
@@ -164,7 +163,11 @@ export class Vanyl {
 					}
 
 				/* this 3 can alter tho. once arg is list, then string */
-				if (data._VRESULT_){ // arg is a vResult
+				else if (arg instanceof VResult){ // arg is a vResult
+					data._VRESULT_ ??= {
+						vanyl: new Vanyl(v`<wbr>`),
+						vanyls: [],
+					}
 					const vResult = /*VResult.ish*/(arg)
 					if (data._VRESULT_.vanyl.vResult.isSame(vResult)) data._VRESULT_.vanyl.updateWith(vResult)
 					else {
@@ -180,11 +183,11 @@ export class Vanyl {
 						data.element.after(data._VRESULT_.vanyl.topElement)
 					}
 				}
-				if (data._TEXT_){ // arg is the dynamic text
+				else if (data._TEXT_){ // arg is the dynamic text
 					data.element.nodeValue = arg
 					}
 
-				if (data._LIST_){ // arg is the array of vResults
+				else if (data._LIST_){ // arg is the array of vResults
 					const frag = document.createDocumentFragment()
 					while (data._LIST_.vanylsKeyless.length > 0)
 						data._LIST_.vanylsKeyless.pop().topElement.remove()
