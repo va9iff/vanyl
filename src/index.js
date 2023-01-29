@@ -126,15 +126,15 @@ export class Vanyl {
 					selector: unique(),
 				}
 				html += `<wbr ${data.selector}>`
-			} else if (!inTag) {
+			} else /*if (!inTag)*/ {
 				data = {
 					_TEXT_: true,
 					selector: unique(),
 				}
 				html += `<b ${data.selector}>${data.selector}text</b>`
-			} else {
+			} /*else {
 				throw new Error("?? ~V")
-			}
+			}*/
 			data.i = i
 			this.datas.push(data)
 		}
@@ -180,10 +180,7 @@ export class Vanyl {
 						data.element.after(data._VRESULT_.vanyl.topElement)
 					}
 				}
-				else if (data._TEXT_){ // arg is the dynamic text
-					data.element.nodeValue = arg
-					}
-
+				
 				else if (Array.isArray(arg)){ // arg is the array of vResults
 					data._LIST_ ??=	{
 						vanyls: {},
@@ -213,6 +210,9 @@ export class Vanyl {
 						frag.appendChild(vanyl.topElement)
 					}
 					data.element.after(frag)
+					}
+					else { // arg is whatever, assign as dynamic text
+					data.element.nodeValue = arg
 					}
 			
 		}
