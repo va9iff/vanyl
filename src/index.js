@@ -100,41 +100,15 @@ export class Vanyl {
 	}
 	datas = []
 	initHTML(vResult) {
-		let [html, lt, gt, data] = ["", 0, 0, null]
+		let [html, lt, gt] = ["", 0, 0]
 		for (const [i, arg] of vResult.args.entries()) {
 			const string = vResult.strings[i]
 			html += string
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
-			const inTag = lt > gt
-			if (inTag) {
-				data = {
-					_PROPS_: true,
-					selector: unique(),
-				}
-				html += ` ${data.selector} `
-			} 
-			// else if (arg instanceof VResult && vResult.isSame(vResult)) {
-				// data = {
-					// 
-					// selector: unique(),
-				// }
-				// html += `${data.selector + "vresult:"}<wbr ${data.selector}>`
-			// }
-			 else if (true){ 
-			 // if (!inTag && Array.isArray(arg) && arg[0] instanceof VResult) {
-				data = {
-					selector: unique(),
-				}
-				html += `<wbr ${data.selector}>`
-			} else /*if (!inTag)*/ {
-				data = {
-					_TEXT_: true,
-					selector: unique(),
-				}
-				html += `<b ${data.selector}>${data.selector}text</b>`
-			} /*else {
-				throw new Error("?? ~V")
-			}*/
+			const data = { selector: unique(), inTag: lt > gt }
+			if (data.inTag) html += ` ${data.selector} `
+			else html += ` <wbr ${data.selector}> `
+			
 			data.i = i
 			this.datas.push(data)
 		}
@@ -148,7 +122,9 @@ export class Vanyl {
 			const arg = vResultFresh.args[i]
 
 				/* this won't alter as you can't go to outside of a tag and inside, there's only _PROPS_*/
-				if (data._PROPS_){ // arg is dynamic props object
+				// we don't need a _PROPS_ namespace, dynamic props don't store anything.
+				// if this argument is in tag, just do the _PROP_ thing.
+				if (data.inTag){ // arg is dynamic props object
 					for (const [key, val] of Object.entries(arg)) {
 						const $key = key.slice(1)
 						if (val instanceof Lazy || key == "ref") "just stop"
@@ -232,7 +208,7 @@ export class Vanyl {
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
 			should.notNull(data.element)
-			 if (data._PROPS_) {
+			 if (data.inTag) {
 				for (const [key, val] of Object.entries(this.vResult.args[data.i])) {
 					const $key = key.slice(1)
 					if (key[0] == "@") {
