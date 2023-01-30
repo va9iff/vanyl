@@ -29,6 +29,9 @@ class VResult {
 			this.strings.every((s, i) => this.strings[i] == _vResult.strings[i])
 		)
 	}
+	isSameish(_vResult) {
+		return _vResult instanceof this.constructor && this.isSame(_vResult)
+	}
 	static ish(arg) {
 		return arg instanceof VResult ? arg : v`${arg}`
 	}
@@ -130,31 +133,32 @@ export class Vanyl {
 							else data.element.classList.remove($key)
 						else data.element[key] = val
 					}
-					}
+					continue
+				}
 
 				/* this 3 can alter tho. once arg is list, then string */
-				else if (arg instanceof VResult){ // arg is a vResult
+				if (arg instanceof VResult){ // arg is a vResult
 					data._VRESULT_ ??= {
-						vanyl: new Vanyl(v`<wbr>`),
+						// vanyl: new Vanyl(v`<wbr>`),
 						vanyls: [],
 					}
-					const vResult = /*VResult.ish*/(arg)
-					if (data._VRESULT_.vanyl.vResult.isSame(vResult)) data._VRESULT_.vanyl.updateWith(vResult)
+					if (data._VRESULT_.vanyl?.vResult.isSame(arg)) data._VRESULT_.vanyl.updateWith(arg)
 					else {
-						data._VRESULT_.vanyl.topElement.remove() // changed from ?.remove() as we use {vanyl: new Vanyl(v``)}
-						data._VRESULT_.vanyl = data._VRESULT_.vanyls.find(vanyl => vanyl.vResult.isSame(vResult))
+						data._VRESULT_.vanyl?.topElement.remove()
+						data._VRESULT_.vanyl = data._VRESULT_.vanyls.find(vanyl => vanyl.vResult.isSame(arg))
 						if (!data._VRESULT_.vanyl) {
-							data._VRESULT_.vanyl =
-								vResult instanceof VResult
-									? new Vanyl(vResult)
-									: new Vanyl(v`${vResult}`)
+							data._VRESULT_.vanyl = new Vanyl(arg)
 							data._VRESULT_.vanyls.push(data._VRESULT_.vanyl)
 						}
 						data.element.after(data._VRESULT_.vanyl.topElement)
 					}
+					continue
+				} else if (data._VRESULT_?.vanyl){
+					data._VRESULT_.vanyl.topElement.remove()
+					data._VRESULT_.vanyl = null
 				}
 				
-				else if (Array.isArray(arg)){ // arg is the array of vResults
+				if (Array.isArray(arg)){ // arg is the array of vResults
 					data._LIST_ ??=	{
 						vanyls: {},
 						vanylsKeyless: [],
@@ -201,6 +205,7 @@ export class Vanyl {
 	}
 	process() {
 		for (const data of this.datas) {
+			console.log(this.topElement.hasAttribute('.'))
 			data.element = this.topElement.hasAttribute(data.selector)
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
@@ -228,7 +233,8 @@ export class Vanyl {
 	grabFirstChild(htmlString) {
 		const domik = new DOMParser().parseFromString(htmlString, "text/html")
 		const topElement = domik.body.firstChild
-		should.notNull(topElement)
+		// console.log(topElement)
+		should.notNull(topElement) // !this can be text ndoe if no tag was provided
 		return topElement
 	}
 }
