@@ -109,6 +109,8 @@ export class Vanyl {
 						data._LIST_.vanyls[dataVanyl.vResult.key].topElement.remove()
 				}
 				data._LIST_.last = false
+				// data._LIST_.vanylsKeyless = [] // this will be [] with .pop()
+				data._LIST_.vanylsWithKey = []
 			}
 
 			if (arg instanceof VResult) {
@@ -155,6 +157,7 @@ export class Vanyl {
 					if (vanyl) {
 						// can raise when array gets non-same vResults with same keys
 						vanyl.updateWith(vResult)
+						data._LIST_.vanylsWithKey.push(vanyl)
 					} else if (vResult.key) {
 						vanyl = new Vanyl(vResult)
 						data._LIST_.vanyls[vanyl.vResult.key] = vanyl
