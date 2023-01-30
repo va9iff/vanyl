@@ -1,11 +1,14 @@
 dynamic text				+
-dynamic attributes			+
+dynamic attributes			-
 dynamic properties			+
 adding event listeners		+
-dynamic list views			+
+dynamic list views			++
 ? conditional views			+
 nested rendering			+
 ?!- routing					-
+
+2 way binding +
+
 
 
 ```js
