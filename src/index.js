@@ -221,19 +221,17 @@ export class Vanyl {
 	}
 	process() {
 		for (const data of this.datas) {
-			// console.log(this.topElement.hasAttribute("."))
 			data.element = this.topElement.hasAttribute(data.selector)
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
-			should.notNull(data.element)
+			should.notNull(data.element) // can be textnode if v`` isn't wrapped in a tag
+			data.element.removeAttribute(data.selector)
 			if (data.inTag) {
 				for (const [key, val] of Object.entries(this.vResult.args[data.i])) {
 					const $key = key.slice(1)
-					if (key[0] == "@") {
-						data.element.addEventListener($key, val)
-					} else if (key == "ref") {
-						val.element = data.element
-					} else if (val instanceof Lazy) {
+					if (key[0] == "@") data.element.addEventListener($key, val)
+					else if (key == "ref") val.element = data.element
+					else if (val instanceof Lazy) {
 						val.element = data.element
 						val.prop = key
 						val.element[val.prop] = val.initialValue
