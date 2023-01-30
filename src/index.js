@@ -53,38 +53,6 @@ export class Lazy {
 
 export const ref = (fun = () => fun.element ?? null) => fun
 
-// WE MAY NOT NEED __TEXT__ __PROPS__ __LIST__
-// JUST USE A LOGIC TO SWAP BETWEEN
-// obviously props will be different as it's in tag
-
-// each data will have 'element' prop to know the location in the dom (with wbr)
-// @process
-// if intag: data = {element: element, now: props} // `now` will also assigned to `remembers`
-
-//
-// if arg is array: data.now=arg
-// elif arg instanceof VResult: data.now = "__VRESULT__"
-// else data.now = "text"
-//
-// if data.remembers == data.now:
-//
-
-// __VRESULT__ __LIST__ __TEXT__
-
-// idk maybe use switch's not breaking cases
-
-// NO NO NO THIS ALL 3 IS 1!!
-// IN PROCESS, TAKE THE WBR AND CONVERT IT TO A TEXT NODE IN ALL 3.
-// USE THIS TEXT NODE TO USE `.after` FOR LISTS AND VRESULTS
-// USE THIS ITSELF FOR _TEXT_
-// WE DON'T HAVE TO SPLIT THEM.
-// if arg is array of vResults:
-// do the same thing. we got element, we got arg, just add few arrays in data object. not a problem.
-
-// so, initing a data will be same for all none-in-tag datas.
-// switch statement will be replaced with the conditionals in the init.
-// it will give the flexibility to switch args from list to single vResult to string.
-// they all need the same stuff to work.
 
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
@@ -130,19 +98,21 @@ export class Vanyl {
 				continue
 			}
 
-
-			// if rendered a list once, remove it everytime
 			if (data._LIST_?.last){
+				// if rendered List at least once and also the last time,
 				while (data._LIST_.vanylsKeyless.length > 0)
+					// remove all the keyless from last update
 					data._LIST_.vanylsKeyless.pop().topElement.remove()
-				for (const dataVanylKey in data._LIST_.vanyls){
-					if (!arg.some?.(_vResult => dataVanylKey == _vResult.key))
-						data._LIST_.vanyls[dataVanylKey].topElement.remove()
+				// remove last displaying keyed vanyls if arg doesn't have them
+				for (const dataVanyl of data._LIST_.vanylsWithKey){
+					if (!arg.some?.(_vResult => dataVanyl.vResult.key == _vResult.key))
+						data._LIST_.vanyls[dataVanyl.vResult.key].topElement.remove()
 				}
+				data._LIST_.last = false
 			}
 
-			/* this 3 can alter tho. once arg is list, then string */
 			if (arg instanceof VResult) {
+				// oh my... data._VRESULT_. hurts my eyes
 				data.element.nodeValue &&= '' // clear if there's any
 				data._VRESULT_ ??= { vanyls: [] }
 				if (data._VRESULT_.last?.vResult.isSame(arg))
@@ -168,11 +138,16 @@ export class Vanyl {
 				data.element.nodeValue &&= '' // clear if there's any
 
 				data._LIST_ ??= {
+					// this stores all the keyed vanyls in its keys.
+					// so that we can bring them back instead of recreating
 					vanyls: {},
+					// those 2 contains showing vanyls from last array update.
 					vanylsKeyless: [],
-					// vanylsDisplayin: []
+					vanylsWithKey: [],
+					// if the last call wasn't an array update, don't check for 
+					// removes as there's no added vanyls since last remove.
+					last: true
 				}
-				data._LIST_.last = arg
 				const frag = document.createDocumentFragment()
 
 				for (let vResult of arg) {
@@ -183,14 +158,15 @@ export class Vanyl {
 					} else if (vResult.key) {
 						vanyl = new Vanyl(vResult)
 						data._LIST_.vanyls[vanyl.vResult.key] = vanyl
+						data._LIST_.vanylsWithKey.push(vanyl)
 					} else {
 						vanyl = new Vanyl(vResult)
 						data._LIST_.vanylsKeyless.push(vanyl)
 					}
 					frag.appendChild(vanyl.topElement)
 				}
-				// console.log([...frag.childNodes])
 				data.element.after(frag)
+				data._LIST_.last = true
 			}
 			else {
 				// arg is whatever, assign as dynamic text
