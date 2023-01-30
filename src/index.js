@@ -18,7 +18,7 @@ class VResult {
 		;[this.strings, this.args] = [strings, args]
 	}
 	get key() {
-		return this.args[0].key
+		return this.args?.[0]?.key
 	}
 	get keep() {
 		return this.args[0].keep
@@ -104,11 +104,9 @@ export class Vanyl {
 			const string = vResult.strings[i]
 			html += string
 			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
-			const data = { selector: unique(), inTag: lt > gt }
+			const data = { selector: unique(), inTag: lt > gt, i }
 			if (data.inTag) html += ` ${data.selector} `
 			else html += ` <wbr ${data.selector}> `
-
-			data.i = i
 			this.datas.push(data)
 		}
 		html += vResult.strings.at(-1)
@@ -120,9 +118,6 @@ export class Vanyl {
 		for (const [i, data] of this.datas.entries()) {
 			const arg = vResultFresh.args[i]
 
-			/* this won't alter as you can't go to outside of a tag and inside, there's only _PROPS_*/
-			// we don't need a _PROPS_ namespace, dynamic props don't store anything.
-			// if this argument is in tag, just do the _PROP_ thing.
 			if (data.inTag) {
 				for (const [key, val] of Object.entries(arg)) {
 					const $key = key.slice(1)
@@ -133,6 +128,17 @@ export class Vanyl {
 					else data.element[key] = val
 				}
 				continue
+			}
+
+
+			// if rendered a list once, remove it everytime
+			if (data._LIST_?.last){
+				while (data._LIST_.vanylsKeyless.length > 0)
+					data._LIST_.vanylsKeyless.pop().topElement.remove()
+				for (const dataVanylKey in data._LIST_.vanyls){
+					if (!arg.some?.(_vResult => dataVanylKey == _vResult.key))
+						data._LIST_.vanyls[dataVanylKey].topElement.remove()
+				}
 			}
 
 			/* this 3 can alter tho. once arg is list, then string */
@@ -158,38 +164,21 @@ export class Vanyl {
 				data._VRESULT_.last = null
 			}
 
-			// if rendered a list once, remove it everytime
-			if (data._LIST_?.last){
-				while (data._LIST_.vanylsKeyless.length > 0)
-					data._LIST_.vanylsKeyless.pop().topElement.remove()
-				// for (const dataVanyl of Object.values(data._LIST_.vanyls))
-					// dataVanyl.topElement.remove()
-				// data._LIST_.last = false
-				for (const dataVanylKey in data._LIST_.vanyls){
-					if (!data._LIST_.some?.(_vResult => dataVanylKey == _vResult.key))
-						data._LIST_.vanyls[dataVanylKey].topElement.remove()
-				}
-			}
 			if (Array.isArray(arg)) {
-				// data.element.nodeValue = ''
 				data.element.nodeValue &&= '' // clear if there's any
 
-				// arg is the array of vResults
 				data._LIST_ ??= {
 					vanyls: {},
 					vanylsKeyless: [],
+					// vanylsDisplayin: []
 				}
 				data._LIST_.last = arg
 				const frag = document.createDocumentFragment()
 
-				// for (const dataVanylKey in data._LIST_.vanyls)
-					// if (!arg.some?.(_vResult => dataVanylKey == _vResult.key))
-						// data._LIST_.vanyls[dataVanylKey].topElement.remove()
-
 				for (let vResult of arg) {
-					vResult = /*VResult.ish*/ vResult
 					let vanyl = data._LIST_.vanyls[vResult.key] // take vResult in display
 					if (vanyl) {
+						// can raise when array gets non-same vResults with same keys
 						vanyl.updateWith(vResult)
 					} else if (vResult.key) {
 						vanyl = new Vanyl(vResult)
@@ -200,6 +189,7 @@ export class Vanyl {
 					}
 					frag.appendChild(vanyl.topElement)
 				}
+				// console.log([...frag.childNodes])
 				data.element.after(frag)
 			}
 			else {

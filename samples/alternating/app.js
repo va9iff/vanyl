@@ -3,9 +3,16 @@ import {Vanyl, v, create} from '/src/index.js'
 const r = ()=>Math.random()
 let arg = null
 let arr = [
-	v`<p ${{key: 9}}>and this list</p>`,
-	v`<p ${{key: 8}}>asdlfkj</p>`,
-	v`<p ${{key: 0}}>flaji</p>`,
+	v`<p ${{key: 9}}>and <input type="text"> this list</p>`,
+	v`<p ${{key: 8}}>asd <input type="text">lfkj</p>`,
+	v`<p ${{key: 0}}>KEYLESS <input type="text">ji</p>`,
+	]
+let arr2 = [
+	v`<p ${{key: 99}}>a2nd <input type="text"> this list</p>`,
+	v`<p ${{key: 88}}>asasdfd <input type="text">lfkj</p>`,
+	v`<p ${{key: 2}}>üeafsdasd <input type="text">lfkj</p>`,
+	v`<p ${{key: 84}}>asadsvd <input type="text">lfkj</p>`,
+	v`<p>keyless plain element <input type="text">ji</p>`,
 	]
 let mainView = ()=> v`
 	<div>
@@ -19,16 +26,21 @@ let mainView = ()=> v`
 			main.update()
 		}
 	}}>vResult</button>
-		<button ${{"@click":e=>{
+	<button ${{"@click":e=>{
 			arg = "Simple String. Wonderful"
 			main.update()
 		}
 	}}>String</button>
-		<button ${{"@click":e=>{
+	<button ${{"@click":e=>{
 			arg = arr
 			main.update()
 		}
 	}}>List</button>
+	<button ${{"@click":e=>{
+			arg = arr2
+			main.update()
+		}
+	}}>List2</button>
 		here's the result:
 		${arg}
 	</div>
