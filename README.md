@@ -1,6 +1,5 @@
 # The Most Vanilla Declarative UI Library
 
-
 Aside from built in 2 way data binding `lazy`, Vanyl doesn't have any knowledge about your data so, when it's changed, you should call update.
 
 ---
@@ -38,7 +37,7 @@ let main = () =>
 
 ---
 
-### `snippets/` Dynamic lists
+### `snippets/` Dynamic Lists
 
 ```js
 let data = [
@@ -49,6 +48,36 @@ let data = [
 let main = () =>
 	v`<ul>${data.map(prop => v`<li>${prop.item} - ${prop.cost}</li>`)}>/ul>`
 ```
+
+---
+
+### `snippets/` Components
+
+```js
+let user = prop => v`<div>
+	<p>user's name: ${prop.name}</p>
+	<p>this user's favorite color is ${prop.fav}</p>
+</div>`
+
+let main = () => v`<div>${user({name: "Violet", fav: "purpler"})}</div>`
+```
+
+### `snippets/` 2 Way Binding (lazy)
+
+```js
+let text = new Lazy("empty")
+
+let main = () => v`<div>
+	<input type="text" ${{value: text}}>
+
+	<p>the value of input right now is ${text.now}</p>
+
+	<button ${{"@click": e => text.now += "!"}}>add exclamation</button>
+</div>`
+```
+`text.now` will always return the value of the input, and setting `text.now = "string"` 
+will also sets the value of the input and doesn't require updates.
+Initial value will be set to the argument of `Lazy`.
 
 ---
 
@@ -67,7 +96,7 @@ let main = () => v`<div>${tabs[active] ?? "no such tab"}</div>`
 
 ---
 
-### `snippets/` Dynamic stable lists
+### `snippets/` Dynamic Stable Lists
 
 ```js
 let data = [
@@ -77,13 +106,44 @@ let data = [
 ]
 let main = () =>
 	v`<ul>${data.map(
-		prop => v`<li ${{ key: prop.id }}>
-		${prop.item} - ${prop.cost} <br>
-		your note - <input type="text">
-	</li>`
+		prop => v`
+		<li ${{ key: prop.id }}>
+			${prop.item} - ${prop.cost} <br>
+			your note - <input type="text">
+		</li>`
 	)}>/ul>`
 ```
 
 By using `key`, you can "bring the old element" in updates so, Avocado's input
 will always be the same and hold your note. You don't have to make its logic.
 As Vanilla as possible!
+
+---
+
+### `snippets/` Reference
+
+```js
+let btn1 = ref()
+
+let main = () => v`
+	<div>
+
+		<button ${{
+			ref: btn1,
+			"@click": e => {
+				alert('btn 1')
+			}
+		}}>I'm 1</button>
+
+		<button ${{
+			"@click": e => {
+				alert('btn 2')
+				btn1().click()
+			}
+		}}>I'm 2</button>
+
+	</div>`
+```
+
+Note that we call `btn1`. If the Vanyl that's reference was used in is initialized, 
+then it'll return to the element. Else, returns `null`
