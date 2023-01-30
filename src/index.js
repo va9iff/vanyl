@@ -73,7 +73,7 @@ export const ref = (fun = () => fun.element ?? null) => fun
 
 // idk maybe use switch's not breaking cases
 
-// NO NO NO THIS ALL 3 IS 1!! 
+// NO NO NO THIS ALL 3 IS 1!!
 // IN PROCESS, TAKE THE WBR AND CONVERT IT TO A TEXT NODE IN ALL 3.
 // USE THIS TEXT NODE TO USE `.after` FOR LISTS AND VRESULTS
 // USE THIS ITSELF FOR _TEXT_
@@ -85,7 +85,6 @@ export const ref = (fun = () => fun.element ?? null) => fun
 // switch statement will be replaced with the conditionals in the init.
 // it will give the flexibility to switch args from list to single vResult to string.
 // they all need the same stuff to work.
-
 
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
@@ -108,7 +107,7 @@ export class Vanyl {
 			const data = { selector: unique(), inTag: lt > gt }
 			if (data.inTag) html += ` ${data.selector} `
 			else html += ` <wbr ${data.selector}> `
-			
+
 			data.i = i
 			this.datas.push(data)
 		}
@@ -121,77 +120,94 @@ export class Vanyl {
 		for (const [i, data] of this.datas.entries()) {
 			const arg = vResultFresh.args[i]
 
-				/* this won't alter as you can't go to outside of a tag and inside, there's only _PROPS_*/
-				// we don't need a _PROPS_ namespace, dynamic props don't store anything.
-				// if this argument is in tag, just do the _PROP_ thing.
-				if (data.inTag){ // arg is dynamic props object
-					for (const [key, val] of Object.entries(arg)) {
-						const $key = key.slice(1)
-						if (val instanceof Lazy || key == "ref") "just stop"
-						else if (key[0] == ".")
-							if (val) data.element.classList.add($key)
-							else data.element.classList.remove($key)
-						else data.element[key] = val
-					}
-					continue
+			/* this won't alter as you can't go to outside of a tag and inside, there's only _PROPS_*/
+			// we don't need a _PROPS_ namespace, dynamic props don't store anything.
+			// if this argument is in tag, just do the _PROP_ thing.
+			if (data.inTag) {
+				for (const [key, val] of Object.entries(arg)) {
+					const $key = key.slice(1)
+					if (val instanceof Lazy || key == "ref") "just stop"
+					else if (key[0] == ".")
+						if (val) data.element.classList.add($key)
+						else data.element.classList.remove($key)
+					else data.element[key] = val
 				}
+				continue
+			}
 
-				/* this 3 can alter tho. once arg is list, then string */
-				if (arg instanceof VResult){ // arg is a vResult
-					data._VRESULT_ ??= {
-						// vanyl: new Vanyl(v`<wbr>`),
-						vanyls: [],
+			/* this 3 can alter tho. once arg is list, then string */
+			if (arg instanceof VResult) {
+				data.element.nodeValue &&= '' // clear if there's any
+				data._VRESULT_ ??= { vanyls: [] }
+				if (data._VRESULT_.last?.vResult.isSame(arg))
+					data._VRESULT_.last.updateWith(arg)
+				else {
+					data._VRESULT_.last?.topElement.remove()
+					data._VRESULT_.last = data._VRESULT_.vanyls.find(vanyl =>
+						vanyl.vResult.isSame(arg)
+					)
+					if (!data._VRESULT_.last) {
+						data._VRESULT_.last = new Vanyl(arg)
+						data._VRESULT_.vanyls.push(data._VRESULT_.last)
 					}
-					if (data._VRESULT_.vanyl?.vResult.isSame(arg)) data._VRESULT_.vanyl.updateWith(arg)
-					else {
-						data._VRESULT_.vanyl?.topElement.remove()
-						data._VRESULT_.vanyl = data._VRESULT_.vanyls.find(vanyl => vanyl.vResult.isSame(arg))
-						if (!data._VRESULT_.vanyl) {
-							data._VRESULT_.vanyl = new Vanyl(arg)
-							data._VRESULT_.vanyls.push(data._VRESULT_.vanyl)
-						}
-						data.element.after(data._VRESULT_.vanyl.topElement)
-					}
-					continue
-				} else if (data._VRESULT_?.vanyl){
-					data._VRESULT_.vanyl.topElement.remove()
-					data._VRESULT_.vanyl = null
+					data.element.after(data._VRESULT_.last.topElement)
 				}
-				
-				if (Array.isArray(arg)){ // arg is the array of vResults
-					data._LIST_ ??=	{
-						vanyls: {},
-						vanylsKeyless: [],
-					}
-					const frag = document.createDocumentFragment()
-					while (data._LIST_.vanylsKeyless.length > 0)
-						data._LIST_.vanylsKeyless.pop().topElement.remove()
+				continue
+			} else if (data._VRESULT_?.last) {
+				data._VRESULT_.last.topElement.remove()
+				data._VRESULT_.last = null
+			}
 
-					// (once a vanyl with a key was added it'll check every time to remove)
-					for (const dataVanylKey in data._LIST_.vanyls)
-						if (!arg.some(_vResult => dataVanylKey == _vResult.key))
-							data._LIST_.vanyls[dataVanylKey].topElement.remove()
+			// if rendered a list once, remove it everytime
+			if (data._LIST_?.last){
+				while (data._LIST_.vanylsKeyless.length > 0)
+					data._LIST_.vanylsKeyless.pop().topElement.remove()
+				// for (const dataVanyl of Object.values(data._LIST_.vanyls))
+					// dataVanyl.topElement.remove()
+				// data._LIST_.last = false
+				for (const dataVanylKey in data._LIST_.vanyls){
+					if (!data._LIST_.some?.(_vResult => dataVanylKey == _vResult.key))
+						data._LIST_.vanyls[dataVanylKey].topElement.remove()
+				}
+			}
+			if (Array.isArray(arg)) {
+				// data.element.nodeValue = ''
+				data.element.nodeValue &&= '' // clear if there's any
 
-					for (let vResult of arg) {
-						vResult = /*VResult.ish*/(vResult)
-						let vanyl = data._LIST_.vanyls[vResult.key] // take vResult in display
-						if (vanyl) {
-							vanyl.updateWith(vResult)
-						} else if (vResult.key) {
-							vanyl = new Vanyl(vResult)
-							data._LIST_.vanyls[vanyl.vResult.key] = vanyl
-						} else {
-							vanyl = new Vanyl(vResult)
-							data._LIST_.vanylsKeyless.push(vanyl)
-						}
-						frag.appendChild(vanyl.topElement)
+				// arg is the array of vResults
+				data._LIST_ ??= {
+					vanyls: {},
+					vanylsKeyless: [],
+				}
+				data._LIST_.last = arg
+				const frag = document.createDocumentFragment()
+
+				// for (const dataVanylKey in data._LIST_.vanyls)
+					// if (!arg.some?.(_vResult => dataVanylKey == _vResult.key))
+						// data._LIST_.vanyls[dataVanylKey].topElement.remove()
+
+				for (let vResult of arg) {
+					vResult = /*VResult.ish*/ vResult
+					let vanyl = data._LIST_.vanyls[vResult.key] // take vResult in display
+					if (vanyl) {
+						vanyl.updateWith(vResult)
+					} else if (vResult.key) {
+						vanyl = new Vanyl(vResult)
+						data._LIST_.vanyls[vanyl.vResult.key] = vanyl
+					} else {
+						vanyl = new Vanyl(vResult)
+						data._LIST_.vanylsKeyless.push(vanyl)
 					}
-					data.element.after(frag)
-					}
-					else { // arg is whatever, assign as dynamic text
-					data.element.nodeValue = arg
-					}
-			
+					frag.appendChild(vanyl.topElement)
+				}
+				data.element.after(frag)
+			}
+			else {
+				// arg is whatever, assign as dynamic text
+				data.element.nodeValue = arg
+				continue
+			}
+
 		}
 		return this
 	}
@@ -205,12 +221,12 @@ export class Vanyl {
 	}
 	process() {
 		for (const data of this.datas) {
-			console.log(this.topElement.hasAttribute('.'))
+			// console.log(this.topElement.hasAttribute("."))
 			data.element = this.topElement.hasAttribute(data.selector)
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
 			should.notNull(data.element)
-			 if (data.inTag) {
+			if (data.inTag) {
 				for (const [key, val] of Object.entries(this.vResult.args[data.i])) {
 					const $key = key.slice(1)
 					if (key[0] == "@") {
@@ -227,7 +243,7 @@ export class Vanyl {
 				const textNode = document.createTextNode(data.selector)
 				data.element.replaceWith(textNode)
 				data.element = textNode
-			} 
+			}
 		}
 	}
 	grabFirstChild(htmlString) {
