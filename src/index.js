@@ -1,17 +1,36 @@
 export const unique = ((counter = 0) => () => `V${counter++}`)()
 
-const should = new (class Sould {
+class VError extends Error {
+	name = 'VanylError';
+}
+
+class TypeVError extends TypeError{
+	name = 'VanylTypeError'
+}
+
+const expect = {
+	vResult(arg){
+		if (!(arg instanceof VResult))
+			throw new TypeVError('expected vResult. \n instead use v`` function.')
+	},
 	sameVResult(vResult1, vResult2) {
-		if (!vResult1.isSame(vResult2)) throw new Error(`should be same vResult ~V`)
-	}
+		if (!vResult1.isSame(vResult2)) throw new VError('expected same vResult')
+	},
 	notNull(val) {
-		if (val == null) throw new Error("should not be null ~V")
-	}
+		if (val == null) throw new VError("not expected null")
+	},
+	notNullish(val){
+		if (val == null || val == undefined) throw new VError("not expected nullish")
+	},
 	instanceof(instance, cls) {
 		if (!(instance instanceof cls))
-			throw new Error(`expected an instance of ${cls.name} ~V`)
-	}
-})()
+			throw new TypeVError(`expected an instance of ${cls.name || cls}`)
+	},
+	vResultAt(arg, i){
+		if (!(arg instanceof VResult)) 
+			throw new VError(`expected vResult for argument ${i} but got ${arg}`)
+	},
+}
 
 class VResult {
 	constructor(strings, ...args) {
@@ -101,7 +120,7 @@ export class Vanyl {
 		return html
 	}
 	updateWith(vResultFresh) {
-		should.sameVResult(this.vResult, vResultFresh)
+		expect.sameVResult(this.vResult, vResultFresh)
 		this.vResult = vResultFresh
 		for (const [i, data] of this.datas.entries()) {
 			const arg = vResultFresh.args[i]
@@ -213,7 +232,7 @@ export class Vanyl {
 			data.element = this.topElement.hasAttribute(data.selector)
 				? this.topElement
 				: this.topElement.querySelector(`[${data.selector}]`)
-			should.notNull(data.element) // can be textnode if v`` isn't wrapped in a tag
+			expect.notNull(data.element) // can be textnode if v`` isn't wrapped in a tag
 			data.element.removeAttribute(data.selector)
 			if (data.inTag) {
 				for (const [key, val] of Object.entries(this.vResult.args[data.i])) {
@@ -237,7 +256,7 @@ export class Vanyl {
 		const domik = new DOMParser().parseFromString(htmlString, "text/html")
 		const topElement = domik.body.firstChild
 		// console.log(topElement)
-		should.notNull(topElement) // !this can be text ndoe if no tag was provided
+		expect.notNull(topElement) // !this can be text ndoe if no tag was provided
 		return topElement
 	}
 }

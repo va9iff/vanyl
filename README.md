@@ -62,6 +62,8 @@ let user = prop => v`<div>
 let main = () => v`<div>${user({name: "Violet", fav: "purpler"})}</div>`
 ```
 
+---
+
 ### `snippets/` 2 Way Binding (lazy)
 
 ```js
@@ -145,5 +147,5 @@ let main = () => v`
 	</div>`
 ```
 
-Note that we call `btn1`. If the Vanyl that's reference was used in is initialized, 
-then it'll return to the element. Else, returns `null`
+Note that we call `btn1`. If the Vanyl that the reference was used in is 
+initialized, then it'll return to the element. Else, returns `null`.
