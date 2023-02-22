@@ -1,36 +1,41 @@
 export const unique = ((counter = 0) => () => `V${counter++}`)()
 
 class VError extends Error {
-	name = 'VanylError';
+	name = "VanylError"
 }
-
-class TypeVError extends TypeError{
-	name = 'VanylTypeError'
+class TypeVError extends TypeError {
+	name = "VanylTypeError"
 }
 
 const expect = {
-	vResult(arg){
+	vResult(arg) {
 		if (!(arg instanceof VResult))
-			throw new TypeVError('expected vResult. \n instead use v`` function.')
+			throw new TypeVError("expected vResult. \n instead use v`` function.")
 	},
 	sameVResult(vResult1, vResult2) {
-		if (!vResult1.isSame(vResult2)) throw new VError('expected same vResult')
+		if (!vResult1.isSame(vResult2)) throw new VError("expected same vResult")
 	},
 	notNull(val) {
 		if (val == null) throw new VError("not expected null")
 	},
-	oneChildElementCount(element){
-		if (element.childElementCount != 1) throw new VError(`expected 1 wrapped top element (got ${element.childElementCount}): \n${element.innerHTML.slice(0,30)}...`)
+	oneChildElementCount(element) {
+		if (element.childElementCount != 1)
+			throw new VError(
+				`expected 1 wrapped top element (got ${
+					element.childElementCount
+				}): \n${element.innerHTML.slice(0, 30)}...`
+			)
 	},
-	notNullish(val){
-		if (val == null || val == undefined) throw new VError("not expected nullish")
+	notNullish(val) {
+		if (val == null || val == undefined)
+			throw new VError("not expected nullish")
 	},
 	instanceof(instance, cls) {
 		if (!(instance instanceof cls))
 			throw new TypeVError(`expected an instance of ${cls.name || cls}`)
 	},
-	vResultAt(arg, i){
-		if (!(arg instanceof VResult)) 
+	vResultAt(arg, i) {
+		if (!(arg instanceof VResult))
 			throw new VError(`expected vResult for argument ${i} but got ${arg}`)
 	},
 }
@@ -74,7 +79,6 @@ export class Lazy {
 }
 
 export const ref = (fun = () => fun.element ?? null) => fun
-
 
 /*
 	LIST STILL CAN ONLY ACCAPET ARRAY OF vResult
@@ -142,13 +146,13 @@ export class Vanyl {
 				continue
 			}
 
-			if (data._LIST_?.last){
-				// if rendered List at least once and also the last time,
+			// if rendered List at least once and also the last time,
+			if (data._LIST_?.last) {
+				// remove all the keyless from last update
 				while (data._LIST_.vanylsKeyless.length > 0)
-					// remove all the keyless from last update
 					data._LIST_.vanylsKeyless.pop().topElement.remove()
 				// remove last displaying keyed vanyls if arg doesn't have them
-				for (const dataVanyl of data._LIST_.vanylsWithKey){
+				for (const dataVanyl of data._LIST_.vanylsWithKey) {
 					if (!arg.some?.(_vResult => dataVanyl.vResult.key == _vResult.key))
 						data._LIST_.vanyls[dataVanyl.vResult.key].topElement.remove()
 				}
@@ -159,7 +163,7 @@ export class Vanyl {
 
 			if (arg instanceof VResult) {
 				// oh my... data._VRESULT_. hurts my eyes
-				data.element.nodeValue &&= '' // clear if there's any
+				data.element.nodeValue &&= "" // clear if there's any
 				data._VRESULT_ ??= { vanyls: [] }
 				if (data._VRESULT_.last?.vResult.isSame(arg))
 					data._VRESULT_.last.updateWith(arg)
@@ -181,7 +185,7 @@ export class Vanyl {
 			}
 
 			if (Array.isArray(arg)) {
-				data.element.nodeValue &&= '' // clear if there's any
+				data.element.nodeValue &&= "" // clear if there's any
 
 				data._LIST_ ??= {
 					// this stores all the keyed vanyls in its keys.
@@ -190,9 +194,9 @@ export class Vanyl {
 					// those 2 contains showing vanyls from last array update.
 					vanylsKeyless: [],
 					vanylsWithKey: [],
-					// if the last call wasn't an array update, don't check for 
+					// if the last call wasn't an array update, don't check for
 					// removes as there's no added vanyls since last remove.
-					last: true
+					last: true,
 				}
 				const frag = document.createDocumentFragment()
 
@@ -214,13 +218,11 @@ export class Vanyl {
 				}
 				data.element.after(frag)
 				data._LIST_.last = true
-			}
-			else {
+			} else {
 				// arg is whatever, assign as dynamic text
 				data.element.nodeValue = arg
 				continue
 			}
-
 		}
 		return this
 	}
