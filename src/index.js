@@ -99,6 +99,29 @@ export const ref = (fun = () => fun.element ?? null) => fun
 
 	probably won't change it. may only add a few cleanings and optimizations.
 */
+function prettyPropsInit(propsObj, element){
+	for (const [key, val] of Object.entries(propsObj)) {
+		const $key = key.slice(1)
+		if (key[0] == "@") element.addEventListener($key, val)
+		else if (key == "ref") val.element = element
+		else if (val instanceof Lazy) {
+			val.element = element
+			val.prop = key
+			val.element[val.prop] = val.initialValue
+		}
+	}
+}
+function prettyPropsUpdate(propsObj, element) {
+	for (const [key, val] of Object.entries(arg)) {
+		const $key = key.slice(1)
+		if (val instanceof Lazy || key == "ref") "just stop"
+		else if (key[0] == ".")
+			if (val) element.classList.add($key)
+			else element.classList.remove($key)
+		else element[key] = val
+	}
+}
+
 
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
@@ -135,14 +158,7 @@ export class Vanyl {
 			const arg = vResultFresh.args[data.i]
 
 			if (data.inTag) {
-				for (const [key, val] of Object.entries(arg)) {
-					const $key = key.slice(1)
-					if (val instanceof Lazy || key == "ref") "just stop"
-					else if (key[0] == ".")
-						if (val) data.element.classList.add($key)
-						else data.element.classList.remove($key)
-					else data.element[key] = val
-				}
+				prettyPropsUpdate(arg,data.element)
 				continue
 			}
 
@@ -241,18 +257,8 @@ export class Vanyl {
 				: this.topElement.querySelector(`[${data.selector}]`)
 			expect.notNull(data.element) // can be textnode if v`` isn't wrapped in a tag
 			data.element.removeAttribute(data.selector)
-			if (data.inTag) {
-				for (const [key, val] of Object.entries(vResult.args[data.i])) {
-					const $key = key.slice(1)
-					if (key[0] == "@") data.element.addEventListener($key, val)
-					else if (key == "ref") val.element = data.element
-					else if (val instanceof Lazy) {
-						val.element = data.element
-						val.prop = key
-						val.element[val.prop] = val.initialValue
-					}
-				}
-			} else {
+			if (data.inTag) prettyPropsInit(vResult.args[data.i], data.element)
+			else {
 				const textNode = document.createTextNode(data.selector)
 				data.element.replaceWith(textNode)
 				data.element = textNode
@@ -264,10 +270,7 @@ export class Vanyl {
 
 		expect.oneChildElementCount(domik.body)
 		const topElement = domik.body.children[0]
-		// console.log(topElement)
-		expect.notNull(topElement) // !this can be text ndoe if no tag was provided
-		// !won't be a text node. children only includes elements.
-		// also won't be null ever. as we check to have one child element. no more, no less.
+		expect.notNull(topElement) // lets keep to see if it will rise ever.
 		return topElement
 	}
 }
