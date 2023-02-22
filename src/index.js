@@ -95,10 +95,12 @@ export const ref = (fun = () => fun.element ?? null) => fun
 
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
-		this.vResult = vResult
 		this.html = this.initHTML(vResult)
 		this.topElement = this.grabFirstChild(this.html)
-		this.process()
+
+		this.vResult = vResult
+		this.process(vResult)
+
 		this.updateWith(vResult)
 	}
 	vFun() {
@@ -122,8 +124,8 @@ export class Vanyl {
 	updateWith(vResultFresh) {
 		expect.sameVResult(this.vResult, vResultFresh)
 		this.vResult = vResultFresh
-		for (const [i, data] of this.datas.entries()) {
-			const arg = vResultFresh.args[i]
+		for (const data of this.datas) {
+			const arg = vResultFresh.args[data.i]
 
 			if (data.inTag) {
 				for (const [key, val] of Object.entries(arg)) {
@@ -227,7 +229,7 @@ export class Vanyl {
 		vanyl.vFun = vFun
 		return vanyl
 	}
-	process() {
+	process(vResult) {
 		for (const data of this.datas) {
 			data.element = this.topElement.hasAttribute(data.selector)
 				? this.topElement
@@ -235,7 +237,7 @@ export class Vanyl {
 			expect.notNull(data.element) // can be textnode if v`` isn't wrapped in a tag
 			data.element.removeAttribute(data.selector)
 			if (data.inTag) {
-				for (const [key, val] of Object.entries(this.vResult.args[data.i])) {
+				for (const [key, val] of Object.entries(vResult.args[data.i])) {
 					const $key = key.slice(1)
 					if (key[0] == "@") data.element.addEventListener($key, val)
 					else if (key == "ref") val.element = data.element
