@@ -1,4 +1,4 @@
-import {Vanyl, vanyl, v, create, Lazy, unique, ref} from '/src/index.js'
+import {Vanyl, v, create, Lazy, unique, ref} from '/src/index.js'
 
 let a1 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
 let a2 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
@@ -121,7 +121,7 @@ setInterval(()=>{
 	state.disabled = !state.disabled
 	state.data1++
 	// console.log(arr)
-	// div.update()
+	div.update()
 }, 1000)
 
 

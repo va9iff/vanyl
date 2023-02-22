@@ -272,12 +272,5 @@ export class Vanyl {
 	}
 }
 
-export class vanyl extends Vanyl {
-	constructor(vFun) {
-		const vResult = vFun()
-		super(vResult)
-		this.vFun = vFun
-	}
-}
 
 export const create = vFun => Vanyl.fromVFun(vFun)
