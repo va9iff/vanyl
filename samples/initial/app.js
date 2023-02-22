@@ -78,7 +78,10 @@ let myView = props => {
 							// v`<b>3</b>`
 
 	return v`
+	this won't be taken with .firstChild
 <div ${{j:9}}>
+	${'this may break'} - ${v`<i>lkdj</i>`}
+
 	<p>
 	  that's an ${state.data1} test for ${5487} so yeah
 	</p>
@@ -105,7 +108,7 @@ let myView = props => {
 	${users.map(props=>userComponent(props))}
 	this will be displayed, but,
 </div>
-<i>this won't</i>
+<!-- <i>this would raise error</i> -->
 and yes it works
 `
 }
@@ -118,7 +121,7 @@ setInterval(()=>{
 	state.disabled = !state.disabled
 	state.data1++
 	// console.log(arr)
-	div.update()
+	// div.update()
 }, 1000)
 
 

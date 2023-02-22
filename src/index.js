@@ -19,6 +19,9 @@ const expect = {
 	notNull(val) {
 		if (val == null) throw new VError("not expected null")
 	},
+	oneChildElementCount(element){
+		if (element.childElementCount != 1) throw new VError(`expected 1 wrapped top element (got ${element.childElementCount}): \n${element.innerHTML.slice(0,30)}...`)
+	},
 	notNullish(val){
 		if (val == null || val == undefined) throw new VError("not expected nullish")
 	},
@@ -256,9 +259,13 @@ export class Vanyl {
 	}
 	grabFirstChild(htmlString) {
 		const domik = new DOMParser().parseFromString(htmlString, "text/html")
-		const topElement = domik.body.firstChild
+
+		expect.oneChildElementCount(domik.body)
+		const topElement = domik.body.children[0]
 		// console.log(topElement)
 		expect.notNull(topElement) // !this can be text ndoe if no tag was provided
+		// !won't be a text node. children only includes elements.
+		// also won't be null ever. as we check to have one child element. no more, no less.
 		return topElement
 	}
 }
