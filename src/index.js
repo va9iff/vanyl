@@ -110,7 +110,7 @@ export class Vanyl {
 					data.list.vanylsKeylessLast.pop().root.remove()
 				// remove last displaying keyed vanyls if arg doesn't have them
 				for (const dataVanyl of data.list.vanylsKeyedLast) {
-					if (!arg.some?.(_vResult => dataVanyl.vResult.key == _vResult.key))
+					if (arg.every?.(_vResult => dataVanyl.vResult.key != _vResult.key))
 						data.list.vanylsKeyed[dataVanyl.vResult.key].root.remove()
 				}
 				data.list.last = false
