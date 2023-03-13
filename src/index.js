@@ -112,7 +112,7 @@ function prettyPropsInit(propsObj, element){
 	}
 }
 function prettyPropsUpdate(propsObj, element) {
-	for (const [key, val] of Object.entries(arg)) {
+	for (const [key, val] of Object.entries(propsObj)) {
 		const $key = key.slice(1)
 		if (val instanceof Lazy || key == "ref") "just stop"
 		else if (key[0] == ".")
