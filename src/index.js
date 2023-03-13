@@ -96,7 +96,7 @@ export class Vanyl {
 		expect.sameVResult?.(this.vResult, vResultFresh)
 		this.vResult = vResultFresh
 		for (const data of this.datas) {
-			const arg = vResultFresh.args[data.i]
+			const arg = this.vResult.args[data.i]
 
 			if (data.inTag) {
 				prettyPropsUpdate(arg,data.element)
@@ -106,16 +106,16 @@ export class Vanyl {
 			// if rendered List at least once and also the last time,
 			if (data.list?.last) {
 				// remove all keyless from last update
-				while (data.list.vanylsLastKeyless.length > 0)
-					data.list.vanylsLastKeyless.pop().root.remove()
+				while (data.list.vanylsKeylessLast.length > 0)
+					data.list.vanylsKeylessLast.pop().root.remove()
 				// remove last displaying keyed vanyls if arg doesn't have them
-				for (const dataVanyl of data.list.vanylsLastKeyed) {
+				for (const dataVanyl of data.list.vanylsKeyedLast) {
 					if (!arg.some?.(_vResult => dataVanyl.vResult.key == _vResult.key))
 						data.list.vanylsKeyed[dataVanyl.vResult.key].root.remove()
 				}
 				data.list.last = false
-				// data.list.vanylsLastKeyless = [] // this will be [] with .pop()
-				data.list.vanylsLastKeyed = []
+				// data.list.vanylsKeylessLast = [] // this will be [] with .pop()
+				data.list.vanylsKeyedLast = []
 			}
 
 			if (arg instanceof VResult) {
@@ -146,8 +146,8 @@ export class Vanyl {
 
 				data.list ??= {
 					vanylsKeyed: {},
-					vanylsLastKeyless: [],
-					vanylsLastKeyed: [],
+					vanylsKeylessLast: [],
+					vanylsKeyedLast: [],
 					// if the last call wasn't an array update, don't check for
 					// removes as there's no added vanyls since last remove.
 					last: true,
@@ -159,14 +159,14 @@ export class Vanyl {
 					if (vanyl) {
 						// can raise when array gets non-same vResults with same keys
 						vanyl.updateWith(vResult)
-						data.list.vanylsLastKeyed.push(vanyl)
+						data.list.vanylsKeyedLast.push(vanyl)
 					} else if (vResult.key) {
 						vanyl = new Vanyl(vResult)
 						data.list.vanylsKeyed[vanyl.vResult.key] = vanyl
-						data.list.vanylsLastKeyed.push(vanyl)
+						data.list.vanylsKeyedLast.push(vanyl)
 					} else {
 						vanyl = new Vanyl(vResult)
-						data.list.vanylsLastKeyless.push(vanyl)
+						data.list.vanylsKeylessLast.push(vanyl)
 					}
 					frag.appendChild(vanyl.root)
 				}
