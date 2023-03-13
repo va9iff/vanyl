@@ -1,7 +1,7 @@
 export const unique = ((counter = 0) => () => `V${counter++}`)()
 
 import {expect} from "./expect.js"
-// const expect = {} // weird way to remove import for being single file
+// const expect = {} // weird way to remove optional object to be a single file
 
 class VResult {
 	constructor(strings, ...args) {
@@ -40,25 +40,6 @@ export class Lazy {
 
 export const ref = (fun = () => fun.element ?? null) => fun
 
-/*
-	LIST STILL CAN ONLY ACCAPET ARRAY OF vResult
-	tbh I don't think we should modify this.
-	or maybe use array of text nodes.
-	OR MAYBE WE DON'T HAVE TO WRAP EVERYTHING TO 1 ELEMENT
-	IT CAN BE textNode AND QUERYING WILL BE FROM PARENT CHILD
-	well, technically we won't have multiple elements.
-	it just lets us to use something like v`hola`
-
-	wrapping all to 1 element is nice and is the the core thing that made this so vanilla.
-	we need to give a proper error to use v`` wrapped 1 html element.
-
-	but really using this.root.parentNode.querySelector(data.selector)
-	may be a good idea to be able to use v`` as a text node. but I don't know
-	if it worth to do it only for this little stuff. and can we use <wbr/> in a
-	text node? 
-
-	probably won't change it. may only add a few cleanings and optimizations.
-*/
 function prettyPropsInit(propsObj, element){
 	for (const [key, val] of Object.entries(propsObj)) {
 		const $key = key.slice(1)
@@ -86,7 +67,7 @@ function prettyPropsUpdate(propsObj, element) {
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
 		this.html = this.initHTML(vResult)
-		this.root = this.grabFirstChild(this.html)
+		this.root = this.getRoot(this.html)
 
 		this.vResult = vResult
 		this.process(vResult)
@@ -225,9 +206,8 @@ export class Vanyl {
 			}
 		}
 	}
-	grabFirstChild(htmlString) {
+	getRoot(htmlString){
 		const domik = new DOMParser().parseFromString(htmlString, "text/html")
-
 		expect.oneChildElementCount?.(domik.body)
 		const root = domik.body.children[0]
 		expect.notNull?.(root) // lets keep to see if it will rise ever.
