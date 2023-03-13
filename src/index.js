@@ -1,6 +1,7 @@
 export const unique = ((counter = 0) => () => `V${counter++}`)()
-import {expect} from "./expect.js"
 
+import {expect} from "./expect.js"
+// const expect = {} // weird way to remove import for being single file
 
 class VResult {
 	constructor(strings, ...args) {
@@ -17,9 +18,6 @@ class VResult {
 			this.strings.length == _vResult.strings.length &&
 			this.strings.every((s, i) => this.strings[i] == _vResult.strings[i])
 		)
-	}
-	isSameish(_vResult) {
-		return _vResult instanceof this.constructor && this.isSame(_vResult)
 	}
 	static ish(arg) {
 		return arg instanceof VResult ? arg : v`${arg}`
@@ -54,7 +52,7 @@ export const ref = (fun = () => fun.element ?? null) => fun
 	wrapping all to 1 element is nice and is the the core thing that made this so vanilla.
 	we need to give a proper error to use v`` wrapped 1 html element.
 
-	but really using this.topElement.parentNode.querySelector(data.selector)
+	but really using this.root.parentNode.querySelector(data.selector)
 	may be a good idea to be able to use v`` as a text node. but I don't know
 	if it worth to do it only for this little stuff. and can we use <wbr/> in a
 	text node? 
@@ -88,7 +86,7 @@ function prettyPropsUpdate(propsObj, element) {
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
 		this.html = this.initHTML(vResult)
-		this.topElement = this.grabFirstChild(this.html)
+		this.root = this.grabFirstChild(this.html)
 
 		this.vResult = vResult
 		this.process(vResult)
@@ -114,7 +112,7 @@ export class Vanyl {
 		return html
 	}
 	updateWith(vResultFresh) {
-		expect.sameVResult(this.vResult, vResultFresh)
+		expect.sameVResult?.(this.vResult, vResultFresh)
 		this.vResult = vResultFresh
 		for (const data of this.datas) {
 			const arg = vResultFresh.args[data.i]
@@ -128,11 +126,11 @@ export class Vanyl {
 			if (data._LIST_?.last) {
 				// remove all the keyless from last update
 				while (data._LIST_.vanylsKeyless.length > 0)
-					data._LIST_.vanylsKeyless.pop().topElement.remove()
+					data._LIST_.vanylsKeyless.pop().root.remove()
 				// remove last displaying keyed vanyls if arg doesn't have them
 				for (const dataVanyl of data._LIST_.vanylsWithKey) {
 					if (!arg.some?.(_vResult => dataVanyl.vResult.key == _vResult.key))
-						data._LIST_.vanyls[dataVanyl.vResult.key].topElement.remove()
+						data._LIST_.vanyls[dataVanyl.vResult.key].root.remove()
 				}
 				data._LIST_.last = false
 				// data._LIST_.vanylsKeyless = [] // this will be [] with .pop()
@@ -146,7 +144,7 @@ export class Vanyl {
 				if (data._VRESULT_.last?.vResult.isSame(arg))
 					data._VRESULT_.last.updateWith(arg)
 				else {
-					data._VRESULT_.last?.topElement.remove()
+					data._VRESULT_.last?.root.remove()
 					data._VRESULT_.last = data._VRESULT_.vanyls.find(vanyl =>
 						vanyl.vResult.isSame(arg)
 					)
@@ -154,11 +152,11 @@ export class Vanyl {
 						data._VRESULT_.last = new Vanyl(arg)
 						data._VRESULT_.vanyls.push(data._VRESULT_.last)
 					}
-					data.element.after(data._VRESULT_.last.topElement)
+					data.element.after(data._VRESULT_.last.root)
 				}
 				continue
 			} else if (data._VRESULT_?.last) {
-				data._VRESULT_.last.topElement.remove()
+				data._VRESULT_.last.root.remove()
 				data._VRESULT_.last = null
 			}
 
@@ -192,7 +190,7 @@ export class Vanyl {
 						vanyl = new Vanyl(vResult)
 						data._LIST_.vanylsKeyless.push(vanyl)
 					}
-					frag.appendChild(vanyl.topElement)
+					frag.appendChild(vanyl.root)
 				}
 				data.element.after(frag)
 				data._LIST_.last = true
@@ -214,10 +212,10 @@ export class Vanyl {
 	}
 	process(vResult) {
 		for (const data of this.datas) {
-			data.element = this.topElement.hasAttribute(data.selector)
-				? this.topElement
-				: this.topElement.querySelector(`[${data.selector}]`)
-			expect.notNull(data.element) // can be textnode if v`` isn't wrapped in a tag
+			data.element = this.root.hasAttribute(data.selector)
+				? this.root
+				: this.root.querySelector(`[${data.selector}]`)
+			expect.notNull?.(data.element) // can be textnode if v`` isn't wrapped in a tag
 			data.element.removeAttribute(data.selector)
 			if (data.inTag) prettyPropsInit(vResult.args[data.i], data.element)
 			else {
@@ -230,10 +228,10 @@ export class Vanyl {
 	grabFirstChild(htmlString) {
 		const domik = new DOMParser().parseFromString(htmlString, "text/html")
 
-		expect.oneChildElementCount(domik.body)
-		const topElement = domik.body.children[0]
-		expect.notNull(topElement) // lets keep to see if it will rise ever.
-		return topElement
+		expect.oneChildElementCount?.(domik.body)
+		const root = domik.body.children[0]
+		expect.notNull?.(root) // lets keep to see if it will rise ever.
+		return root
 	}
 }
 

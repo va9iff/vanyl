@@ -57,4 +57,4 @@ let mainView = ()=> v`
 
 
 let main = create(mainView)
-document.body.appendChild(main.topElement)
+document.body.appendChild(main.root)

@@ -19,7 +19,7 @@ let mainView = (props = "main") => v`
 `
 
 let main = create(mainView)
-document.body.appendChild(main.topElement)
+document.body.appendChild(main.root)
 main.update()	
 
 setInterval(()=>main.update(), 2000)

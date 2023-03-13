@@ -114,7 +114,7 @@ and yes it works
 }
 
 let div = create(myView)
-document.body.appendChild(div.topElement)
+document.body.appendChild(div.root)
 
 setInterval(()=>{
 	state.value += (Math.random()+'')[3]
