@@ -65,19 +65,19 @@ function prettyPropsUpdate(propsObj, element) {
 
 
 function markHtml(vResult) {
-		let [html, datas, lt, gt] = ["", [], 0, 0]
-		for (const [i, arg] of vResult.args.entries()) {
-			const string = vResult.strings[i]
-			html += string
-			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
-			const data = { selector: unique(), inTag: lt > gt, i }
-			if (data.inTag) html += ` ${data.selector} `
-			else html += ` <wbr ${data.selector}> `
-			datas.push(data)
-		}
-		html += vResult.strings.at(-1)
-		return [html, datas]
+	let [html, datas, lt, gt] = ["", [], 0, 0]
+	for (const [i, arg] of vResult.args.entries()) {
+		const string = vResult.strings[i]
+		html += string
+		;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
+		const data = { selector: unique(), inTag: lt > gt, i }
+		if (data.inTag) html += ` ${data.selector} `
+		else html += ` <wbr ${data.selector}> `
+		datas.push(data)
 	}
+	html += vResult.strings.at(-1)
+	return [html, datas]
+}
 
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
@@ -105,17 +105,17 @@ export class Vanyl {
 
 			// if rendered List at least once and also the last time,
 			if (data._LIST_?.last) {
-				// remove all the keyless from last update
-				while (data._LIST_.vanylsKeyless.length > 0)
-					data._LIST_.vanylsKeyless.pop().root.remove()
+				// remove all keyless from last update
+				while (data._LIST_.vanylsLastKeyless.length > 0)
+					data._LIST_.vanylsLastKeyless.pop().root.remove()
 				// remove last displaying keyed vanyls if arg doesn't have them
-				for (const dataVanyl of data._LIST_.vanylsWithKey) {
+				for (const dataVanyl of data._LIST_.vanylsLastKeyed) {
 					if (!arg.some?.(_vResult => dataVanyl.vResult.key == _vResult.key))
-						data._LIST_.vanyls[dataVanyl.vResult.key].root.remove()
+						data._LIST_.vanylsKeyed[dataVanyl.vResult.key].root.remove()
 				}
 				data._LIST_.last = false
-				// data._LIST_.vanylsKeyless = [] // this will be [] with .pop()
-				data._LIST_.vanylsWithKey = []
+				// data._LIST_.vanylsLastKeyless = [] // this will be [] with .pop()
+				data._LIST_.vanylsLastKeyed = []
 			}
 
 			if (arg instanceof VResult) {
@@ -145,12 +145,9 @@ export class Vanyl {
 				data.element.nodeValue &&= "" // clear if there's any
 
 				data._LIST_ ??= {
-					// this stores all the keyed vanyls in its keys.
-					// so that we can bring them back instead of recreating
-					vanyls: {},
-					// those 2 contains showing vanyls from last array update.
-					vanylsKeyless: [],
-					vanylsWithKey: [],
+					vanylsKeyed: {},
+					vanylsLastKeyless: [],
+					vanylsLastKeyed: [],
 					// if the last call wasn't an array update, don't check for
 					// removes as there's no added vanyls since last remove.
 					last: true,
@@ -158,18 +155,18 @@ export class Vanyl {
 				const frag = document.createDocumentFragment()
 
 				for (let vResult of arg) {
-					let vanyl = data._LIST_.vanyls[vResult.key] // take vResult in display
+					let vanyl = data._LIST_.vanylsKeyed[vResult.key] // take vResult in display
 					if (vanyl) {
 						// can raise when array gets non-same vResults with same keys
 						vanyl.updateWith(vResult)
-						data._LIST_.vanylsWithKey.push(vanyl)
+						data._LIST_.vanylsLastKeyed.push(vanyl)
 					} else if (vResult.key) {
 						vanyl = new Vanyl(vResult)
-						data._LIST_.vanyls[vanyl.vResult.key] = vanyl
-						data._LIST_.vanylsWithKey.push(vanyl)
+						data._LIST_.vanylsKeyed[vanyl.vResult.key] = vanyl
+						data._LIST_.vanylsLastKeyed.push(vanyl)
 					} else {
 						vanyl = new Vanyl(vResult)
-						data._LIST_.vanylsKeyless.push(vanyl)
+						data._LIST_.vanylsLastKeyless.push(vanyl)
 					}
 					frag.appendChild(vanyl.root)
 				}
@@ -197,7 +194,7 @@ export class Vanyl {
 				? this.root
 				: this.root.querySelector(`[${data.selector}]`)
 			expect.notNull?.(data.element) // can be textnode if v`` isn't wrapped in a tag
-			data.element.removeAttribute(data.selector)
+			// data.element.removeAttribute(data.selector)
 			if (data.inTag) prettyPropsInit(vResult.args[data.i], data.element)
 			else {
 				const textNode = document.createTextNode(data.selector)
