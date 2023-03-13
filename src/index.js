@@ -64,9 +64,24 @@ function prettyPropsUpdate(propsObj, element) {
 }
 
 
+function markHtml(vResult) {
+		let [html, datas, lt, gt] = ["", [], 0, 0]
+		for (const [i, arg] of vResult.args.entries()) {
+			const string = vResult.strings[i]
+			html += string
+			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
+			const data = { selector: unique(), inTag: lt > gt, i }
+			if (data.inTag) html += ` ${data.selector} `
+			else html += ` <wbr ${data.selector}> `
+			datas.push(data)
+		}
+		html += vResult.strings.at(-1)
+		return [html, datas]
+	}
+
 export class Vanyl {
 	constructor(vResult = v`<b>empty v</b>`) {
-		this.html = this.initHTML(vResult)
+		[this.html, this.datas] = markHtml(vResult)
 		this.root = this.getRoot(this.html)
 
 		this.vResult = vResult
@@ -76,21 +91,6 @@ export class Vanyl {
 	}
 	vFun() {
 		return v`V~${this.constructor.name}`
-	}
-	datas = []
-	initHTML(vResult) {
-		let [html, lt, gt] = ["", 0, 0]
-		for (const [i, arg] of vResult.args.entries()) {
-			const string = vResult.strings[i]
-			html += string
-			;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
-			const data = { selector: unique(), inTag: lt > gt, i }
-			if (data.inTag) html += ` ${data.selector} `
-			else html += ` <wbr ${data.selector}> `
-			this.datas.push(data)
-		}
-		html += vResult.strings.at(-1)
-		return html
 	}
 	updateWith(vResultFresh) {
 		expect.sameVResult?.(this.vResult, vResultFresh)
