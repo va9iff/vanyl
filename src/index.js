@@ -104,47 +104,47 @@ export class Vanyl {
 			}
 
 			// if rendered List at least once and also the last time,
-			if (data._LIST_?.last) {
+			if (data.list?.last) {
 				// remove all keyless from last update
-				while (data._LIST_.vanylsLastKeyless.length > 0)
-					data._LIST_.vanylsLastKeyless.pop().root.remove()
+				while (data.list.vanylsLastKeyless.length > 0)
+					data.list.vanylsLastKeyless.pop().root.remove()
 				// remove last displaying keyed vanyls if arg doesn't have them
-				for (const dataVanyl of data._LIST_.vanylsLastKeyed) {
+				for (const dataVanyl of data.list.vanylsLastKeyed) {
 					if (!arg.some?.(_vResult => dataVanyl.vResult.key == _vResult.key))
-						data._LIST_.vanylsKeyed[dataVanyl.vResult.key].root.remove()
+						data.list.vanylsKeyed[dataVanyl.vResult.key].root.remove()
 				}
-				data._LIST_.last = false
-				// data._LIST_.vanylsLastKeyless = [] // this will be [] with .pop()
-				data._LIST_.vanylsLastKeyed = []
+				data.list.last = false
+				// data.list.vanylsLastKeyless = [] // this will be [] with .pop()
+				data.list.vanylsLastKeyed = []
 			}
 
 			if (arg instanceof VResult) {
-				// oh my... data._VRESULT_. hurts my eyes
+				// oh my... data.vResult. hurts my eyes
 				data.element.nodeValue &&= "" // clear if there's any
-				data._VRESULT_ ??= { vanyls: [] }
-				if (data._VRESULT_.last?.vResult.isSame(arg))
-					data._VRESULT_.last.updateWith(arg)
+				data.vResult ??= { vanyls: [] }
+				if (data.vResult.last?.vResult.isSame(arg))
+					data.vResult.last.updateWith(arg)
 				else {
-					data._VRESULT_.last?.root.remove()
-					data._VRESULT_.last = data._VRESULT_.vanyls.find(vanyl =>
+					data.vResult.last?.root.remove()
+					data.vResult.last = data.vResult.vanyls.find(vanyl =>
 						vanyl.vResult.isSame(arg)
 					)
-					if (!data._VRESULT_.last) {
-						data._VRESULT_.last = new Vanyl(arg)
-						data._VRESULT_.vanyls.push(data._VRESULT_.last)
+					if (!data.vResult.last) {
+						data.vResult.last = new Vanyl(arg)
+						data.vResult.vanyls.push(data.vResult.last)
 					}
-					data.element.after(data._VRESULT_.last.root)
+					data.element.after(data.vResult.last.root)
 				}
 				continue
-			} else if (data._VRESULT_?.last) {
-				data._VRESULT_.last.root.remove()
-				data._VRESULT_.last = null
+			} else if (data.vResult?.last) {
+				data.vResult.last.root.remove()
+				data.vResult.last = null
 			}
 
 			if (Array.isArray(arg)) {
 				data.element.nodeValue &&= "" // clear if there's any
 
-				data._LIST_ ??= {
+				data.list ??= {
 					vanylsKeyed: {},
 					vanylsLastKeyless: [],
 					vanylsLastKeyed: [],
@@ -155,23 +155,23 @@ export class Vanyl {
 				const frag = document.createDocumentFragment()
 
 				for (let vResult of arg) {
-					let vanyl = data._LIST_.vanylsKeyed[vResult.key] // take vResult in display
+					let vanyl = data.list.vanylsKeyed[vResult.key] // take vResult in display
 					if (vanyl) {
 						// can raise when array gets non-same vResults with same keys
 						vanyl.updateWith(vResult)
-						data._LIST_.vanylsLastKeyed.push(vanyl)
+						data.list.vanylsLastKeyed.push(vanyl)
 					} else if (vResult.key) {
 						vanyl = new Vanyl(vResult)
-						data._LIST_.vanylsKeyed[vanyl.vResult.key] = vanyl
-						data._LIST_.vanylsLastKeyed.push(vanyl)
+						data.list.vanylsKeyed[vanyl.vResult.key] = vanyl
+						data.list.vanylsLastKeyed.push(vanyl)
 					} else {
 						vanyl = new Vanyl(vResult)
-						data._LIST_.vanylsLastKeyless.push(vanyl)
+						data.list.vanylsLastKeyless.push(vanyl)
 					}
 					frag.appendChild(vanyl.root)
 				}
 				data.element.after(frag)
-				data._LIST_.last = true
+				data.list.last = true
 			} else {
 				// arg is whatever, assign as dynamic text
 				data.element.nodeValue = arg
