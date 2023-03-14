@@ -25,35 +25,6 @@ class VResult {
 }
 export const v = (...argums) => new VResult(...argums)
 
-export class Lazy {
-	constructor(initialValue) {
-		this.initialValue = initialValue
-	}
-	get now() {
-		if (this.element) return this.element[this.prop]
-		return this.initialValue
-	}
-	set now(newValue) {
-		this.element[this.prop] = newValue
-	}
-	vDirectiveInit(key, val, element){
-		// key == key, val == this, element == this.element
-		console.log(...arguments)
-		// val.element = element
-		// val.prop = key
-		// val.element[val.prop] = val.initialValue
-
-		this.element = element
-		this.prop = key
-		console.log(key, this.element[key])
-		this.element[this.prop] = this.initialValue
-		return true // don't treat it like normal a prop and don't assign it
-	}
-	vDirectiveUpdate(){
-		return true
-	}
-}
-
 export const ref = (fun = () => fun.element ?? null) => fun
 
 function prettyPropsInit(propsObj, element){
@@ -74,7 +45,6 @@ function prettyPropsUpdate(propsObj, element) {
 		else element[key] = val
 	}
 }
-
 
 function markHtml(vResult) {
 	let [html, datas, lt, gt] = ["", [], 0, 0]

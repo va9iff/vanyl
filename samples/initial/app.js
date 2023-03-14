@@ -1,4 +1,5 @@
-import {Vanyl, v, create, Lazy, unique, ref} from '/src/index.js'
+import {Vanyl, v, create, unique, ref} from '/src/index.js'
+import {Lazy } from '/src/directives/Lazy.js'
 
 let a1 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
 let a2 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`

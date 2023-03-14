@@ -1,4 +1,5 @@
-import {Vanyl, v, create, Lazy, unique} from '/src/index.js'
+import {Vanyl, v, create, unique} from '/src/index.js'
+import { Lazy } from '/src/directives/Lazy.js'
 
 let text = new Lazy("text")
 let c = 0
