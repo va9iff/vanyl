@@ -98,26 +98,13 @@ export class Vanyl {
 		for (const data of this.datas) {
 			const arg = this.vResult.args[data.i]
 
+			/* props */
 			if (data.inTag) {
 				prettyPropsUpdate(arg,data.element)
 				continue
 			}
 
-			// if rendered List at least once and also the last time,
-			if (data.list?.last) {
-				// remove all keyless from last update
-				while (data.list.vanylsKeylessLast.length > 0)
-					data.list.vanylsKeylessLast.pop().root.remove()
-				// remove last displaying keyed vanyls if arg doesn't have them
-				for (const dataVanyl of data.list.vanylsKeyedLast) {
-					if (arg.every?.(_vResult => dataVanyl.vResult.key != _vResult.key))
-						data.list.vanylsKeyed[dataVanyl.vResult.key].root.remove()
-				}
-				data.list.last = false
-				// data.list.vanylsKeylessLast = [] // this will be [] with .pop()
-				data.list.vanylsKeyedLast = []
-			}
-
+			/* vResult */
 			if (arg instanceof VResult) {
 				// oh my... data.vResult. hurts my eyes
 				data.element.nodeValue &&= "" // clear if there's any
@@ -141,6 +128,21 @@ export class Vanyl {
 				data.vResult.last = null
 			}
 
+			/* list */
+			// if rendered List at least once and also the last time,
+			if (data.list?.last) {
+				// remove all keyless from last update
+				while (data.list.vanylsKeylessLast.length > 0)
+					data.list.vanylsKeylessLast.pop().root.remove()
+				// remove last displaying keyed vanyls if arg doesn't have them
+				for (const dataVanyl of data.list.vanylsKeyedLast) {
+					if (arg.every?.(_vResult => dataVanyl.vResult.key != _vResult.key))
+						data.list.vanylsKeyed[dataVanyl.vResult.key].root.remove()
+				}
+				data.list.last = false
+				// data.list.vanylsKeylessLast = [] // this will be [] with .pop()
+				data.list.vanylsKeyedLast = []
+			}
 			if (Array.isArray(arg)) {
 				data.element.nodeValue &&= "" // clear if there's any
 
@@ -153,7 +155,6 @@ export class Vanyl {
 					last: true,
 				}
 				const frag = document.createDocumentFragment()
-
 				for (let vResult of arg) {
 					let vanyl = data.list.vanylsKeyed[vResult.key] // take vResult in display
 					if (vanyl) {
@@ -172,7 +173,9 @@ export class Vanyl {
 				}
 				data.element.after(frag)
 				data.list.last = true
-			} else {
+			}
+			/* text */
+			else {
 				// arg is whatever, assign as dynamic text
 				data.element.nodeValue = arg
 				continue
