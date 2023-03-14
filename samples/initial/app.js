@@ -1,4 +1,4 @@
-import {Vanyl, v, create, unique, ref} from '/src/index.js'
+import {Vanyl, v, create, unique} from '/src/index.js'
 import {Lazy } from '/src/directives/Lazy.js'
 
 let a1 = v`<div>hi it's ${unique()} <button>${'dodoo'} ${'the' + unique()}</button></div>`
@@ -50,10 +50,10 @@ let userComponent = props => v`
 `
 
 let inputText = new Lazy("isn't set")
-let ol = ref()
+let ol
 
-console.log(ol())
-setTimeout(function() {console.log(ol())}, 10);
+console.log(ol)
+setTimeout(function() {console.log(ol)}, 10);
 
 /*
 	or maybe 
@@ -93,13 +93,13 @@ let myView = props => {
 	<button ${{
 		"@click"(){
 			console.log("alerteddd")
-			ol().after('lsdjfk')
+			ol.after('lsdjfk')
 		}
 	}}>alerts (actually logs)</button>
 	nested ${vicka}
 	lets put a list
 	keyless <br>${[r(),r(),r(),r(),r(),r()].map(i=>v`<i>${parseInt(i*100)+';'}</i>`)}
-	<ol ${{ref:ol, ".highlight": Math.random()>0.5}}>
+	<ol ${{do: it => ol = it, ".highlight": Math.random()>0.5}}>
 		${arr.map((prop,i)=>v`<li ${{
 			key: prop.key, 
 			// keep:prop.keep || Math.random()>0.5, 

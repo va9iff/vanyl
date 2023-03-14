@@ -1,4 +1,4 @@
-import {Vanyl, v, create, Lazy, unique, ref} from '/src/index.js'
+import {Vanyl, v, create, Lazy, unique} from '/src/index.js'
 window.c = 0
 
 let mainView = () => v`

@@ -125,13 +125,12 @@ As Vanilla as possible!
 ### `snippets/` Reference
 
 ```js
-let btn1 = ref()
-
+let btn1
 let main = () => v`
 	<div>
 
 		<button ${{
-			ref: btn1,
+			do: it => btn1 = it,
 			"@click": e => {
 				alert('btn 1')
 			}
