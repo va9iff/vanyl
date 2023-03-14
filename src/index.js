@@ -36,6 +36,22 @@ export class Lazy {
 	set now(newValue) {
 		this.element[this.prop] = newValue
 	}
+	vDirectiveInit(key, val, element){
+		// key == key, val == this, element == this.element
+		console.log(...arguments)
+		// val.element = element
+		// val.prop = key
+		// val.element[val.prop] = val.initialValue
+
+		this.element = element
+		this.prop = key
+		console.log(key, this.element[key])
+		this.element[this.prop] = this.initialValue
+		return true // don't treat it like normal a prop and don't assign it
+	}
+	vDirectiveUpdate(){
+		return true
+	}
 }
 
 export const ref = (fun = () => fun.element ?? null) => fun
@@ -45,17 +61,13 @@ function prettyPropsInit(propsObj, element){
 		const $key = key.slice(1)
 		if (key[0] == "@") element.addEventListener($key, val)
 		else if (key == "ref") val.element = element
-		else if (val instanceof Lazy) {
-			val.element = element
-			val.prop = key
-			val.element[val.prop] = val.initialValue
-		}
+		else if (val.vDirectiveInit?.(key, val, element)) "just stop"
 	}
 }
 function prettyPropsUpdate(propsObj, element) {
 	for (const [key, val] of Object.entries(propsObj)) {
 		const $key = key.slice(1)
-		if (val instanceof Lazy || key == "ref") "just stop"
+		if (val.vDirectiveUpdate?.(key, val, element) || key == "ref") "just stop"
 		else if (key[0] == ".")
 			if (val) element.classList.add($key)
 			else element.classList.remove($key)
