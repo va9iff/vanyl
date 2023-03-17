@@ -45,7 +45,7 @@ function prettyPropsUpdate(propsObj, element) {
 	}
 }
 
-function markHtml(vResult) {
+export function markHtml(vResult) {
 	let [html, datas, lt, gt] = ["", [], 0, 0]
 	for (const [i, arg] of vResult.args.entries()) {
 		const string = vResult.strings[i]
@@ -61,8 +61,12 @@ function markHtml(vResult) {
 }
 
 export class Vanyl {
-	constructor(vResult = v`<b>empty v</b>`) {
-		[this.html, this.datas] = markHtml(vResult)
+	opts(opts){}
+	constructor(vResult = v`<b>empty v</b>`, opts) {
+		this.opts(opts)
+		let [html, datas] = markHtml(vResult)
+		this.html = html 
+		this.datas = datas 
 		this.root = this.getRoot(this.html)
 
 		this.vResult = vResult
