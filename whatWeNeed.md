@@ -25,3 +25,14 @@ let mainView = props => v`
 
 let mainVanyl = create(main).to(document.body)
 ```
+
+## to refer the element itself
+```js
+// instead of this
+v`<div ${{do: it => markUp(it)}}></div>`
+
+// do this
+v`<div ${it => markUp(it)}></div>`
+
+// does it realy worth? it's not even an effort but seems useless and confusing
+```
