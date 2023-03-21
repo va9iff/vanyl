@@ -2,7 +2,8 @@ import {Vanyl, v, create, unique, markHtml} from './index.js'
 
 class VanylEmbedded extends Vanyl {
 	// goes before constructors. for assign options.
-	opts(opts){
+	opts(opts={}){
+		super.opts(opts)
 		this.root = opts.root
 	}
 	getRoot(htmlString){

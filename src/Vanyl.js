@@ -22,8 +22,10 @@ export function markHtml(vResult) {
 }
 
 export class Vanyl {
-	opts(opts){}
-	constructor(vResult = v`<b>empty v</b>`, opts) {
+	opts(opts = {}){
+		if (opts?.vFun) this.vFun = opts.vFun
+	}
+	constructor(vResult = v`<b>empty v</b>`, opts = {}) {
 		this.opts(opts)
 		let [html, datas] = markHtml(vResult)
 		this.html = html 
@@ -132,11 +134,6 @@ export class Vanyl {
 	update() {
 		return this.updateWith(this.vFun())
 	}
-	static fromVFun(vFun) {
-		const vanyl = new Vanyl(vFun())
-		vanyl.vFun = vFun
-		return vanyl
-	}
 	process(vResult) {
 		for (const data of this.datas) {
 			data.element = this.root.hasAttribute(data.selector)
@@ -162,4 +159,4 @@ export class Vanyl {
 }
 
 
-export const create = vFun => Vanyl.fromVFun(vFun)
+export const create = vFun => new Vanyl(vFun(), { vFun: vFun })
