@@ -14,10 +14,9 @@ class VanylEmbedded extends Vanyl {
 class VanylElement extends HTMLElement {
 	constructor(){
 		super()
-		console.log('custom element has been constructed')
 	}
 	render(){
-		return v`<i>dado${Math.random()}</i><b>fasd</b>`
+		return v`define render function`
 	}
 	hasInit = false
 	init(){
@@ -32,24 +31,11 @@ class VanylElement extends HTMLElement {
 		console.log('connected to dom')
 		if (!this.hasInit) return this.init()
 	}
-
-
-	// --
 	static define(tagName, opts){
 		customElements.define(tagName, this, opts);
 	}
 }
 
-
-// customElements.define("vanyl-element", VanylElement/*, { extends: "p" }*/);
-
-export const tag = new Proxy({}, {
-	set(_, prop, val){
-		customElements.define(prop, val, {});
-		return true
-	}
-})
-
-tag["vanyl-element"] = VanylElement
+VanylElement.define('vanyl-element')
 
 export {Vanyl, v, create, unique, VanylElement}

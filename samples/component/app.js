@@ -1,6 +1,6 @@
-import {VanylElement, v, tag} from '/src/index.js'
+import {VanylElement, v} from '/src/index.js'
 
-tag["a-el"] = class extends VanylElement{
+export class AEl extends VanylElement{
 	render(){
 		return v`
 		<vanyl-element></vanyl-element> <br>
@@ -8,16 +8,18 @@ tag["a-el"] = class extends VanylElement{
 		`
 	}
 }
+AEl.define('a-el')
 
-tag["b-el"] = class extends VanylElement {
+export class BEl extends VanylElement {
 	render(){
 		return v`
 			<a-el></a-el>
 		`
 	}
 }
+BEl.define('b-el')
 
 let myComponent = document.createElement('b-el')
-myComponent.onclick = e => myComponent.update()
+myComponent.onclick = e => console.log(myComponent)
 
 document.body.appendChild(myComponent)
