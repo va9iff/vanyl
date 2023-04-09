@@ -99,11 +99,11 @@ let myView = props => {
 	nested ${vicka}
 	lets put a list
 	keyless <br>${[r(),r(),r(),r(),r(),r()].map(i=>v`<i>${parseInt(i*100)+';'}</i>`)}
-	<ol ${{do: it => ol = it, ".highlight": Math.random()>0.5}}>
+	<ol ${{do: it => ol = it, "$.highlight": Math.random()>0.5}}>
 		${arr.map((prop,i)=>v`<li ${{
 			key: prop.key, 
 			// keep:prop.keep || Math.random()>0.5, 
-			".highlight": Math.random()>0.7
+			"$.highlight": Math.random()>0.7
 		}}><u>${i}-</u>${prop.key}~${prop.val} <input type="text"></li>`)}
 	</ol>
 	${users.map(props=>userComponent(props))}

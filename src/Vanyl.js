@@ -4,7 +4,8 @@ import {expect} from "./expect.js"
 // const expect = {} // weird way to remove optional object to be a single file
 
 import { v, VResult } from './vResult.js'
-import { prettyPropsInit, prettyPropsUpdate } from "./props.js"
+// import { prettyPropsInit, prettyPropsUpdate } from "./props.js"
+import { The } from "./the.js"
 
 export function markHtml(vResult) {
 	let [html, datas, lt, gt] = ["", [], 0, 0]
@@ -24,13 +25,14 @@ export function markHtml(vResult) {
 export class Vanyl {
 	opts(opts = {}){
 		if (opts?.vFun) this.vFun = opts.vFun
+		if (opts?.root) this.root = opts.root
 	}
 	constructor(vResult = v`<b>empty v</b>`, opts = {}) {
 		this.opts(opts)
 		let [html, datas] = markHtml(vResult)
 		this.html = html 
 		this.datas = datas 
-		this.root = this.getRoot(this.html)
+		this.root ||= this.getRoot(this.html)
 
 		this.vResult = vResult
 		this.process(vResult)
@@ -48,7 +50,9 @@ export class Vanyl {
 
 			/* props */
 			if (data.inTag) {
-				prettyPropsUpdate(arg,data.element)
+
+				// prettyPropsUpdate(arg,data.element)
+				this.the.updateWith(arg)
 				continue
 			}
 
@@ -141,7 +145,9 @@ export class Vanyl {
 				: this.root.querySelector(`[${data.selector}]`)
 			expect.notNull?.(data.element) // can be textnode if v`` isn't wrapped in a tag
 			// data.element.removeAttribute(data.selector)
-			if (data.inTag) prettyPropsInit(vResult.args[data.i], data.element)
+			if (data.inTag) {
+				this.the = new The(data.element, vResult.args[data.i])
+			}
 			else {
 				const textNode = document.createTextNode(data.selector)
 				data.element.replaceWith(textNode)

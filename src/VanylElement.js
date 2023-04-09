@@ -1,28 +1,19 @@
 import {Vanyl, v, create, unique, markHtml} from './index.js'
 
-class VanylEmbedded extends Vanyl {
-	// goes before constructors. for assign options.
-	opts(opts={}){
-		super.opts(opts)
-		this.root = opts.root
-	}
-	getRoot(htmlString){
-		this.root.innerHTML = this.html // assign marked things to query
-		return this.root
-	}
-}
-
 class VanylElement extends HTMLElement {
 	constructor(){
 		super()
 	}
 	render(){
-		return v`define render function`
+		return v`<p>~VanylElement</p>`
 	}
 	hasInit = false
 	init(){
 		this.hasInit = true
-		this.vanyl = new VanylEmbedded(this.render(), { root: this })
+
+		let vr = this.render()
+		this.innerHTML = markHtml(vr)[0]
+		this.vanyl = new Vanyl(vr, { root: this })
 
 	}
 	update() {
