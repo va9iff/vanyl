@@ -1,5 +1,5 @@
 {
-  "name": "vanyl",
+  "name": "vanylui",
   "version": "1.0.0",
   "description": "most vanilla ui framework",
   "main": "src/index.js",
