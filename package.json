@@ -1,0 +1,25 @@
+{
+  "name": "vanyl",
+  "version": "1.0.0",
+  "description": "most vanilla ui framework",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/va9iff/vanyl.git"
+  },
+  "keywords": [
+    "vanyl",
+    "ui",
+    "frontend",
+    "vanilla"
+  ],
+  "author": "va9iff",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/va9iff/vanyl/issues"
+  },
+  "homepage": "https://github.com/va9iff/vanyl#readme"
+}
