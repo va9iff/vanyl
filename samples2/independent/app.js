@@ -17,14 +17,20 @@ export function v() {
 export function adata() {
 	return {
 		// core
-		element: null,
+		element: null, // text node for marking. won't be removed.
 
 		// functions
 		callNext: true,
 
 		// vResult arg
-		vResultLast: null,
-		// controller
+		vResultLast: null, // to check - update or replace
+		vResultElem: null, // the element of vResult. refer to remove.
+		controller: null,
+
+		// lists
+		listLast: [
+			/*{element, controller}*/
+			]
 	}
 }
 
@@ -62,7 +68,7 @@ class VanylController {
 			data.element.removeAttribute(`V${data.i}`)
 			if (data.inTag) {
 			} else {
-				const textNode = document.createTextNode(data.arg)
+				const textNode = document.createTextNode("") // or erease at upt
 				data.element.replaceWith(textNode)
 				data.element = textNode
 			}
@@ -84,12 +90,17 @@ class VanylController {
 				}
 				else {
 					const [el, controllerData] = markedFirstChild(arg)
-					data.element.replaceWith(el)
-					data.element = el
+					data.element.after(el)
+					data.vResultElem?.remove() // needs in most palces
+					data.vResultElem = el
 					data.controller = new VanylController(this.root, controllerData)
+					data.controller.update(arg)
 				}
 				data.vResultLast = arg
 			} else if (Array.isArray(arg)) {
+				for (const controller of data.listLast) {
+
+				}
 				// data.controller = new VanylController(this.root, )
 			} else if (typeof arg == "string" || typeof arg == "number") {
 				data.element.nodeValue = arg
