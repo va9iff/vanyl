@@ -77,6 +77,14 @@ class VanylController {
 	update(vResult) {
 		for (const data of this.datas) {
 			const arg = vResult.args[data.i]
+			// for the old
+			data.element.nodeValue &&= ""
+			if (!(arg instanceof VResult)) {
+				data.vResultElem?.remove()
+				data.vResultLast = null
+			}
+
+			// for the new
 			if (data.inTag) {
 				if (typeof arg == "object") {
 					this.updateProps(data.element, arg, data.arg)
@@ -128,6 +136,8 @@ function markedFirstChild(vr) {
 // }
 
 
+let vt = ()=>Math.random()>0.5? v`<span>that's from v</span>` : "textyyyytextyyyyy"
+
 let f = (a = false, b = 0) => v`
 	<button ${{
 		disabled: a,
@@ -141,7 +151,8 @@ let f = (a = false, b = 0) => v`
 			hi <i>my</i> <b>bro ${parseInt(Math.random()*100)}</b>
 		</p>
 	`} <br>
-	${ab()}
+	${ab()} <br>
+	${vt()}
 `
 
 let buttonA = ()=> v`<button
