@@ -35,6 +35,7 @@ export function markHtml(vResult) {
 class VanylController{
 	constructor(root, vResult){
 		let [html, datas] = markHtml(vResult)
+		this.datas = datas
 		this.root = root
 		root.innerHTML = html
 		this.process(datas)
@@ -42,7 +43,7 @@ class VanylController{
 	process(datas){
 		for (const data of datas) {
 			data.element = this.root.querySelector(`[V${data.i}]`)
-			if (data.inTag) null
+			if (data.inTag) {}
 			else {
 				const textNode = document.createTextNode(data.arg)
 				data.element.replaceWith(textNode)
@@ -50,9 +51,26 @@ class VanylController{
 			}
 		}
 	}
+	update(vResult){
+		for (const data of this.datas) {
+			const arg = vResult.args[data.i]
+			if (data.inTag) {}
+			else if (arg instanceof VResult){}
+			else if (Array.isArray(arg)){}
+			else if (typeof arg == "string"){
+				data.element.nodeValue = arg
+			}
+		}
+	}
 }
 
-new VanylController(document.body, v`
+let c = new VanylController(document.body, v`
 		hi ${4} <b>bora</b>
 	`)
 
+
+setTimeout(()=>{
+	c.update(v`
+		hi ${"some sorta text"} <b>bora</b>
+	`)
+}, 1500)
