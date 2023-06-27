@@ -11,3 +11,9 @@ should be method cuz we want to give them oppurtunity to change diffing.
 	}
 
 ```
+
+`typeof arg == VResult`
+=======================
+we use `markHTML()` but won't this cause multiple `V1`?
+yes but those will be removed at `.process()`
+it'll start again for this `VanylController` with the same element.

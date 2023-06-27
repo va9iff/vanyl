@@ -41,16 +41,17 @@ export function markHtml(vResult) {
 const updater = Symbol("updater")
 
 class VanylController {
-	constructor(root, vResult) {
-		let [html, datas] = markHtml(vResult)
+	constructor(root, datas) {
+		// let [html, datas] = markHtml(vResult)
 		this.datas = datas
 		this.root = root
-		root.innerHTML = html
+		// root.innerHTML = html
 		this.process(datas)
 	}
 	process(datas) {
 		for (const data of datas) {
 			data.element = this.root.querySelector(`[V${data.i}]`)
+			data.element.removeAttribute(`V${data.i}`)
 			if (data.inTag) {
 			} else {
 				const textNode = document.createTextNode(data.arg)
@@ -70,7 +71,9 @@ class VanylController {
 					if (data.callNext) data.callNext = arg(data.element) == updater
 				}
 			} else if (arg instanceof VResult) {
+
 			} else if (Array.isArray(arg)) {
+				data.controller = new VanylController(this.root, )
 			} else if (typeof arg == "string") {
 				data.element.nodeValue = arg
 			}
@@ -88,19 +91,23 @@ class VanylController {
 let f = (a = false, b = 0) => v`
 	<button ${{
 		disabled: a,
-	}}
-	${el => {
-		alert(el)
-	}}
-	${el => {
-		console.log(el)
-		return updater
+		onclick: ()=> console.log('clicked')
 	}}
 	>hi
 	</button>
+
+	${v`
+		<p>
+			hi <i>my</i> <b>bro</b>
+		</p>
+	`}
 `
 
-let c = new VanylController(document.body, f())
+let vr = f()
+// let {strings, args} = vr
+let [html, datas] = markHtml(vr)
+document.body.innerHTML = html
+let c = new VanylController(document.body, datas)
 
 setInterval(() => {
 	c.update(f(Math.random() > 0.5))
