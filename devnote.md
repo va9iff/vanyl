@@ -50,9 +50,30 @@ tag["my-tag"] = () => v`
 	`
 ```
 
+
+Router loading/importing and placeholder.
+```js
+... async wait => {
+	wait(v`loading...`) || await import("./myPage.js")
+	return v`<my-page></my-page>`
+}
+```
+when this function is called first, the `wait` will return false, cousing the import statement to run.
+> it's like waiting for return of the function. whatever passed will be shown while the script is loaded.
+
+after awaiting for import to be done, and the function has run to the end, the 
+return value will replace whatever `wait` has given to here. calling it second time
+will couse `wait` to return true, short circuting and blocking the import.
+
+but as it takes tame, if the second call was before the first function has ended, 
+while importing the script, then the second call will be ignored. (or maybe take
+the resullt and assign this instead of first's result.)
+
+
 ROUTER
 But I'm not sure and don't have much knowledge yet.
 ```js
+// href with trailing slash "/" indicates custom routing
 tag["my-tag"] = () => v`
 	<a ${{"href/": "home"}}>home</a>
 	<a ${{"href/": "etc"}}>etc</a>
@@ -141,6 +162,29 @@ v`
 
 ```
 
+```js
+// completely different element. `<v-a></v-a>`. all the keys of this element 
+// will treated as route of the value on the key.
+v`
+	<v-a ${{home: content}}>home</v-a>
+	<a ${{profile: content}}>profile</a>
+	<a ${{"etc/1": content}}>go to this</a>
+`
+
+// all a tags. key ending with "/" will be treated like a v-a tag key
+v`
+	<a ${{"home/": content}}>home</a>
+	<a ${{"profile/": content}}>profile</a>
+	<a ${{"settings/": content}}>settings</a>
+	<a ${{"etc/1": content}}>go to this</a>
+	<a ${{"hidden/": toolbar}}>close toolbar</a>
+	<a ${{"tools/": toolbar}}>open toolbar</a>
+`
+```
+! this way, we don't need to do anything to routes. we see we're updating 
+content, so update every vanyl that it has in them. when content is inserted to 
+a vanyl, add to its list. when the vanyl isn't connected anymore, remove it. 
+
 
 
 ```js
@@ -207,4 +251,46 @@ ${content.on = "pane1"}`
 content.go("pane1", {id: 88})
 content.go.pane1({id: 88}).
 
+```
+
+maybe to add a setter for `.on` and having lists of vanyls where the router is 
+used. so when `.on` is set on the router, it'll update the vanyls too but that's 
+kinda unnecessary. how many places the same route would have been used?
+```js
+let pane1 = router({	
+	on: "pane1",
+	pane1: () => ({
+		on: "inner2",
+		inner1: () => html`that's 1`,
+		inner2: () => html`here's another
+			some template
+			in nested switcher
+		`,
+		default: () => "select inner tab",
+		}),
+	pane2: () => html`<i>that's tab2 with some list</i>
+		${window.someList.map(item=>html`
+			<p>${item.caption}</p>
+		`)}
+	`,
+	pane3: () => html`<p>a basic tab</p>`
+})
+```
+
+
+a quick way to define a component.
+creates class, assigns given function to its `prototype.render`.
+```js
+tag["my-tag"] = function () {
+	return v`something`
+} // or
+tag["my-tag"] = self => v`something`
+```
+or even in `asHTML/` folder with `.html` extension. it'll load the "text" and 
+eval it and define a component. you can use ${this.prop} too in this html.
+a little bit easier and cute way to work with more static components.literally evals this
+```js
+tag["file-name"] = function () {
+	return v`file-content`
+}
 ```

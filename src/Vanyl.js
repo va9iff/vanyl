@@ -13,9 +13,11 @@ export function markHtml(vResult) {
 		const string = vResult.strings[i]
 		html += string
 		;[gt, lt] = [gt + string.split(">").length, lt + string.split("<").length]
-		const data = { selector: unique(), inTag: lt > gt, i }
+		const data = { selector: unique(), /*last:"",*/ inTag: lt > gt, i }
+		/* I'm not sure about using .last=="vResult" style.*/
+		/* i'ts been some time since my last commits. I have to get my hands warmer */
 		if (data.inTag) html += ` ${data.selector} `
-		else html += ` <wbr ${data.selector}> `
+		else html += `<wbr ${data.selector}>`
 		datas.push(data)
 	}
 	html += vResult.strings.at(-1)
@@ -42,6 +44,19 @@ export class Vanyl {
 	vFun() {
 		return v`V~${this.constructor.name}`
 	}
+	/* wanna use something like .core in .updateWith 
+		vResult and text in list? we have an way for them saperate.
+		use something like that in the list too.
+		currently only accapets vResult.
+		I also want to add HTMLElement with ${} syntax.
+
+		being the 4th case others being:
+			any: in the tag, for syncing values
+			vResult: to use Vanyl's dynamic stuff dynamically (bruh)
+			list: to render list of vResults (add text and elements)
+			+ element: to append elements on the fly
+			any: anything else will be for dynamic text outside of tag
+	*/
 	updateWith(vResultFresh) {
 		expect.sameVResult?.(this.vResult, vResultFresh)
 		this.vResult = vResultFresh
@@ -52,6 +67,8 @@ export class Vanyl {
 			if (data.inTag) {
 
 				// prettyPropsUpdate(arg,data.element)
+
+				// I can't see where the element comes from prop name "the"
 				this.the.updateWith(arg)
 				continue
 			}

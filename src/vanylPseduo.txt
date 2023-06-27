@@ -1,0 +1,19 @@
+syntax
+	-> : push to
+	a:b : b is explanation for a
+
+updateWIth(vResultFresh)
+	error ? vResultFresh != previous vResult
+
+	for data of datas
+		arg = vResult[]
+		frag = [] to append
+
+		if previous arg was array
+			remove all keyless vr
+			remove keyfuls which not in arg
+
+		if current is list
+			for vr in current
+				if vr in keyed: update & move top
+				if not in keyed but has key: create and add

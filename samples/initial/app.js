@@ -84,7 +84,7 @@ let myView = props => {
 	${'this may break'} - ${v`<i>lkdj</i>`}
 
 	<p>
-	  that's an ${state.data1} test for ${5487} so yeah
+	  that's an${state.data1} test for ${5487} so yeah
 	</p>
 	and here's an input 
 	<input type="text" 
