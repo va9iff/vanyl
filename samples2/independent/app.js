@@ -91,7 +91,7 @@ class VanylController {
 				data.vResultLast = arg
 			} else if (Array.isArray(arg)) {
 				// data.controller = new VanylController(this.root, )
-			} else if (typeof arg == "string") {
+			} else if (typeof arg == "string" || typeof arg == "number") {
 				data.element.nodeValue = arg
 			}
 		}
@@ -133,8 +133,12 @@ let f = (a = false, b = 0) => v`
 	${ab()}
 `
 
-let buttonA = ()=> v`<button>a ${parseInt(Math.random()*1000)}</button>`
-let buttonB = ()=> v`<button>b ${parseInt(Math.random()*1000)}</button>`
+let buttonA = ()=> v`<button
+	${{onclick: ()=>console.log('fasad')}}
+>a ${parseInt(Math.random()*1000)}</button>`
+let buttonB = ()=> v`<button
+	${{onclick: ()=>console.log('fasad')}}
+>b ${parseInt(Math.random()*1000)}</button>`
 let ab = () => Math.random() > 0.5 ? buttonA() : buttonB()
 
 
