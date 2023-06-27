@@ -16,7 +16,15 @@ export function v() {
 
 export function adata() {
 	return {
-		callNext: true
+		// core
+		element: null,
+
+		// functions
+		callNext: true,
+
+		// vResult arg
+		vResultLast: null,
+		// controller
 	}
 }
 
