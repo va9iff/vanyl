@@ -32,6 +32,7 @@ export function markHtml(vResult) {
 	return [html, datas]
 }
 
+
 class VanylController{
 	constructor(root, vResult){
 		let [html, datas] = markHtml(vResult)
@@ -54,7 +55,12 @@ class VanylController{
 	update(vResult){
 		for (const data of this.datas) {
 			const arg = vResult.args[data.i]
-			if (data.inTag) {}
+			if (data.inTag) {
+				if (typeof arg == "object") {
+					this.updateProps(data.element, arg, data.arg)
+					data.arg = arg
+				}
+			}
 			else if (arg instanceof VResult){}
 			else if (Array.isArray(arg)){}
 			else if (typeof arg == "string"){
@@ -62,15 +68,27 @@ class VanylController{
 			}
 		}
 	}
+	updateProps(target, props, oldProps = {}) {
+		for (let prop in props) {
+			console.log(props[prop] !== oldProps[prop], prop, props[prop], oldProps[prop])
+				if (props[prop] !== oldProps[prop]) {
+					target[prop] = props[prop]
+					console.log('*changed*')
+				}
+		}
+	}
 }
 
-let c = new VanylController(document.body, v`
-		hi ${4} <b>bora</b>
-	`)
+let f = (a = false, b = 0)=>v`
+	<button ${{
+		disabled: a
+	}}>hi
+	</button>
+`
+
+let c = new VanylController(document.body, f())
 
 
-setTimeout(()=>{
-	c.update(v`
-		hi ${"some sorta text"} <b>bora</b>
-	`)
-}, 1500)
+setInterval(()=>{
+	c.update(f(Math.random()>0.5))
+}, 500)
