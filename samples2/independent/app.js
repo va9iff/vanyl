@@ -14,6 +14,12 @@ export function v() {
 	return new VResult(...arguments)
 }
 
+export function adata() {
+	return {
+		callNext: true,
+	}
+}
+
 export function markHtml(vResult) {
 	const { strings, args } = vResult
 	let [html, datas, lt, gt] = ["", [], 0, 0]
@@ -23,7 +29,7 @@ export function markHtml(vResult) {
 		html += string
 		gt = gt + string.split(">").length
 		lt = lt + string.split("<").length
-		const data = { arg, inTag: lt > gt, i }
+		const data = { ...adata(), arg, i, inTag: lt > gt }
 		if (data.inTag) html += ` V${i} `
 		else html += `<wbr V${i}>`
 		datas.push(data)
@@ -61,8 +67,7 @@ class VanylController {
 					this.updateProps(data.element, arg, data.arg)
 					data.arg = arg
 				} else if (typeof arg == "function") {
-					if (!data.dontCall) 
-						data.dontCall = arg(data.element) != updater
+					if (data.callNext) data.callNext = arg(data.element) == updater
 				}
 			} else if (arg instanceof VResult) {
 			} else if (Array.isArray(arg)) {
@@ -84,10 +89,10 @@ let f = (a = false, b = 0) => v`
 	<button ${{
 		disabled: a,
 	}}
-	${el=>{
+	${el => {
 		alert(el)
 	}}
-	${el=>{
+	${el => {
 		console.log(el)
 		return updater
 	}}
