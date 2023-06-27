@@ -71,10 +71,16 @@ class VanylController {
 					if (data.callNext) data.callNext = arg(data.element) == updater
 				}
 			} else if (arg instanceof VResult) {
-				let [el, vrDatas] = firstChild(arg)
-				data.vResultController = new VanylController(el, vrDatas)
-				data.element.replaceWith(el)
-				data.element = el
+				if (data.vResultLast?.isSame(arg)) {
+					data.controller.update(arg)
+				}
+				else {
+					const [el, controllerData] = markedFirstChild(arg)
+					data.element.replaceWith(el)
+					data.element = el
+					data.controller = new VanylController(this.root, controllerData)
+				}
+				data.vResultLast = arg
 			} else if (Array.isArray(arg)) {
 				// data.controller = new VanylController(this.root, )
 			} else if (typeof arg == "string") {
@@ -91,11 +97,16 @@ class VanylController {
 	}
 }
 
-function firstChild(vr) {
-	let [html, datas] = markHtml(vr)
+function markedFirstChild(vr) {
+	const [html, datas] = markHtml(vr)
 	const domik = new DOMParser().parseFromString(html, "text/html")
 	return [domik.body.firstElementChild, datas]
 }
+
+// function controlled(vr) {
+// 	const [element, datas] = markedFirstChild(vr)
+// 	return new VanylController(element, datas)
+// }
 
 
 let f = (a = false, b = 0) => v`
@@ -110,8 +121,14 @@ let f = (a = false, b = 0) => v`
 		<p>
 			hi <i>my</i> <b>bro ${parseInt(Math.random()*100)}</b>
 		</p>
-	`}
+	`} <br>
+	${ab()}
 `
+
+let buttonA = ()=> v`<button>a ${parseInt(Math.random()*1000)}</button>`
+let buttonB = ()=> v`<button>b ${parseInt(Math.random()*1000)}</button>`
+let ab = () => Math.random() > 0.5 ? buttonA() : buttonB()
+
 
 let vr = f()
 // let {strings, args} = vr
