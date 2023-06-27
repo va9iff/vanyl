@@ -16,7 +16,7 @@ export function v() {
 
 export function adata() {
 	return {
-		callNext: true,
+		callNext: true
 	}
 }
 
@@ -71,9 +71,12 @@ class VanylController {
 					if (data.callNext) data.callNext = arg(data.element) == updater
 				}
 			} else if (arg instanceof VResult) {
-
+				let [el, vrDatas] = firstChild(arg)
+				data.vResultController = new VanylController(el, vrDatas)
+				data.element.replaceWith(el)
+				data.element = el
 			} else if (Array.isArray(arg)) {
-				data.controller = new VanylController(this.root, )
+				// data.controller = new VanylController(this.root, )
 			} else if (typeof arg == "string") {
 				data.element.nodeValue = arg
 			}
@@ -88,6 +91,13 @@ class VanylController {
 	}
 }
 
+function firstChild(vr) {
+	let [html, datas] = markHtml(vr)
+	const domik = new DOMParser().parseFromString(html, "text/html")
+	return [domik.body.firstElementChild, datas]
+}
+
+
 let f = (a = false, b = 0) => v`
 	<button ${{
 		disabled: a,
@@ -98,7 +108,7 @@ let f = (a = false, b = 0) => v`
 
 	${v`
 		<p>
-			hi <i>my</i> <b>bro</b>
+			hi <i>my</i> <b>bro ${parseInt(Math.random()*100)}</b>
 		</p>
 	`}
 `
