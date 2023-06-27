@@ -32,63 +32,71 @@ export function markHtml(vResult) {
 	return [html, datas]
 }
 
+const updater = Symbol("updater")
 
-class VanylController{
-	constructor(root, vResult){
+class VanylController {
+	constructor(root, vResult) {
 		let [html, datas] = markHtml(vResult)
 		this.datas = datas
 		this.root = root
 		root.innerHTML = html
 		this.process(datas)
 	}
-	process(datas){
+	process(datas) {
 		for (const data of datas) {
 			data.element = this.root.querySelector(`[V${data.i}]`)
-			if (data.inTag) {}
-			else {
+			if (data.inTag) {
+			} else {
 				const textNode = document.createTextNode(data.arg)
 				data.element.replaceWith(textNode)
 				data.element = textNode
 			}
 		}
 	}
-	update(vResult){
+	update(vResult) {
 		for (const data of this.datas) {
 			const arg = vResult.args[data.i]
 			if (data.inTag) {
 				if (typeof arg == "object") {
 					this.updateProps(data.element, arg, data.arg)
 					data.arg = arg
+				} else if (typeof arg == "function") {
+					if (!data.dontCall) 
+						data.dontCall = arg(data.element) != updater
 				}
-			}
-			else if (arg instanceof VResult){}
-			else if (Array.isArray(arg)){}
-			else if (typeof arg == "string"){
+			} else if (arg instanceof VResult) {
+			} else if (Array.isArray(arg)) {
+			} else if (typeof arg == "string") {
 				data.element.nodeValue = arg
 			}
 		}
 	}
 	updateProps(target, props, oldProps = {}) {
 		for (let prop in props) {
-			console.log(props[prop] !== oldProps[prop], prop, props[prop], oldProps[prop])
-				if (props[prop] !== oldProps[prop]) {
-					target[prop] = props[prop]
-					console.log('*changed*')
-				}
+			if (props[prop] !== oldProps[prop]) {
+				target[prop] = props[prop]
+			}
 		}
 	}
 }
 
-let f = (a = false, b = 0)=>v`
+let f = (a = false, b = 0) => v`
 	<button ${{
-		disabled: a
-	}}>hi
+		disabled: a,
+	}}
+	${el=>{
+		alert(el)
+	}}
+	${el=>{
+		console.log(el)
+		return updater
+	}}
+	>hi
 	</button>
 `
 
 let c = new VanylController(document.body, f())
 
-
-setInterval(()=>{
-	c.update(f(Math.random()>0.5))
+setInterval(() => {
+	c.update(f(Math.random() > 0.5))
 }, 500)
