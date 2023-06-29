@@ -14,7 +14,7 @@ export function v() {
 	return new VResult(...arguments)
 }
 
-export function adata() {
+export function pinProperties() {
 	return {
 		// defined @markHtml
 		// arg, i, inTag
@@ -39,90 +39,90 @@ export function adata() {
 
 export function markHtml(vResult) {
 	const { strings, args } = vResult
-	let [html, datas, lt, gt] = ["", [], 0, 0]
+	let [html, pins, lt, gt] = ["", [], 0, 0]
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i],
 			string = strings[i]
 		html += string
 		gt = gt + string.split(">").length
 		lt = lt + string.split("<").length
-		const data = { ...adata(), arg, i, inTag: lt > gt }
-		if (data.inTag) html += ` V${i} `
+		const pin = { ...pinProperties(), arg, i, inTag: lt > gt }
+		if (pin.inTag) html += ` V${i} `
 		else html += `<wbr V${i}>`
-		datas.push(data)
+		pins.push(pin)
 	}
 	html += strings.at(-1)
-	return [html, datas]
+	return [html, pins]
 }
 
 const updater = Symbol("updater")
 
 class VanylController {
-	constructor(root, datas) {
-		// let [html, datas] = markHtml(vResult)
-		this.datas = datas
+	constructor(root, pinss) {
+		// let [html, pinss] = markHtml(vResult)
+		this.pins = pinss
 		this.root = root
 		// root.innerHTML = html
-		this.process(datas)
+		this.process(pinss)
 	}
-	process(datas) {
-		for (const data of datas) {
-			data.element = this.root.querySelector(`[V${data.i}]`)
-			data.element.removeAttribute(`V${data.i}`)
-			if (data.inTag) {
+	process(pins) {
+		for (const pin of pins) {
+			pin.element = this.root.querySelector(`[V${pin.i}]`)
+			pin.element.removeAttribute(`V${pin.i}`)
+			if (pin.inTag) {
 			} else {
 				const textNode = document.createTextNode("") // or erease at upt
-				data.element.replaceWith(textNode)
-				data.element = textNode
+				pin.element.replaceWith(textNode)
+				pin.element = textNode
 			}
 		}
 	}
 	update(vResult) {
-		for (const data of this.datas) {
-			const arg = vResult.args[data.i]
+		for (const pin of this.pins) {
+			const arg = vResult.args[pin.i]
 			// for the old
-			data.element.nodeValue &&= ""
+			pin.element.nodeValue &&= ""
 			if (!(arg instanceof VResult)) {
-				data.vResultElem?.remove()
-				data.vResultLast = null
+				pin.vResultElem?.remove()
+				pin.vResultLast = null
 			}
 			if (!Array.isArray(arg)) {
-				while (data.listLast.length) data.listLast.pop().element.remove()
+				while (pin.listLast.length) pin.listLast.pop().element.remove()
 			}
 
 			// for the new
-			if (data.inTag) {
+			if (pin.inTag) {
 				if (typeof arg == "object") {
-					this.updateProps(data.element, arg, data.arg)
-					data.arg = arg
+					this.updateProps(pin.element, arg, pin.arg)
+					pin.arg = arg
 				} else if (typeof arg == "function") {
-					if (data.callNext) data.callNext = arg(data.element) == updater
+					if (pin.callNext) pin.callNext = arg(pin.element) == updater
 				}
 			}
 			// else if (Array.isArray(arg)) {
-			// for (const pin of data.listLast) {
+			// for (const pin of pin.listLast) {
 
 			// }
-			// data.controller = new VanylController(this.root, )
+			// pin.controller = new VanylController(this.root, )
 			// }
-			else this.updatePin(data, arg)
+			else this.updatePin(pin, arg)
 		}
 	}
-	updatePin(data, arg) {
+	updatePin(pin, arg) {
 		if (arg instanceof VResult) {
-			if (data.vResultLast?.isSame(arg)) {
-				data.controller.update(arg)
+			if (pin.vResultLast?.isSame(arg)) {
+				pin.controller.update(arg)
 			} else {
-				const [el, controllerData] = markedFirstChild(arg)
-				data.element.after(el)
-				data.vResultElem?.remove() // needs in most palces
-				data.vResultElem = el
-				data.controller = new VanylController(this.root, controllerData)
-				data.controller.update(arg)
+				const [el, controllerpin] = markedFirstChild(arg)
+				pin.element.after(el)
+				pin.vResultElem?.remove() // needs in most palces
+				pin.vResultElem = el
+				pin.controller = new VanylController(this.root, controllerpin)
+				pin.controller.update(arg)
 			}
-			data.vResultLast = arg
+			pin.vResultLast = arg
 		} else if (typeof arg == "string" || typeof arg == "number") {
-			data.element.nodeValue = arg
+			pin.element.nodeValue = arg
 		}
 	}
 	updateProps(target, props, oldProps = {}) {
@@ -135,14 +135,14 @@ class VanylController {
 }
 
 function markedFirstChild(vr) {
-	const [html, datas] = markHtml(vr)
+	const [html, pins] = markHtml(vr)
 	const domik = new DOMParser().parseFromString(html, "text/html")
-	return [domik.body.firstElementChild, datas]
+	return [domik.body.firstElementChild, pins]
 }
 
 // function controlled(vr) {
-// 	const [element, datas] = markedFirstChild(vr)
-// 	return new VanylController(element, datas)
+// 	const [element, pins] = markedFirstChild(vr)
+// 	return new VanylController(element, pins)
 // }
 
 let vt = () =>
@@ -175,9 +175,9 @@ let ab = () => (Math.random() > 0.5 ? buttonA() : buttonB())
 
 let vr = f()
 // let {strings, args} = vr
-let [html, datas] = markHtml(vr)
+let [html, pins] = markHtml(vr)
 document.body.innerHTML = html
-let c = new VanylController(document.body, datas)
+let c = new VanylController(document.body, pins)
 
 setInterval(() => {
 	c.update(f(Math.random() > 0.5))
