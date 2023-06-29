@@ -16,6 +16,9 @@ export function v() {
 
 export function adata() {
 	return {
+		// defined @markHtml
+		// arg, i, inTag
+
 		// core
 		element: null, // text node for marking. won't be removed.
 
@@ -30,7 +33,7 @@ export function adata() {
 		// lists
 		listLast: [
 			/*{element, controller}*/
-			]
+		],
 	}
 }
 
@@ -83,6 +86,9 @@ class VanylController {
 				data.vResultElem?.remove()
 				data.vResultLast = null
 			}
+			if (!Array.isArray(arg)) {
+				while (data.listLast.length) data.listLast.pop().element.remove()
+			}
 
 			// for the new
 			if (data.inTag) {
@@ -92,27 +98,31 @@ class VanylController {
 				} else if (typeof arg == "function") {
 					if (data.callNext) data.callNext = arg(data.element) == updater
 				}
-			} else if (arg instanceof VResult) {
-				if (data.vResultLast?.isSame(arg)) {
-					data.controller.update(arg)
-				}
-				else {
-					const [el, controllerData] = markedFirstChild(arg)
-					data.element.after(el)
-					data.vResultElem?.remove() // needs in most palces
-					data.vResultElem = el
-					data.controller = new VanylController(this.root, controllerData)
-					data.controller.update(arg)
-				}
-				data.vResultLast = arg
-			} else if (Array.isArray(arg)) {
-				for (const controller of data.listLast) {
-
-				}
-				// data.controller = new VanylController(this.root, )
-			} else if (typeof arg == "string" || typeof arg == "number") {
-				data.element.nodeValue = arg
 			}
+			// else if (Array.isArray(arg)) {
+			// for (const pin of data.listLast) {
+
+			// }
+			// data.controller = new VanylController(this.root, )
+			// }
+			else this.updatePin(data, arg)
+		}
+	}
+	updatePin(data, arg) {
+		if (arg instanceof VResult) {
+			if (data.vResultLast?.isSame(arg)) {
+				data.controller.update(arg)
+			} else {
+				const [el, controllerData] = markedFirstChild(arg)
+				data.element.after(el)
+				data.vResultElem?.remove() // needs in most palces
+				data.vResultElem = el
+				data.controller = new VanylController(this.root, controllerData)
+				data.controller.update(arg)
+			}
+			data.vResultLast = arg
+		} else if (typeof arg == "string" || typeof arg == "number") {
+			data.element.nodeValue = arg
 		}
 	}
 	updateProps(target, props, oldProps = {}) {
@@ -135,34 +145,33 @@ function markedFirstChild(vr) {
 // 	return new VanylController(element, datas)
 // }
 
-
-let vt = ()=>Math.random()>0.5? v`<span>that's from v</span>` : "textyyyytextyyyyy"
+let vt = () =>
+	Math.random() > 0.5 ? v`<span>that's from v</span>` : "textyyyytextyyyyy"
 
 let f = (a = false, b = 0) => v`
 	<button ${{
 		disabled: a,
-		onclick: ()=> console.log('clicked')
+		onclick: () => console.log("clicked"),
 	}}
 	>hi
 	</button>
 
 	${v`
 		<p>
-			hi <i>my</i> <b>bro ${parseInt(Math.random()*100)}</b>
+			hi <i>my</i> <b>bro ${parseInt(Math.random() * 100)}</b>
 		</p>
 	`} <br>
 	${ab()} <br>
 	${vt()}
 `
 
-let buttonA = ()=> v`<button
-	${{onclick: ()=>console.log('fasad')}}
->a ${parseInt(Math.random()*1000)}</button>`
-let buttonB = ()=> v`<button
-	${{onclick: ()=>console.log('fasad')}}
->b ${parseInt(Math.random()*1000)}</button>`
-let ab = () => Math.random() > 0.5 ? buttonA() : buttonB()
-
+let buttonA = () => v`<button
+	${{ onclick: () => console.log("fasad") }}
+>a ${parseInt(Math.random() * 1000)}</button>`
+let buttonB = () => v`<button
+	${{ onclick: () => console.log("fasad") }}
+>b ${parseInt(Math.random() * 1000)}</button>`
+let ab = () => (Math.random() > 0.5 ? buttonA() : buttonB())
 
 let vr = f()
 // let {strings, args} = vr
