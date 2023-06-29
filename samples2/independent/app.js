@@ -80,17 +80,10 @@ class VanylController {
 	update(vResult) {
 		for (const pin of this.pins) {
 			const arg = vResult.args[pin.i]
-			// for the old
-			pin.element.nodeValue &&= ""
-			if (!(arg instanceof VResult)) {
-				pin.vResultElem?.remove()
-				pin.vResultLast = null
-			}
 			if (!Array.isArray(arg)) {
 				while (pin.listLast.length) pin.listLast.pop().element.remove()
 			}
 
-			// for the new
 			if (pin.inTag) {
 				if (typeof arg == "object") {
 					this.updateProps(pin.element, arg, pin.arg)
@@ -108,7 +101,14 @@ class VanylController {
 			else this.updatePin(pin, arg)
 		}
 	}
+	// used to update/create/remove of text/vResult/(element)
 	updatePin(pin, arg) {
+		pin.element.nodeValue &&= ""
+		if (!(arg instanceof VResult)) {
+			pin.vResultElem?.remove()
+			pin.vResultLast = null
+		}
+
 		if (arg instanceof VResult) {
 			if (pin.vResultLast?.isSame(arg)) {
 				pin.controller.update(arg)
