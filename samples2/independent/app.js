@@ -105,30 +105,43 @@ class VanylController {
 	}
 	// used to update/create/remove of text/vResult/(element)
 	updatePin(pin, arg) {
-		pin.element.nodeValue &&= ""
-		if (!(arg instanceof VResult)) {
-			pin.vResultElem?.remove()
-			pin.vResultLast = null
-		}
-
 		if (arg instanceof VResult) {
 			pin.now = "VResult"
-			if (pin.vResultLast?.isSame(arg)) {
-				pin.controller.update(arg)
-			} else {
-				const [el, controllerpin] = markedFirstChild(arg)
-				pin.element.after(el)
-				pin.vResultElem?.remove() // needs in most palces
-				pin.vResultElem = el
-				pin.controller = new VanylController(this.root, controllerpin)
-				pin.controller.update(arg)
-			}
-			pin.vResultLast = arg
-		} else if (typeof arg == "string" || typeof arg == "number") {
+			this.updateVResult(pin, arg)
+		} else if (pin.last == "VResult")
+			this.resetVResult(pin, arg)
+
+		if (typeof arg == "string" || typeof arg == "number") {
 			pin.now = "text"
-			pin.element.nodeValue = arg
+			this.updateText(pin, arg)
+		} else if (pin.last == "text") {
+			this.resetText(pin, arg)
 		}
+
 		pin.last = pin.now
+	}
+	updateVResult(pin, arg){
+		if (pin.vResultLast?.isSame(arg)) {
+			pin.controller.update(arg)
+		} else {
+			const [el, controllerpin] = markedFirstChild(arg)
+			pin.element.after(el)
+			pin.vResultElem?.remove() // needs in most palces
+			pin.vResultElem = el
+			pin.controller = new VanylController(this.root, controllerpin)
+			pin.controller.update(arg)
+		}
+		pin.vResultLast = arg
+	}
+	resetVResult(pin, arg){
+		pin.vResultElem.remove() // not ?.remove() cuz .last ensures before call
+		pin.vResultLast = null
+	}
+	updateText(pin, arg){
+		pin.element.nodeValue = arg
+	}
+	resetText(pin, arg){
+		pin.element.nodeValue = ""
 	}
 	updateProps(target, props, oldProps = {}) {
 		for (let prop in props) {
@@ -151,7 +164,7 @@ function markedFirstChild(vr) {
 // }
 
 let vt = () =>
-	Math.random() > 0.5 ? v`<span>that's from v</span>` : "textyyyytextyyyyy"
+	Math.random() > 0.5 ? v`<span>that's from v</span>` : "textymishhhhhhhhhhhh"
 
 let f = (a = false, b = 0) => v`
 	<button ${{
