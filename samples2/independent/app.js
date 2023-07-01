@@ -99,25 +99,25 @@ class VanylController {
 	updatePin(pin, arg) {
 		if (pin.inTag) {
 			if (typeof arg == "object") {
-				this.updateProps(pin.element, arg, pin.arg)
-				pin.arg = arg
+				pin.now = "props"
+				this.updateProps(pin, arg)
 			} else if (typeof arg == "function") {
-				if (pin.callNext) pin.callNext = arg(pin.element) == updater
+				pin.now = "function"
+				this.updateFunction()
 			}
-		}
+		} else {
+			if (arg instanceof VResult) {
+				pin.now = "VResult"
+				this.updateVResult(pin, arg)
+			} else if (pin.last == "VResult")
+				this.resetVResult(pin, arg)
 
-		
-		if (arg instanceof VResult) {
-			pin.now = "VResult"
-			this.updateVResult(pin, arg)
-		} else if (pin.last == "VResult")
-			this.resetVResult(pin, arg)
-
-		if (typeof arg == "string" || typeof arg == "number") {
-			pin.now = "text"
-			this.updateText(pin, arg)
-		} else if (pin.last == "text") {
-			this.resetText(pin, arg)
+			if (typeof arg == "string" || typeof arg == "number") {
+				pin.now = "text"
+				this.updateText(pin, arg)
+			} else if (pin.last == "text") {
+				this.resetText(pin, arg)
+			}
 		}
 
 		pin.last = pin.now
@@ -145,12 +145,20 @@ class VanylController {
 	resetText(pin, arg){
 		pin.element.nodeValue = ""
 	}
-	updateProps(target, props, oldProps = {}) {
+	updateProps(pin, arg) {
+		let target = pin.element
+		let props = arg
+		let oldProps = pin.arg
+
 		for (let prop in props) {
 			if (props[prop] !== oldProps[prop]) {
 				target[prop] = props[prop]
 			}
 		}
+		pin.arg = arg
+	}
+	updateFunction(pin, arg){
+		if (pin.callNext) pin.callNext = arg(pin.element) == updater
 	}
 }
 
