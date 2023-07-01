@@ -21,6 +21,8 @@ export function pinProperties() {
 
 		// core
 		element: null, // text node for marking. won't be removed.
+		now: null, // used to assign to last at the end
+		last: null, // the now value. means the type of last pin update.
 
 		// functions
 		callNext: true,
@@ -110,6 +112,7 @@ class VanylController {
 		}
 
 		if (arg instanceof VResult) {
+			pin.now = "VResult"
 			if (pin.vResultLast?.isSame(arg)) {
 				pin.controller.update(arg)
 			} else {
@@ -122,8 +125,10 @@ class VanylController {
 			}
 			pin.vResultLast = arg
 		} else if (typeof arg == "string" || typeof arg == "number") {
+			pin.now = "text"
 			pin.element.nodeValue = arg
 		}
+		pin.last = pin.now
 	}
 	updateProps(target, props, oldProps = {}) {
 		for (let prop in props) {
