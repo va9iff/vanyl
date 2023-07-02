@@ -99,8 +99,8 @@ class VanylController {
 	updatePin(pin, arg) {
 		if (pin.inTag) {
 			if (typeof arg == "object") {
-				pin.now = "props"
-				this.updateProps(pin, arg)
+				this.updateProps(pin.element, arg, pin.arg)
+				pin.arg = arg
 			} else if (typeof arg == "function") {
 				pin.now = "function"
 				this.updateFunction()
@@ -145,17 +145,12 @@ class VanylController {
 	resetText(pin, arg){
 		pin.element.nodeValue = ""
 	}
-	updateProps(pin, arg) {
-		let target = pin.element
-		let props = arg
-		let oldProps = pin.arg
-
+	updateProps(target, props, oldProps = {}) {
 		for (let prop in props) {
 			if (props[prop] !== oldProps[prop]) {
 				target[prop] = props[prop]
 			}
 		}
-		pin.arg = arg
 	}
 	updateFunction(pin, arg){
 		if (pin.callNext) pin.callNext = arg(pin.element) == updater
