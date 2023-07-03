@@ -177,6 +177,13 @@ class VanylController {
 		pin.list[arg.length-1] ??= undefined
 
 		//instead of this.updatePins we should use listPinsController.updatePins
+
+		//actually it does 0 difference since the iterations are determined by 
+		//the argument. so there's no difference. it just matters for the root
+		//which is this.root but should be el if we want to narrow some query.
+		//but then the props won't work for the top level element. it's kinda 
+		//messed up now but I believe I can find a better way. everything 
+		//has just been better and better. except my breakup.
 		for (const [i, listItem] of pin.list.entries()){
 			const listArg = arg[i]
 			if (listItem?.listArg.isSame?.(listArg)) {
