@@ -33,8 +33,8 @@ export function pinProperties() {
 		controller: null,
 
 		// lists
-		listLast: [
-			/*{element, controller}*/
+		list: [
+			/*pin - {element, controller}*/
 		],
 	}
 }
@@ -79,6 +79,12 @@ class VanylController {
 			}
 		}
 	}
+	updatePins(vResult, pins){
+		for (const pin of pins) {
+			const arg = vResult.args[pin.i]
+			this.updatePin(pin, arg)
+		}		
+	}
 	update(vResult) {
 		for (const pin of this.pins) {
 			const arg = vResult.args[pin.i]
@@ -101,6 +107,7 @@ class VanylController {
 			if (typeof arg == "object") {
 				this.updateProps(pin.element, arg, pin.arg)
 				pin.arg = arg
+				pin.now = "props"
 			} else if (typeof arg == "function") {
 				pin.now = "function"
 				this.updateFunction()
@@ -111,12 +118,17 @@ class VanylController {
 				this.updateVResult(pin, arg)
 			} else if (pin.last == "VResult")
 				this.resetVResult(pin, arg)
-
 			if (typeof arg == "string" || typeof arg == "number") {
 				pin.now = "text"
 				this.updateText(pin, arg)
 			} else if (pin.last == "text") {
 				this.resetText(pin, arg)
+			}
+			if (Array.isArray(arg)) {
+				pin.now = "list"
+				this.updateList(pin, arg)
+			} else if (pin.last == "list") {
+				this.resetList(pin, arg)
 			}
 		}
 
@@ -145,6 +157,22 @@ class VanylController {
 	resetText(pin, arg){
 		pin.element.nodeValue = ""
 	}
+	updateList(pin, arg){
+		pin.list[arg.length-1] ??= undefined
+
+		for (const [i, listItem] of pin.list.entries()){
+			const listArg = arg[i]
+			if (listItem?.listArg.isSame?.(listArg)) {
+				this.updatePins(listArg, listItem.listPins)
+			} else{
+				const [el, listPins] = markedFirstChild(listArg)
+				pin.element.after(el)
+				const listPinsController = new VanylController(this.root, listPins)
+				pin.list[i] = {listPins,listArg}
+				this.updatePins(listArg, listPins)
+			}
+		}
+	}
 	updateProps(target, props, oldProps = {}) {
 		for (let prop in props) {
 			if (props[prop] !== oldProps[prop]) {
@@ -168,6 +196,18 @@ function markedFirstChild(vr) {
 // 	return new VanylController(element, pins)
 // }
 
+let list = ()=>{
+	// let l = Math.round(Math.random()*4)
+	let l = 4
+	console.log(l)
+	return [
+	parseInt(Math.random()*1000),
+	parseInt(Math.random()*1000),
+	parseInt(Math.random()*1000),
+	parseInt(Math.random()*1000),
+	].slice(0,l)
+}
+
 let vt = () =>
 	Math.random() > 0.5 ? v`<span>that's from v</span>` : "textymishhhhhhhhhhhh"
 
@@ -185,7 +225,11 @@ let f = (a = false, b = 0) => v`
 		</p>
 	`} <br>
 	${ab()} <br>
-	${vt()}
+	${vt()} <br>
+	and here's the list
+	${list().map(num=>v`
+		<b>hi dude ${num} <br></b>
+		`)}
 `
 
 let buttonA = () => v`<button
