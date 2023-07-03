@@ -4,6 +4,7 @@ export class VResult {
 		this.args = args
 	}
 	isSame(_vResult) {
+		if (!_vResult) return false
 		return (
 			this.strings.length == _vResult.strings.length &&
 			this.strings.every((s, i) => this.strings[i] == _vResult.strings[i])
@@ -57,6 +58,19 @@ export function markHtml(vResult) {
 	return [html, pins]
 }
 
+export function processHtml(element, pins) {
+	for (const pin of pins) {
+		pin.element = element.querySelector(`[V${pin.i}]`)
+		pin.element.removeAttribute(`V${pin.i}`)
+		if (pin.inTag) {
+		} else {
+			const textNode = document.createTextNode("") // or erease at upt
+			pin.element.replaceWith(textNode)
+			pin.element = textNode
+		}
+	}
+}
+
 const updater = Symbol("updater")
 
 class VanylController {
@@ -65,9 +79,10 @@ class VanylController {
 		this.pins = pinss
 		this.root = root
 		// root.innerHTML = html
-		this.process(pinss)
+		/*this.process(pinss)*/
+		processHtml(this.root, this.pins)
 	}
-	process(pins) {
+/*	process(pins) {
 		for (const pin of pins) {
 			pin.element = this.root.querySelector(`[V${pin.i}]`)
 			pin.element.removeAttribute(`V${pin.i}`)
@@ -78,28 +93,15 @@ class VanylController {
 				pin.element = textNode
 			}
 		}
-	}
+	}*/
 	updatePins(vResult, pins){
 		for (const pin of pins) {
-			const arg = vResult.args[pin.i]
+			const arg = vResult?.args?.[pin.i]
 			this.updatePin(pin, arg)
 		}		
 	}
 	update(vResult) {
-		for (const pin of this.pins) {
-			const arg = vResult.args[pin.i]
-			this.updatePin(pin, arg)
-		}
-			// if (!Array.isArray(arg)) {
-				// while (pin.listLast.length) pin.listLast.pop().element.remove()
-			// }
-
-			// else if (Array.isArray(arg)) {
-			// for (const pin of pin.listLast) {
-
-			// }
-			// pin.controller = new VanylController(this.root, )
-			// }
+		this.updatePins(vResult, this.pins)
 	}
 	// used to update/create/remove of text/vResult/(element)
 	updatePin(pin, arg) {
@@ -157,19 +159,45 @@ class VanylController {
 	resetText(pin, arg){
 		pin.element.nodeValue = ""
 	}
+	/*
+		NO WE'LL USE KEYS. I DON'T LIKE THIS DYNAMIC SIZED ARRAYS.
+		IF THERE'S THE KEY, OK. IF NOT, NOT.
+		that's not even bad dev exp either.
+		v`
+			<ul>
+				${data.map((item,key)=>v`
+					<li ${{key}}>${item.text}</li>
+				`)}
+			</ul>
+		`
+
+		or maybe both as an option. I'm jus lil scared of keyless updates.
+	*/
 	updateList(pin, arg){
 		pin.list[arg.length-1] ??= undefined
 
+		//instead of this.updatePins we should use listPinsController.updatePins
 		for (const [i, listItem] of pin.list.entries()){
 			const listArg = arg[i]
 			if (listItem?.listArg.isSame?.(listArg)) {
 				this.updatePins(listArg, listItem.listPins)
-			} else{
+			}
+			else if (listItem){
+				listItem.el.remove()
 				const [el, listPins] = markedFirstChild(listArg)
-				pin.element.after(el)
+				pin.element.before(el)
 				const listPinsController = new VanylController(this.root, listPins)
-				pin.list[i] = {listPins,listArg}
+				pin.list[i] = {listPins,listArg, el, listPinsController}
 				this.updatePins(listArg, listPins)
+			}
+			else if (listArg){
+				const [el, listPins] = markedFirstChild(listArg)
+				pin.element.before(el)
+				const listPinsController = new VanylController(this.root, listPins)
+				pin.list[i] = {listPins,listArg, el, listPinsController}
+				this.updatePins(listArg, listPins)
+			} else {
+				listItem.el.remove()
 			}
 		}
 	}
@@ -196,16 +224,40 @@ function markedFirstChild(vr) {
 // 	return new VanylController(element, pins)
 // }
 
+let k = 0
+
 let list = ()=>{
-	// let l = Math.round(Math.random()*4)
-	let l = 4
-	console.log(l)
-	return [
-	parseInt(Math.random()*1000),
-	parseInt(Math.random()*1000),
-	parseInt(Math.random()*1000),
-	parseInt(Math.random()*1000),
-	].slice(0,l)
+	k++
+	if (k<=2) return [
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000)
+	]
+
+	if (k<=4) return [
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000),
+	]
+
+	if (k<=6) return [
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000)
+	]
+
+	return Math.random() > 0.5 ? [
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000)
+	] : 
+	[
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000),
+		parseInt(Math.random()*1000)
+	]
 }
 
 let vt = () =>
@@ -226,9 +278,9 @@ let f = (a = false, b = 0) => v`
 	`} <br>
 	${ab()} <br>
 	${vt()} <br>
-	and here's the list
-	${list().map(num=>v`
-		<b>hi dude ${num} <br></b>
+	and here's the list<br>
+	${list().map((num,i)=>Math.random()<0.5? v`<b>bo${0}b<br></b>`  : v`
+		<b>${i}hi dude ${num} <br></b>
 		`)}
 `
 
