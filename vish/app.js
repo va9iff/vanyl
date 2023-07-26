@@ -9,6 +9,7 @@ export class VResult {
 	}
 	isSame(_vResult) {
 		if (!_vResult) return false
+		if (! (vResult instanceof VResult)) return false
 		return (
 			this.strings.length == _vResult.strings.length &&
 			this.strings.every((s, i) => this.strings[i] == _vResult.strings[i])
@@ -113,10 +114,10 @@ class Controller {
 			if (vish.isSame(pin.lastVResultC.vish)){
 				pin.lastVResultC.updateWith(vish)
 			} else {
-				// use pin.element for the root and replace it
+				pin.lastVResultC.root.remove()
 				const newVResultC = new Controller(vish)
-				pin.element.replaceWith(newVResultC.root)
-				pin.element = newVResultC.root
+				pin.element.after(newVResultC.root)
+				pin.lastVResultC = newVResultC
 			}
 		}
 
