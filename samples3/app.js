@@ -176,54 +176,6 @@ class VanylController {
 	resetText(pin, arg){
 		pin.element.nodeValue = ""
 	}
-	/*
-		NO WE'LL USE KEYS. I DON'T LIKE THIS DYNAMIC SIZED ARRAYS.
-		IF THERE'S THE KEY, OK. IF NOT, NOT.
-		that's not even bad dev exp either.
-		v`
-			<ul>
-				${data.map((item,key)=>v`
-					<li ${{key}}>${item.text}</li>
-				`)}
-			</ul>
-		`
-
-		or maybe both as an option. I'm jus lil scared of keyless updates.
-	*/
-	// updateList(pin, arg){
-	// 	// pin.list[arg.length-1] ??= undefined
-	// 	/*for (const [i, listItem] of pin.list.entries()){
-	// 		listItem.isOk = true
-	// 		if (listItem?.listArg.isSame?.(listArg)) {
-	// 			this.updatePins(listArg, listItem.listPins)
-	// 		} else {
-	// 			listItem.el.remove()
-	// 		}
-	// 	}*/
-	// 	for (const [i, listItem] of pin.list.entries()){
-	// 		const listArg = arg[i]
-	// 		if (listItem?.listArg.isSame?.(listArg)) {
-	// 			this.updatePins(listArg, listItem.listPins)
-	// 		}
-	// 		else if (listItem){
-	// 			listItem.el.remove()
-	// 			const [el, listPins] = markedFirstChild(listArg)
-	// 			pin.element.before(el)
-	// 			const listPinsController = new VanylController(this.root, listPins)
-	// 			pin.list[i] = {listPins,listArg, el, listPinsController}
-	// 			this.updatePins(listArg, listPins)
-	// 		}
-	// 		else if (listArg){
-	// 			const [el, listPins] = markedFirstChild(listArg)
-	// 			pin.element.before(el)
-	// 			const listPinsController = new VanylController(this.root, listPins)
-	// 			pin.list[i] = {listPins,listArg, el, listPinsController}
-	// 			this.updatePins(listArg, listPins)
-	// 		} else {
-	// 			listItem.el.remove()
-	// 		}
-	// 	}
-	// }
 	updateProps(target, props, oldProps = {}) {
 		for (let prop in props) {
 			if (props[prop] !== oldProps[prop]) {
@@ -236,43 +188,3 @@ class VanylController {
 	}
 }
 
-let vt = () =>
-	Math.random() > 0.5 ? v`<span>that's from v</span>` : "textymishhhhhhhhhhhh"
-
-let rendr = () => v`
-	<button ${{
-		disabled: Math.random()>0.5,
-		onclick: () => console.log("clicked"),
-	}}
-	>hi </button>
-
-	${v`
-		<p>
-			hi <i>my</i> <b>bro ${parseInt(Math.random() * 100)}</b>
-		</p>
-	`} <br>
-
-	${ab()} <br>
-	${vt()} <br>
-	and here's the list<br>
-`
-
-let buttonA = () => v`<button
-	${{ onclick: e => console.log(e.target.innerHTML) }}
-	${k=>k.click()}
->a ${parseInt(Math.random() * 1000)}</button>`
-let buttonB = () => v`<button
-	${{ onclick: e => console.log(e.target.innerHTML) }}
-	${k=>k.click()}
->b ${parseInt(Math.random() * 1000)}</button>`
-let ab = () => (Math.random() > 0.5 ? buttonA() : buttonB())
-
-let vr = rendr()
-// let {strings, args} = vr
-let [html, pins] = markHtml(vr)
-document.body.innerHTML = html
-let c = new VanylController(document.body, pins)
-
-setInterval(() => {
-	c.update(Math.random() > 0.5 ? rendr() : "hi????")
-}, 500)

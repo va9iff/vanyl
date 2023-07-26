@@ -11,40 +11,59 @@ export class VResult {
 		)
 	}
 }
+
+const count = (()=>{
+	let current = 0
+	return () => current++
+})()
+
+// mark is an object that generates the string and holds the data to later 
+// grab and the element from string and make a pin with the grabbed element
+
+export class Mark {
+	constructor(inTag = false){
+		this.inTag = inTag
+	}
+	id = count()
+	get unique(){
+		return `V${this.id}`
+	}
+	get selector(){
+		return `[${this.unique}]`
+	}
+	drop(){
+		return this.inTag ? `${this.unique}` : `<wbr V${this.id}>`
+	}
+	// grabFrom(element){
+		// return element.querySelector(this.selector)
+	// }
+}
+
+export class Pin {
+	constructor(mark, parent, arg){
+		this.mark = mark
+		this.node = parent.querySelector(mark.selector)
+		this.node.removeAttribute(mark.selector)
+		if (!mark.inTag) {
+			const textNode = document.createTextNode("") // or erease at upt
+			pin.element.replaceWith(textNode)
+			pin.element = textNode
+		}
+		this.arg
+	}
+	isPin = true
+	node = null
+}
+
 export function v() {
 	return new VResult(...arguments)
 }
 
-export function pinProperties() {
-	return {
-		// definer
-		isPin: true,
 
-		// defined @markHtml
-		// arg, i, inTag
-
-		// core
-		element: null, // text node for marking. won't be removed.
-		now: null, // used to assign to last at the end
-		last: null, // the now value. means the type of last pin update.
-
-		// functions
-		callNext: true,
-
-		// vResult arg
-		vResultLast: null, // to check - update or replace
-		vResultElem: null, // the element of vResult. refer to remove.
-		controller: null,
-
-		// lists
-		list: [
-			/*pin - {element, controller}*/
-		],
-	}
-}
-
+// -> [string, pin[]]
 export function markHtml(pinnable) {
 	if (typeof pinnable == "string"){
+		let mark = new Mark(false)
 		return [`<wbr V0>`, [{ ...pinProperties(), arg: pinnable, i, inTag: true }]]
 	}
 	else if (pinnable instanceof VResult){
@@ -97,7 +116,6 @@ class VanylController {
 		this.root = root
 		processHtml(this.root, this.pins)
 	}
-	// pins are the ${}s in the vResult. so it NEEDS a vResult
 	updatePins(pinnable, pins){
 		if (pinnable instanceof VResult){
 			for (const pin of pins) {
@@ -107,19 +125,11 @@ class VanylController {
 		} else if (pinnable.isPin) {
 			for (const pin of pins) this.updatePin(pin, null)
 		}
-			// instead of calling it vResult, we should call it pinnable.
-			// vResult is the most meaningful pinnable thing.
-			// but it can be string, null as well.
-			// and then, we should treat it like a single pin 
-			// instead of something that has a multiple pins.
 
-			// so pinnables are either vResult with multiple pins
-			// or a single pin
 	}
 	update(vResult) {
 		this.updatePins(vResult, this.pins)
 	}
-	// used to update/create/remove of text/vResult/(element)
 	updatePin(pin, arg) {
 		if (pin.inTag) {
 			if (typeof arg == "object") {
@@ -142,13 +152,7 @@ class VanylController {
 			} else if (pin.last == "text") {
 				this.resetText(pin, arg)
 			}
-			// if (Array.isArray(arg)) {
-			// 	pin.now = "list"
-			// 	this.updateList(pin, arg)
-			// } else if (pin.last == "list") {
-			// 	this.resetList(pin, arg)
-			// }
-		}
+	}
 
 		pin.last = pin.now
 	}
@@ -176,7 +180,7 @@ class VanylController {
 	resetText(pin, arg){
 		pin.element.nodeValue = ""
 	}
-	/*
+		/*
 		NO WE'LL USE KEYS. I DON'T LIKE THIS DYNAMIC SIZED ARRAYS.
 		IF THERE'S THE KEY, OK. IF NOT, NOT.
 		that's not even bad dev exp either.
@@ -190,40 +194,6 @@ class VanylController {
 
 		or maybe both as an option. I'm jus lil scared of keyless updates.
 	*/
-	// updateList(pin, arg){
-	// 	// pin.list[arg.length-1] ??= undefined
-	// 	/*for (const [i, listItem] of pin.list.entries()){
-	// 		listItem.isOk = true
-	// 		if (listItem?.listArg.isSame?.(listArg)) {
-	// 			this.updatePins(listArg, listItem.listPins)
-	// 		} else {
-	// 			listItem.el.remove()
-	// 		}
-	// 	}*/
-	// 	for (const [i, listItem] of pin.list.entries()){
-	// 		const listArg = arg[i]
-	// 		if (listItem?.listArg.isSame?.(listArg)) {
-	// 			this.updatePins(listArg, listItem.listPins)
-	// 		}
-	// 		else if (listItem){
-	// 			listItem.el.remove()
-	// 			const [el, listPins] = markedFirstChild(listArg)
-	// 			pin.element.before(el)
-	// 			const listPinsController = new VanylController(this.root, listPins)
-	// 			pin.list[i] = {listPins,listArg, el, listPinsController}
-	// 			this.updatePins(listArg, listPins)
-	// 		}
-	// 		else if (listArg){
-	// 			const [el, listPins] = markedFirstChild(listArg)
-	// 			pin.element.before(el)
-	// 			const listPinsController = new VanylController(this.root, listPins)
-	// 			pin.list[i] = {listPins,listArg, el, listPinsController}
-	// 			this.updatePins(listArg, listPins)
-	// 		} else {
-	// 			listItem.el.remove()
-	// 		}
-	// 	}
-	// }
 	updateProps(target, props, oldProps = {}) {
 		for (let prop in props) {
 			if (props[prop] !== oldProps[prop]) {
