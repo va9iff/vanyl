@@ -9,7 +9,7 @@ export class VResult {
 	}
 	isSame(_vResult) {
 		if (!_vResult) return false
-		if (! (vResult instanceof VResult)) return false
+		if (! (_vResult instanceof VResult)) return false
 		return (
 			this.strings.length == _vResult.strings.length &&
 			this.strings.every((s, i) => this.strings[i] == _vResult.strings[i])
@@ -35,8 +35,9 @@ class Pin {
 
 	// vResult arg
 	// lastVResultC =  v`` // to check - update or replace vResult
-	lastVResultC = new Controller(v``)
+	lastVResultC = null
 	lastList =  [/*controller*/]
+	last = ""
 }
 
 export function v() {
@@ -107,25 +108,39 @@ class Controller {
 	}
 	updateProps(){}
 	updateVish(pin, vish) {
+		let now
 		if (typeof vish == "string" || typeof vish == "number") {
-			console.log('cish')
+			now = "text"
 			pin.element.nodeValue = vish
-		} else if (vish instanceof VResult){
-			if (vish.isSame(pin.lastVResultC.vish)){
+		} else if (pin.last == "text") {
+			pin.element.nodeValue = ""
+		}
+
+		if (vish instanceof VResult){
+			now = "vResult"
+			if (vish.isSame(pin.lastVResultC?.vish)){
 				pin.lastVResultC.updateWith(vish)
 			} else {
-				pin.lastVResultC.root.remove()
+				pin.lastVResultC?.root.remove()
 				const newVResultC = new Controller(vish)
 				pin.element.after(newVResultC.root)
 				pin.lastVResultC = newVResultC
 			}
+		} else if (pin.last == "vResult") {
+			pin.lastVResultC?.root.remove()
+			pin.lastVResultC = null
 		}
+		pin.last = now
 
 	}
 	updateWith(vish) {
 		if (vish instanceof VResult) {
 			this.updatePins(vish)
 		}
+		/* else if (typeof vish == "string" || typeof vish == "number"){
+			[insert returning to a string from template function logic here]
+			or maybe not. unnecessary complications
+		}*/
 		this.vish = vish
 	}
 }
@@ -137,9 +152,10 @@ function oneOf(...things) {
 
 let a = 7
 let vr = ()=> oneOf(
-	v`hi`,
-	v`<b>hi</b>`,
-	v`<span>wuss ${"uppppp"}</span>`,
+	"hi",
+	// v`hi`,
+	// v`<b>hi</b>`,
+	// v`<span>wuss ${"uppppp"}</span>`,
 	v`<span>wuss ${v`
 		<div>upppp heyyyy ${a}</div>
 		`
@@ -160,4 +176,4 @@ controller.to(document.body)
 
 setInterval(()=>{
 	controller.updateWith(template())
-}, 200)
+}, 700)
