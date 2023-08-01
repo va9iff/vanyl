@@ -1,3 +1,14 @@
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!!!!! WE'RE REWIRTING !!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# Vanyl is being rewritten to be safer and more stable. please wait for the 
+# main version to be published. You'll have all the functionality of the 
+# previous one (on the below) and far more extensibility. stay tuned <3
+
+
+
 # The Most Vanilla Declarative UI Library
 
 Aside from built in 2 way data binding `lazy`, Vanyl doesn't have any knowledge about your data so, when it's changed, you should call update.
