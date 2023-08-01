@@ -88,63 +88,6 @@ function markHtml(vResult) {
 	return [html, storeds]
 }
 
-function getFirstChild(htmlString){
-	const holder = document.createElement('div')
-	holder.innerHTML = htmlString
-	const child = holder.firstElementChild
-	child.remove()
-	return child
-}
-
-// function parseThatAlsoUpdates(htmlString, storeds) {
-// 	const holder = document.createElement('div')
-// 	holder.innerHTML = htmlString
-
-// 	for (let [i, stored] of storeds.entries()) {
-// 		const { arg } = stored
-// 		let el = holder.querySelector(`[i${i}]`)
-// 		switch (stored.type) {
-// 			case "function":
-// 				stored.arg(el)
-// 				break
-// 			case "element":
-// 			case "text":
-// 				el.replaceWith(stored.arg)
-// 				break
-// 			case "array":
-// 				for (const _el of stored.arg) el.before(_el)
-// 				el.remove()
-// 				break
-// 			case "props":
-// 				console.log(holder.firstElementChild)
-// 				for (let key in stored.arg) el[key] = stored.arg[key]
-// 		}
-// 	}
-// 	const child = holder.firstElementChild
-// 	child.remove()
-// 	return child
-// }
-
-function parse(htmlString, storeds) {
-	const holder = document.createElement('div')
-	holder.innerHTML = htmlString
-
-	for (let [i, stored] of storeds.entries())
-		stored.element = holder.querySelector(`[i${i}]`)
-
-	const child = holder.firstElementChild
-	child.remove()
-	return child
-}
-
-function getFirstChildParsed(argument) {
-	const holder = document.createElement('div')
-	holder.innerHTML = htmlString
-	const child = holder.firstElementChild
-	child.remove()
-	return child
-}
-
 class V {
 	markedHTML = ""
 	storeds = []
@@ -153,109 +96,95 @@ class V {
 	constructor(strings, args){
 		this.strings = strings
 		this.args = args
-
-		// let [ htmlString, storeds ] = markHtml(this)
-		// ;[ this.markedHTML, this.storeds ] = markHtml(this)
-
-		// this.updateWith(this) // we should parse and querySelector
-		// console.log(this.markedHTML)
-		// console.log(this.storeds)
 	}
 
-	// should be called only if this.isSame(vResult)
+	// should be called only if this.isSame(vResult) or gives unexpected results
 	updateWith(vResult){
 		for (let [i, stored] of this.storeds.entries()){
 			let arg = vResult.args[i]
-			// switch (stored.type){
-			// 	case "text":
-			// 		stored.element.nodeValue = ""
-			// 		break
-			// }
-			// stored.type = storedType(arg, stored.inTag)
-			switch (stored.oldType){
 
-			}
+			// we don't need this actually
+			// switch (stored.oldType){}
 
-			switch (stored.type){
-				case "function":
-					console.log('hit the funs')
-					if (!stored.wasOneTimeCall) arg(stored.element)
+			// if the type changes, we should clean the previous things.
+			if (stored.type != stored.oldType){
+				switch (stored.oldType) {
+					case "array":
+						// remove all the previous elements
 					break
-				case "text":
-					if (stored.type != stored.oldType) {
+				}
+
+				// at the end, everything should end such that stored.element is 
+				// an element-like to use as a mark to replace the new thing
+
+				// also the new type may require initial setup, se here's a good place
+				switch (stored.type){
+					case "text":
 						let newTextNode = document.createTextNode(arg)
 						stored.element.replaceWith(newTextNode)
 						stored.element = newTextNode
-					} else
-						stored.element.nodeValue = arg
-					break
-				case "element":
-					// console.log('hit the elem', arg)
-					stored.element.replaceWith(arg)
-					break
-				case "array":
-					/* 
-						for (oldVr of oldArr) 
-							exists = newArr.find(newVr => oldVr.isSame(newVr))
-							if (exists) 
-								// !! it'll keep replacing the first occurance
-								oldVr.updateWith(exists)
-							else
-								oldVr.remove()
-					*/
+						break
+				}
+			}
+
+			// if the type is the same, we can update it way more simpler
+			else if (stored.type == stored.oldType){
+				switch (stored.type){
+					case "array":
+						/* 
+							for (oldVr of oldArr) 
+								exists = newArr.find(newVr => oldVr.isSame(newVr))
+								if (exists) 
+									// !! it'll keep replacing the first occurance
+									oldVr.updateWith(exists)
+								else
+									oldVr.remove()
+						*/
+						break
+				}
+			}
+
+			// there's some others that doesn't care about the oldType
+			// and they'll do the exact same thing every time.
+			switch (stored.type) {
+				case "function":
+					if (!stored.wasOneTimeCall) 
+						stored.wasOneTimeCall = arg(stored.element) != "repeat"
 					break
 				case "props":
 					for (let key in arg)
 						stored.element[key] = arg[key]
 					break
+				case "element":
+					stored.element.replaceWith(arg)
+					break
+				case "text":
+					stored.element.nodeValue = arg
+					break
+
+				case "array":
+					break // so it won't hit the error
 				default:
 					console.error("unknown stored type", stored)
+
 			}
 			stored.arg = arg
+			stored.oldType = stored.type
 		}
 	}
 	parse(){
 		;[ this.markedHTML, this.storeds ] = markHtml(this)
 
-
-
 		const holder = document.createElement('div')
 		holder.innerHTML = markHtml(this)
 		for (let [i, stored] of this.storeds.entries()) {
 			stored.element = holder.querySelector(`[i${i}]`)
-
 		}
 		const child = holder.firstElementChild
 		child.remove()
 		this.root = child
 		return child
 	}
-
-
-		/*for (let i = 0; i < this.storeds.length; i++) {
-			let el = holder.querySelector(`[i${i + 1}]`)
-			const stored = this.storeds[i][0]
-			switch (this.storeds[i][1]) {
-				case "function":
-					stored(el)
-					break
-				case "element":
-				case "text":
-					el.replaceWith(stored)
-					break
-				case "array":
-					for (const _el of stored) el.before(_el)
-					el.remove()
-					break
-				case "props":
-					for (let key in stored) el[key] = stored[key]
-			}
-		}
-
-		const child = holder.firstElementChild
-		child.remove()
-		return child*/
-
 }
 
 export function v (strings, ...args) {
