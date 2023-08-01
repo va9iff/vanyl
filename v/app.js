@@ -13,6 +13,8 @@ function getType(arg) {
 				return "null"
 			else if (Array.isArray(arg))
 				return "array"
+			else if (arg instanceof V)
+				return "v"
 			else if (arg instanceof Element)
 				return "element"
 			else if (type == "object")
@@ -22,6 +24,7 @@ function getType(arg) {
 }
 
 function storedType(arg, inTag) {
+	if (inTag == undefined) console.error("storetType needs to know if the element is in a tag (second argument: boolean)")
 	let type = getType(arg)
 	if (inTag)
 		switch (type) {
@@ -42,6 +45,7 @@ function storedType(arg, inTag) {
 				break
 			case "element":
 			case "array":
+			case "v":
 				return type
 				break
 			default: 
@@ -78,6 +82,7 @@ function markHtml(vResult) {
 			case "text":
 			case "element":
 			case "array":
+			case "v":
 				html += `<wbr i${i}>`
 				break
 			default:
@@ -102,12 +107,13 @@ class V {
 	updateWith(vResult){
 		for (let [i, stored] of this.storeds.entries()){
 			let arg = vResult.args[i]
+			stored.type = storedType(arg, stored.inTag)
 
-			// we don't need this actually
-			// switch (stored.oldType){}
+			console.log(stored.type)
 
 			// if the type changes, we should clean the previous things.
 			if (stored.type != stored.oldType){
+				// stored.oldArg is old arg
 				switch (stored.oldType) {
 					case "array":
 						// remove all the previous elements
@@ -124,6 +130,12 @@ class V {
 						stored.element.replaceWith(newTextNode)
 						stored.element = newTextNode
 						break
+					case "v":
+						arg.parse()
+						stored.element.replaceWith(arg.root)
+						stored.element = arg.root
+						stored.v = arg
+
 				}
 			}
 
@@ -141,6 +153,8 @@ class V {
 									oldVr.remove()
 						*/
 						break
+					case "v":
+						stored.v.updateWith(arg)
 				}
 			}
 
@@ -162,13 +176,14 @@ class V {
 					stored.element.nodeValue = arg
 					break
 
+				case "v":
 				case "array":
 					break // so it won't hit the error
 				default:
 					console.error("unknown stored type", stored)
 
 			}
-			stored.arg = arg
+			stored.oldArg = arg
 			stored.oldType = stored.type
 		}
 	}
@@ -183,6 +198,14 @@ class V {
 		const child = holder.firstElementChild
 		child.remove()
 		this.root = child
+		this.updateWith(this) // ~~~ I feel like it shouldn't be there tho.
+		// or let it there. I'd change completely if it should have been another place.
+		// there's a `div` is being in use and it's generally a bit shitty in that manner.
+		// so the VanylElement will have completely different approach on top level parse.
+		// but this can be the vResult arg method toc reate the element.
+
+		// so .parse() always does update. it's like marks, processes, updates 
+		// and gives you the element. you can even udate the vResult afterwards.
 		return child
 	}
 }
@@ -194,7 +217,7 @@ export function v (strings, ...args) {
 const oneOf = (...args) => args[Math.floor(Math.random()*args.length)]
 
 
-let ab = ()=>(Math.random()>0.5?"a":"b") + Math.random()
+let ab = ()=>oneOf("a", v`<i>that's a ${Math.random()} vResult</i>`)
 
 let fun = ()=>v`<div>hi <b>${ab()}</b></div>`
 let vr = fun()
