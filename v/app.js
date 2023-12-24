@@ -187,9 +187,18 @@ class V {
 			stored.oldType = stored.type
 		}
 	}
+	parseAs(tagName){
+		;[ this.markedHTML, this.storeds ] = markHtml(this)
+		this.root = document.createElement(tagName)
+		this.root.innerHTML = this.markedHTML
+		for (let [i, stored] of this.storeds.entries()) {
+			stored.element = this.root.querySelector(`[i${i}]`)
+		}
+		this.updateWith(this)
+		return this.root
+	}
 	parse(){
 		;[ this.markedHTML, this.storeds ] = markHtml(this)
-
 		const holder = document.createElement('div')
 		holder.innerHTML = this.markedHTML
 		for (let [i, stored] of this.storeds.entries()) {
@@ -199,13 +208,6 @@ class V {
 		child.remove()
 		this.root = child
 		this.updateWith(this) // ~~~ I feel like it shouldn't be there tho.
-		// or let it there. I'd change completely if it should have been another place.
-		// there's a `div` is being in use and it's generally a bit shitty in that manner.
-		// so the VanylElement will have completely different approach on top level parse.
-		// but this can be the vResult arg method toc reate the element.
-
-		// so .parse() always does update. it's like marks, processes, updates 
-		// and gives you the element. you can even udate the vResult afterwards.
 		return child
 	}
 }
@@ -221,7 +223,7 @@ let ab = ()=>oneOf("a", v`<i>that's a ${Math.random()} vResult</i>`)
 
 let fun = ()=>v`<div>hi <b>${ab()}</b></div>`
 let vr = fun()
-let child = vr.parse()
+let child = vr.parseAs('div')
 vr.updateWith(fun())
 document.body.appendChild(child)
 
