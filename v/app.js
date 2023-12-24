@@ -191,7 +191,7 @@ class V {
 		;[ this.markedHTML, this.storeds ] = markHtml(this)
 
 		const holder = document.createElement('div')
-		holder.innerHTML = markHtml(this)
+		holder.innerHTML = this.markedHTML
 		for (let [i, stored] of this.storeds.entries()) {
 			stored.element = holder.querySelector(`[i${i}]`)
 		}
