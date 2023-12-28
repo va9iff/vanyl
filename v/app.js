@@ -187,16 +187,6 @@ class V {
 			stored.oldType = stored.type
 		}
 	}
-	parseAs(tagName){
-		;[ this.markedHTML, this.storeds ] = markHtml(this)
-		this.root = document.createElement(tagName)
-		this.root.innerHTML = this.markedHTML
-		for (let [i, stored] of this.storeds.entries()) {
-			stored.element = this.root.querySelector(`[i${i}]`)
-		}
-		this.updateWith(this)
-		return this.root
-	}
 	parse(){
 		;[ this.markedHTML, this.storeds ] = markHtml(this)
 		const holder = document.createElement('div')
@@ -212,6 +202,24 @@ class V {
 	}
 }
 
+class ContainedV extends V {
+	static tagName = "v-tag"
+	parse(tagName = this.constructor.tagName){
+		;[ this.markedHTML, this.storeds ] = markHtml(this)
+		this.root = document.createElement(tagName)
+		this.root.innerHTML = this.markedHTML
+		for (let [i, stored] of this.storeds.entries()) {
+			stored.element = this.root.querySelector(`[i${i}]`)
+		}
+		this.updateWith(this)
+		return this.root
+	}
+}
+
+export function cv(strings, ...args) {
+	return new ContainedV(strings, args)
+}
+
 export function v (strings, ...args) {
 	return new V(strings, args)
 }
@@ -221,9 +229,9 @@ const oneOf = (...args) => args[Math.floor(Math.random()*args.length)]
 
 let ab = ()=>oneOf("a", v`<i>that's a ${Math.random()} vResult</i>`)
 
-let fun = ()=>v`<div>hi <b>${ab()}</b></div>`
+let fun = ()=>cv`<div>hi <b>${ab()}</b></div>`
 let vr = fun()
-let child = vr.parseAs('div')
+let child = vr.parse('my-tag')
 vr.updateWith(fun())
 document.body.appendChild(child)
 
