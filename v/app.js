@@ -203,8 +203,7 @@ class V {
 }
 
 class ContainedV extends V {
-	static tagName = "v-tag"
-	parse(tagName = this.constructor.tagName){
+	parse(tagName = "v-tag"){
 		;[ this.markedHTML, this.storeds ] = markHtml(this)
 		this.root = document.createElement(tagName)
 		this.root.innerHTML = this.markedHTML
