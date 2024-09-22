@@ -74,6 +74,7 @@ export class Velo {
 	element = null
 	pins = []
 	render(vres) {
+		this.isRendered = true
 		const { strings, args, tag } = vres
 		this.element = document.createElement(tag)
 		;[this.element.innerHTML, this.ions] = mark(vres)
@@ -91,27 +92,30 @@ export class Velo {
 	}
 	out = true
 	init(el, arg) {
+		console.log('inited a new one' + Math.random())
 		this.render(arg)
 		el.after(this.element)
 	}
-	die() {
+	die(el, arg) {
 		this.element.remove()
 	}
-	// this fucks it up somehow
-	// diff(arg) {
-	// 	if (this.vres.strings.length != arg.strings.length) return true
-	// 	if (this.vres.args.length != arg.args.length) return true
-	// 	for(let i = 0; i < this.vres.strings.length; i++) 
-	// 		if (this.vres.strings[i] != arg.strings.length) return true
-	// }
-	update(vres) {
-		console.assert(this.vres.strings.length == vres.strings.length)
-		console.log(this.vres.args.length == this.pins.length)
+	diff(arg) {
+		if (this.vres.strings.length != arg.strings.length) return true
+		if (this.vres.args.length != arg.args.length) return true
+		for(let i = 0; i < this.vres.strings.length; i++) {
+			if (this.vres.strings[i] != arg.strings[i]) return true
+		}
+		console.log("SAME")
+	}
+	update(el, arg) {
+		const vres = arg
+		console.assert(this.isRendered, ".upate() call before .render()")
+		console.assert(this.vres.strings.length == vres.strings.length, "different vres")
 		for (const [i, pin] of this.pins.entries()) {
 			const ionClass = ionic(this.vres.args[i]) 
 			const arg = vres.args[i]
 			if (this.ions[i].constructor == ionClass 
-				&& this.ions[i].diff?.(arg)) {
+				&& !this.ions[i].diff?.(arg)) {
 				this.ions[i].update?.(pin, arg)
 			} else {
 				this.ions[i].die?.(pin, arg)
@@ -142,6 +146,6 @@ console.log(...mark(mydiver()))
 const myVelo = new Velo()
 myVelo.render(mydiver())
 document.body.appendChild(myVelo.element)
-setInterval(()=>myVelo.update(mydiver()), 500)
+setInterval(()=>myVelo.update(null, mydiver()), 1000)
 console.log(myVelo.element)
 
