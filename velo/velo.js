@@ -10,6 +10,7 @@ const elem = new Proxy({}, {
 	}
 })
 
+
 const set = Symbol()
 class SetIon {
 	init(el, arg) {
@@ -47,9 +48,11 @@ class OnIon {
 function ionic(arg) {
 	if (typeof arg == "string" || typeof arg == "number") return TextIon
 	for (const key in arg) {
-		if (arg[key] == set) return SetIon
-		if (arg[key] == on) return OnIon
+		const val = arg[key]
+		if (val == set) return SetIon
+		if (val == on) return OnIon
 	}
+	if (arg.tag && arg.strings && arg.args) return Velo
 	console.log(arg)
 	throw new Error("coulndn't find a ion for that argument ")
 }
@@ -88,18 +91,24 @@ export class Velo {
 	}
 	out = true
 	init(el, arg) {
-		this.render()
+		this.render(arg)
 		el.after(this.element)
 	}
 	die() {
 		this.element.remove()
 	}
+	// diff(arg) {
+	// 	if (this.vres.strings.length != arg.strings.length) return true
+	// 	if (this.vres.args.length != arg.args.length) return true
+	// 	for(let i = 0; i < this.vres.strings.length; i++) 
+	// 		if (this.vres.strings[i] != arg.strings.length) return true
+	// }
 	update(vres) {
 		console.assert(this.vres.strings.length == vres.strings.length)
 		for (const [i, arg] of this.vres.args.entries()) {
 			const ionClass = ionic(arg)
 			if (this.ions[i].constructor == ionClass 
-				/* && ionClass != Velo && !areSame(this.ions[i], args[i]) */) {
+				&& this.ions[i].diff?.(vres.args[i])) {
 				this.ions[i].update?.(this.pins[i], vres.args[i])
 			} else {
 				this.ions[i].die?.(this.pins[i], vres.args[i])
@@ -111,12 +120,19 @@ export class Velo {
 }
 
 const { div } = elem
+const anodiver = () => div`
+	<h1>this is another div</h1>
+`
+const randb = () => Math.random() > 0.5
 const mydiver = () => div`
 	<h1>jf</h1> jflkasf 
 	<button 
-		${{ set, disabled: Math.random() > 0.5 }}
+		${{ set, disabled: randb() }}
 		${{ on, click: e => alert('hi')}}>didi 
-		${Math.random() + 'k'} limo</button>
+			${Math.random() + 'k'} limo
+	</button>
+	<h1>here another</h1>
+	${randb() ? div`that's one` : div`and the other`}
 	`
 
 console.log(...mark(mydiver()))
