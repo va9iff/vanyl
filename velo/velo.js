@@ -25,21 +25,19 @@ class SetIon {
 class TextIon {
 	out = true
 	init(el, arg) {
-		this.textNode = document.createTextNode(arg)
-		el.after(this.textNode)
+		this.update(el, arg)
 	}
 	update(el, arg) {
-		this.textNode.nodeValue = arg
+		el.nodeValue = arg
 	}
-	die() {
-		this.textNode.remove()
+	die(el) {
+		el.nodeValue = ""
 	}
 }
 
 const on = Symbol()
 class OnIon {
 	init(el, arg) {
-		console.log('inini')
 		for (const key in arg)
 			if (arg[key] !== on)
 				el.addEventListener(key, arg[key])
@@ -78,7 +76,7 @@ export class Velo {
 		;[this.element.innerHTML, this.ions] = mark(vres)
 		for (let i = 0; i < strings.length - 1; i++) {
 			let el = this.element.querySelector(`[v${i}]`)
-			if (this.ions[i].out) { // this is added later and is not tested
+			if (this.ions[i].out) {
 				const textNode = document.createTextNode("")
 				el.replaceWith(textNode)
 				el = textNode
