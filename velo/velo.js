@@ -128,7 +128,7 @@ export class Velo {
 
 const { div } = elem
 const anodiver = () => div`
-	<h1>this is another div</h1>
+	<h1>this is another div${"hi"} alksfdj ${"bye"} sflkjh ${"fa"+8}</h1>
 `
 const randb = () => Math.random() > 0.5
 const mydiver = () => div`
@@ -139,7 +139,7 @@ const mydiver = () => div`
 			${Math.random() + 'k'} limo
 	</button>
 	<h1>here another</h1>
-	${randb() ? div`that's one` : div`and the other`}
+	${randb() ? div`that's one` : div`and the other ${"hi"} ${Math.random()}`}
 	`
 
 console.log(...mark(mydiver()))
