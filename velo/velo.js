@@ -97,6 +97,7 @@ export class Velo {
 	die() {
 		this.element.remove()
 	}
+	// this fucks it up somehow
 	// diff(arg) {
 	// 	if (this.vres.strings.length != arg.strings.length) return true
 	// 	if (this.vres.args.length != arg.args.length) return true
@@ -105,15 +106,17 @@ export class Velo {
 	// }
 	update(vres) {
 		console.assert(this.vres.strings.length == vres.strings.length)
-		for (const [i, arg] of this.vres.args.entries()) {
-			const ionClass = ionic(arg)
+		console.log(this.vres.args.length == this.pins.length)
+		for (const [i, pin] of this.pins.entries()) {
+			const ionClass = ionic(this.vres.args[i]) 
+			const arg = vres.args[i]
 			if (this.ions[i].constructor == ionClass 
-				&& this.ions[i].diff?.(vres.args[i])) {
-				this.ions[i].update?.(this.pins[i], vres.args[i])
+				&& this.ions[i].diff?.(arg)) {
+				this.ions[i].update?.(pin, arg)
 			} else {
-				this.ions[i].die?.(this.pins[i], vres.args[i])
+				this.ions[i].die?.(pin, arg)
 				this.ions[i] = new ionClass()
-				this.ions[i].init?.(this.pins[i], vres.args[i])
+				this.ions[i].init?.(pin, arg)
 			}
 		}
 	}
