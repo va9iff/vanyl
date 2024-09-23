@@ -10,35 +10,76 @@ const elem = new Proxy({}, {
 	}
 })
 
+// a class to protect ion bugs.
+// just use super.init() inside init, etc
+// then it will keep track of the ion's phase
+class Ion {
+	_phase = "none"
+	init(el, arg) {
+		switch (this._phase) {
+			case "init": 
+				throw new Error("consecutive .init() instead of using .update() after")
+			case "update":
+				throw new Error(".init() on an already initialized ion")
+			case "die":
+				throw new Error(".init() on a dead ion")
+		}
+		this._phase = "init"
+	}
+	update(el, arg) {
+		switch (this._phase) {
+			case "none": 
+				throw new Error(".update() requires .init() to be called before")
+			case "die":
+				throw new Error(".update() on a dead ion")
+		}
+		this._phase = "update"
+	}
+	die(el, arg) {
+		switch(this._phase) {
+			case "none":
+				throw new Error(".die() on a non-initialized ion")
+			case "die": 
+				throw new Error(".die() on a dead ion")
+		}
+		this._phase = "die"
+	}
+}
 
 const set = Symbol()
-class SetIon {
+class SetIon extends Ion {
 	init(el, arg) {
+		super.init()
 		this.update(el, arg)
 	}
 	update(el, arg) {
+		super.update()
 		for (const key in arg) 
 			if (arg[key] !== set) 
 				el[key] = arg[key]
 	}
 }
 
-class TextIon {
+class TextIon extends Ion{
 	out = true
 	init(el, arg) {
+		super.init()
 		this.update(el, arg)
 	}
 	update(el, arg) {
+		super.update()
 		el.nodeValue = arg
 	}
 	die(el) {
+		super.die()
 		el.nodeValue = ""
 	}
 }
 
 const on = Symbol()
-class OnIon {
+class OnIon extends Ion{
 	init(el, arg) {
+		super.init()
 		for (const key in arg)
 			if (arg[key] !== on)
 				el.addEventListener(key, arg[key])
@@ -70,16 +111,18 @@ function mark({ strings, args }) {
 	return [htmlString, ions]
 }
 
-export class Velo {
+export class Velo extends Ion {
 	element = null
 	pins = []
-	render(vres) {
-		this.isRendered = true
+	#render(vres) {
 		const { strings, args, tag } = vres
 		this.element = document.createElement(tag)
-		;[this.element.innerHTML, this.ions] = mark(vres)
+		const [html, ions] = mark(vres)
+		this.element.innerHTML = html
+		this.ions = ions
 		for (let i = 0; i < strings.length - 1; i++) {
 			let el = this.element.querySelector(`[v${i}]`)
+			console.assert(el, `broken html: couldn't query v${i} \n`, html)
 			if (this.ions[i].out) {
 				const textNode = document.createTextNode("")
 				el.replaceWith(textNode)
@@ -92,11 +135,13 @@ export class Velo {
 	}
 	out = true
 	init(el, arg) {
+		super.init()
 		console.log('inited a new one' + Math.random())
-		this.render(arg)
+		this.#render(arg)
 		el.after(this.element)
 	}
 	die(el, arg) {
+		super.die()
 		this.element.remove()
 	}
 	diff(arg) {
@@ -108,8 +153,8 @@ export class Velo {
 		console.log("SAME")
 	}
 	update(el, arg) {
+		super.update()
 		const vres = arg
-		console.assert(this.isRendered, ".upate() call before .render()")
 		console.assert(this.vres.strings.length == vres.strings.length, "different vres")
 		for (const [i, pin] of this.pins.entries()) {
 			const ionClass = ionic(this.vres.args[i]) 
@@ -125,6 +170,68 @@ export class Velo {
 		}
 	}
 }
+
+//  // LATEEER. I know it's bizzare to put that in a commit but I don't care
+//
+// // not tested
+// class Fn extends Velo {
+// 	init(el) {
+// 		super.init(el, this.html())
+// 	}
+// 	update(el) {
+// 		// actually no arg needed. used its own function to generate
+// 		super.update(el, this.html(this.state))
+// 	}
+// 	refresh() {
+// 		this.update(null, this.html(this.state))
+// 	}
+// }
+//
+// function fn(fun) {
+// 	const fnVelo = new Fn()
+// 	fnVelo.html = fun
+// 	return fnVelo
+// }
+//
+// const profile = fn(({name}) => div`
+//
+// 	`)
+// // idk how to do it. new Fn instance on all args looks bad.
+// // cuz Fn inherits from Velo which allocates arrays on construction
+// // profile({ name: "VI" }) // -> Fn with this.vres 
+//
+// // or like this
+// // profile({ name: "Hi" }) // Fnn that just constructs Velo when needed
+// class Fnn extends Ion {
+// 	state = {}
+// 	init(el, arg) {
+// 		this.velo = new Velo()
+// 		this.velo.init(el, arg)
+// 		               // idk it got much flaws. it can't determine when it should die
+// 	}
+// 	update(el) {
+// 		this.velo.update(el, this.html(this.state))
+// 	}
+// 	die(el, arg) {
+// 		this.velo.die(el, arg)
+// 	}
+// 	refresh() {
+// 		this.update(null, this.html(this.state))
+// 	}
+// }
+//
+// // wtf is this
+// function app(elOrSelector, fun) {
+// 	const el = typeof elOrSelector == "string"
+// 		? document.querySelector(`#${elOrSelector}`) 
+// 		: elOrSelector
+// 	const textNode = document.createTextNode("")
+// 	el.appendChild(textNode)
+// 	const velo = new Velo()
+// 	velo.init(textNode, fun())
+//
+// }
+//
 
 const { div } = elem
 const anodiver = () => div`
@@ -144,7 +251,7 @@ const mydiver = () => div`
 
 console.log(...mark(mydiver()))
 const myVelo = new Velo()
-myVelo.render(mydiver())
+myVelo.init(document.querySelector("#app"), mydiver())
 document.body.appendChild(myVelo.element)
 setInterval(()=>myVelo.update(null, mydiver()), 1000)
 console.log(myVelo.element)
