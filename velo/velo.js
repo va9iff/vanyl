@@ -87,7 +87,12 @@ class OnIon extends Ion{
 }
 
 function ionic(arg) {
-	if (typeof arg == "string" || typeof arg == "number" || typeof arg == "undefined") return TextIon
+	switch(typeof arg) {
+		case "number":
+		case "string":
+		case "undefined":
+			return TextIon
+	}
 	for (const key in arg) {
 		const val = arg[key]
 		if (val == set) return SetIon
