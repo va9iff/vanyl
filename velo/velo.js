@@ -87,11 +87,12 @@ class OnIon extends Ion{
 }
 
 function ionic(arg) {
-	if (typeof arg == "string" || typeof arg == "number") return TextIon
+	if (typeof arg == "string" || typeof arg == "number" || typeof arg == "undefined") return TextIon
 	for (const key in arg) {
 		const val = arg[key]
 		if (val == set) return SetIon
 		if (val == on) return OnIon
+		if (val == Fn) return Fn
 	}
 	if (arg.tag && arg.strings && arg.args) return Velo
 	console.log(arg)
@@ -145,6 +146,7 @@ export class Velo extends Ion {
 		this.element.remove()
 	}
 	diff(arg) {
+		console.log(arg)
 		if (this.vres.strings.length != arg.strings.length) return true
 		if (this.vres.args.length != arg.args.length) return true
 		for(let i = 0; i < this.vres.strings.length; i++) {
@@ -171,37 +173,40 @@ export class Velo extends Ion {
 	}
 }
 
-//  // LATEEER. I know it's bizzare to put that in a commit but I don't care
-//
-// // not tested
-// class Fn extends Velo {
-// 	init(el) {
-// 		super.init(el, this.html())
-// 	}
-// 	update(el) {
-// 		// actually no arg needed. used its own function to generate
-// 		super.update(el, this.html(this.state))
-// 	}
-// 	refresh() {
-// 		this.update(null, this.html(this.state))
-// 	}
-// }
-//
-// function fn(fun) {
-// 	const fnVelo = new Fn()
-// 	fnVelo.html = fun
-// 	return fnVelo
-// }
-//
-// const profile = fn(({name}) => div`
-//
-// 	`)
-// // idk how to do it. new Fn instance on all args looks bad.
-// // cuz Fn inherits from Velo which allocates arrays on construction
-// // profile({ name: "VI" }) // -> Fn with this.vres 
-//
-// // or like this
-// // profile({ name: "Hi" }) // Fnn that just constructs Velo when needed
+function fn(fun) {
+	return function (props){
+		return { fun, Fn, props }
+	}
+}
+class Fn extends Velo {
+	state = {}
+	init(el, arg) {
+		this.state = arg.props || {}
+		this.html = arg.fun
+		super.init(el, arg.fun(this.state))
+	}
+	update(el, arg) {
+		if (arg?.fun) this.html = arg.fun
+		super.update(el, this.html(this.state))
+	}
+	diff(arg) {
+		super.diff(arg?.fun?.(this.state))
+	}
+	refresh() {
+		this.update('not necessary', this.html(this.state))
+	}
+}
+
+const profile = fn(state => div`
+	<button ${{ on, click: e => state.count = state.count ? state.count+1: 9}}>u${state.count} just wait a little after click</button>
+	`)
+
+// idk how to do it. new Fn instance on all args looks bad.
+// cuz Fn inherits from Velo which allocates arrays on construction
+// profile({ name: "VI" }) // -> Fn with this.vres 
+
+// or like this
+// profile({ name: "Hi" }) // Fnn that just constructs Velo when needed
 // class Fnn extends Ion {
 // 	state = {}
 // 	init(el, arg) {
@@ -231,7 +236,7 @@ export class Velo extends Ion {
 // 	velo.init(textNode, fun())
 //
 // }
-//
+
 
 const { div } = elem
 const anodiver = () => div`
@@ -247,6 +252,8 @@ const mydiver = () => div`
 	</button>
 	<h1>here another</h1>
 	${randb() ? div`that's one` : div`and the other ${"hi"} ${Math.random()}`}
+	<h3>now it's time to test statefuls</h3>
+	${profile({count: 99})}
 	`
 
 console.log(...mark(mydiver()))
