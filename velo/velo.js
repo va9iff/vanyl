@@ -85,13 +85,14 @@ class VresArrayIon extends Ion {
 	ions = []
 	init(el, arg) {
 		super.init()
-		let curr = el
-		for (const item of arg) {
-			const velo = new Velo()
-			velo.init(el,item)
-			curr = velo.element
-			this.ions.push(velo)
-		}
+		// let curr = el
+		// for (const item of arg) {
+		// 	const velo = new Velo()
+		// 	velo.init(el,item)
+		// 	curr = velo.element
+		// 	this.ions.push(velo)
+		// }
+		this.update(el, arg)
 	}
 	diff(arg) {
 		return !Array.isArray(arg)
@@ -99,10 +100,37 @@ class VresArrayIon extends Ion {
 	update(el, arg) {
 		console.log('update Array')
 		super.update()
-		for (const [i, velo] of this.ions.entries()) {
-			velo.update(el, arg[i])
+		var last = el
+		for (let i = 0; i < Math.max(this.ions.length, arg.length); i++) {
+			const vres = arg[i]
+			if (!arg[i]) {
+				this.ions[i]?.die(last, vres)
+				this.ions[i] = null
+				break
+			}
+			if (!this.ions[i]) {
+				console.log(i, arg[i], this.ions[i])
+				this.ions[i] = new Velo()
+				this.ions[i].init(last, vres)
+				last = this.ions[i].element
+				break
+			}
+			if (this.ions[i].diff(vres)) {
+				this.ions[i].die(last, vres)
+				this.ions[i] = new Velo()
+				this.ions[i].init(last, vres)
+			} else {
+				this.ions[i].update(last, vres)
+			}
+			// if (this.ions[i].diff(arg[i])) {
+			// 	this.ions[i].die(el, arg)
+			// 	this.ions[i] = new Velo()
+			// 	this.ions[i].init(last, arg)
+			// }
 		}
-
+	}
+	die() {
+		console.log('todo: kill array')
 	}
 }
 
@@ -172,7 +200,7 @@ export class Velo extends Ion {
 	}
 	out = true
 	init(el, arg) {
-		console.assert(isVres(arg), "Velo init expects vres")
+		console.assert(isVres(arg), "Velo init expects vres, not ", arg)
 		super.init()
 		console.log('inited a new one' + Math.random())
 		this.#render(arg)
@@ -184,6 +212,7 @@ export class Velo extends Ion {
 	}
 	diff(arg) {
 		console.assert(isVres(arg), "Velo diff expects vres")
+		if (!arg) return true
 		if (this.vres.strings.length != arg.strings.length) return true
 		if (this.vres.args.length != arg.args.length) return true
 		for(let i = 0; i < this.vres.strings.length; i++) {
@@ -192,10 +221,10 @@ export class Velo extends Ion {
 		console.log("SAME")
 	}
 	update(el, arg) {
-		console.assert(isVres(arg), "Velo update expects vres")
+		console.assert(isVres(arg), "Velo update expects vres, but got", arg)
 		super.update()
 		const vres = arg
-		console.assert(this.vres.strings.length == vres.strings.length, "different vres")
+		console.assert(this.vres.strings.length == vres.strings.length, "different vres", this.vres.strings, arg.strings)
 		for (const [i, pin] of this.pins.entries()) {
 			const ionClass = ionic(this.vres.args[i]) 
 			const arg = vres.args[i]
@@ -275,11 +304,15 @@ const profile = fn(state => div`
 //
 // }
 
-const arca = () => ([
-	div`that's div 1`,
-	div`and that's ${Math.random()+'k'} moder flipcker`,
-	p`and even a p`
-])
+const arca = () => 
+	randb() ? [
+		div`that's div 1`,
+		div`and that's ${Math.random()+'k'} moder flipcker`,
+		p`and even a p`
+	] : [
+		div`twooo`,
+		div`yaaa`
+	]
 
 const { div, p } = elem
 const anodiver = () => div`
