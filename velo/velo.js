@@ -67,13 +67,12 @@ class TextIon extends Ion{
 	out = true
 	init(el, arg) {
 		super.init()
-		this.element /*actually a text node*/ = document.createTextNode("")
+		this.element = document.createTextNode(arg)
 		el.after(this.element)
-		this.update(el, arg)
 	}
 	update(el, arg) {
 		super.update()
-		this.element.nodevalue = arg
+		this.element.nodeValue = arg
 	}
 	die(el) {
 		super.die()
@@ -85,6 +84,7 @@ class VresArrayIon extends Ion {
 	out = true
 	ions = []
 	init(el, arg) {
+		super.init()
 		let curr = el
 		for (const item of arg) {
 			const velo = new Velo()
@@ -96,6 +96,7 @@ class VresArrayIon extends Ion {
 		return !Array.isArray(arg)
 	}
 	update(el, arg) {
+		super.update()
 		for (const velo of this.ions) {
 			velo.update(el, arg)
 		}
@@ -274,7 +275,7 @@ const profile = fn(state => div`
 
 const arca = () => ([
 	div`that's div 1`,
-	div`and that's ${2} moder flipcker`,
+	div`and that's ${Math.random()+'k'} moder flipcker`,
 	p`and even a p`
 ])
 
