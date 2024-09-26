@@ -90,15 +90,17 @@ class VresArrayIon extends Ion {
 			const velo = new Velo()
 			velo.init(el,item)
 			curr = velo.element
+			this.ions.push(velo)
 		}
 	}
 	diff(arg) {
 		return !Array.isArray(arg)
 	}
 	update(el, arg) {
+		console.log('update Array')
 		super.update()
-		for (const velo of this.ions) {
-			velo.update(el, arg)
+		for (const [i, velo] of this.ions.entries()) {
+			velo.update(el, arg[i])
 		}
 
 	}
