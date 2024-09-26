@@ -1,6 +1,7 @@
 const elem = new Proxy({}, {
 	get(_, prop) {
 		return function (strings, ...args) {
+			// that's called a vres
 			return {
 				tag: prop,
 				strings,
@@ -9,6 +10,8 @@ const elem = new Proxy({}, {
 		}
 	}
 })
+
+const isVres = arg => arg?.tag && arg?.strings && arg?.args
 
 // a class to protect ion bugs.
 // just use super.init() inside init, etc
@@ -64,15 +67,39 @@ class TextIon extends Ion{
 	out = true
 	init(el, arg) {
 		super.init()
+		this.element /*actually a text node*/ = document.createTextNode("")
+		el.after(this.element)
 		this.update(el, arg)
 	}
 	update(el, arg) {
 		super.update()
-		el.nodeValue = arg
+		this.element.nodevalue = arg
 	}
 	die(el) {
 		super.die()
-		el.nodeValue = ""
+		this.element.remove()
+	}
+}
+
+class VresArrayIon extends Ion {
+	out = true
+	ions = []
+	init(el, arg) {
+		let curr = el
+		for (const item of arg) {
+			const velo = new Velo()
+			velo.init(el,item)
+			curr = velo.element
+		}
+	}
+	diff(arg) {
+		return !Array.isArray(arg)
+	}
+	update(el, arg) {
+		for (const velo of this.ions) {
+			velo.update(el, arg)
+		}
+
 	}
 }
 
@@ -99,7 +126,8 @@ function ionic(arg) {
 		if (val == on) return OnIon
 		if (val == Fn) return Fn
 	}
-	if (arg.tag && arg.strings && arg.args) return Velo
+	if (isVres(arg)) return Velo
+	if (isVres(arg[0])) return VresArrayIon
 	console.log(arg)
 	throw new Error("coulndn't find a ion for that argument ")
 }
@@ -141,6 +169,7 @@ export class Velo extends Ion {
 	}
 	out = true
 	init(el, arg) {
+		console.assert(isVres(arg), "Velo init expects vres")
 		super.init()
 		console.log('inited a new one' + Math.random())
 		this.#render(arg)
@@ -151,7 +180,7 @@ export class Velo extends Ion {
 		this.element.remove()
 	}
 	diff(arg) {
-		console.log(arg)
+		console.assert(isVres(arg), "Velo diff expects vres")
 		if (this.vres.strings.length != arg.strings.length) return true
 		if (this.vres.args.length != arg.args.length) return true
 		for(let i = 0; i < this.vres.strings.length; i++) {
@@ -160,6 +189,7 @@ export class Velo extends Ion {
 		console.log("SAME")
 	}
 	update(el, arg) {
+		console.assert(isVres(arg), "Velo update expects vres")
 		super.update()
 		const vres = arg
 		console.assert(this.vres.strings.length == vres.strings.length, "different vres")
@@ -242,8 +272,13 @@ const profile = fn(state => div`
 //
 // }
 
+const arca = () => ([
+	div`that's div 1`,
+	div`and that's ${2} moder flipcker`,
+	p`and even a p`
+])
 
-const { div } = elem
+const { div, p } = elem
 const anodiver = () => div`
 	<h1>this is another div${"hi"} alksfdj ${"bye"} sflkjh ${"fa"+8}</h1>
 `
@@ -259,6 +294,8 @@ const mydiver = () => div`
 	${randb() ? div`that's one` : div`and the other ${"hi"} ${Math.random()}`}
 	<h3>now it's time to test statefuls</h3>
 	${profile({count: 99})}
+	<h3>cool. now arrays []</h3>
+	${arca()}
 	`
 
 console.log(...mark(mydiver()))
