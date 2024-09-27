@@ -13,12 +13,12 @@ const elem = new Proxy({}, {
 
 const isVres = arg => arg?.tag && arg?.strings && arg?.args
 
-// a class to protect ion bugs.
-// just use super.init() inside init, etc
-// then it will keep track of the ion's phase
 class Ion {
+	// out = false // ? put a <wbr> and query that : else query the element
+	// ?element: is the element that this Ion is associated with
 	_phase = "none"
 	init(el, arg) {
+		if (!el) throw new Error(".init requires first argument (the element)")
 		switch (this._phase) {
 			case "init": 
 				throw new Error("consecutive .init() instead of using .update() after")
@@ -79,6 +79,16 @@ class TextIon extends Ion{
 		this.element.remove()
 	}
 }
+
+// we can generalize this to any ion array. 
+// just add a text node after the given text node.
+// pins = [] and pins[i] ||= createTextNode
+// then we can easily pass the el.
+// so we will have n text nodes just for n elemented array :/
+// or the best way is to use .element of the previous ion. 
+// not sure if it's the best but anyways. array should
+// only contain out Ions. they're currently just Velo and TextIons.
+// so just have .element on them.
 
 class VresArrayIon extends Ion {
 	out = true
