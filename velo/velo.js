@@ -21,7 +21,7 @@ class Ion {
 	// static out = false // ? put a <wbr> and query that : else query the element
 	// ?element: is the element that this Ion is associated with
 	_phase = "none"
-	init(arg) {
+	initCheck(arg) {
 		const { el } = this
 		// if (!el) throw new Error(".init requires first argument (the element)") // actually we don't pass el to super init lel :p
 		switch (this._phase) {
@@ -34,7 +34,7 @@ class Ion {
 		}
 		this._phase = "init"
 	}
-	update(arg) {
+	updateCheck(arg) {
 		const { el } = this
 		switch (this._phase) {
 			case "none": 
@@ -44,7 +44,7 @@ class Ion {
 		}
 		this._phase = "update"
 	}
-	die(el, arg) {
+	dieCheck(el, arg) {
 		switch(this._phase) {
 			case "none":
 				throw new Error(".die() on a non-initialized ion")
@@ -59,12 +59,12 @@ const set = Symbol()
 class SetIon extends Ion {
 	init(arg) {
 		const { el } = this
-		super.init()
+		super.initCheck()
 		this.update(arg)
 	}
 	update(arg) {
 		const { el } = this
-		super.update()
+		super.updateCheck()
 		for (const key in arg) 
 			if (arg[key] !== set) 
 				el[key] = arg[key]
@@ -75,17 +75,17 @@ class TextIon extends Ion{
 	static out = true
 	init(arg) {
 		const { el } = this
-		super.init()
+		super.initCheck()
 		this.element = document.createTextNode(arg)
 		el.after(this.element)
 	}
 	update(arg) {
 		const { el } = this
-		super.update()
+		super.updateCheck()
 		this.element.nodeValue = arg
 	}
 	die(el) {
-		super.die()
+		super.dieCheck()
 		this.element.remove()
 	}
 }
@@ -105,7 +105,7 @@ class VresArrayIon extends Ion {
 	ions = []
 	init(arg) {
 		const { el } = this
-		super.init()
+		super.initCheck()
 		// let curr = el
 		// for (const item of arg) {
 		// 	const velo = new Velo()
@@ -121,7 +121,7 @@ class VresArrayIon extends Ion {
 	update(arg) {
 		const { el } = this
 		console.log('update Array')
-		super.update()
+		super.updateCheck()
 		var last = el
 		for (let i = 0; i < Math.max(this.ions.length, arg.length); i++) {
 			const vres = arg[i]
@@ -160,7 +160,7 @@ const on = Symbol()
 class OnIon extends Ion{
 	init(arg) {
 		const { el } = this
-		super.init()
+		super.initCheck()
 		for (const key in arg)
 			if (arg[key] !== on)
 				el.addEventListener(key, arg[key])
@@ -227,13 +227,13 @@ export class Velo extends Ion {
 	init(arg) {
 		const { el } = this
 		console.assert(isVres(arg), "Velo init expects vres, not ", arg)
-		super.init()
+		super.initCheck()
 		console.log('inited a new one' + Math.random())
 		this.#render(arg)
 		el.after(this.element)
 	}
 	die(el, arg) {
-		super.die()
+		super.dieCheck()
 		this.element.remove()
 	}
 	diff(arg) {
@@ -249,7 +249,7 @@ export class Velo extends Ion {
 	update(arg) {
 		const { el } = this
 		console.assert(isVres(arg), "Velo update expects vres, but got", arg)
-		super.update()
+		super.updateCheck()
 		const vres = arg
 		console.assert(this.vres.strings.length == vres.strings.length, "different vres", this.vres.strings, arg.strings)
 		for (const [i, pin] of this.pins.entries()) {
