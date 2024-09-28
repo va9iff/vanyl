@@ -1,3 +1,6 @@
+// predefine array lengths lke new Array(arg.strings.length) to avoid reallocations
+
+
 const elem = new Proxy({}, {
 	get(_, prop) {
 		return function (strings, ...args) {
@@ -15,8 +18,8 @@ const isVres = arg => arg?.tag && arg?.strings && arg?.args
 
 class Ion {
 	constructor(el) {
-		this.el = el
-		// 	and init should expect only the arg
+		this.el = el || console.warn("no element was givne")
+		// 	and init expects only the arg
 	}
 	// static out = false // ? put a <wbr> and query that : else query the element
 	// ?element: is the element that this Ion is associated with
@@ -24,6 +27,7 @@ class Ion {
 	initCheck(arg) {
 		const { el } = this
 		// if (!el) throw new Error(".init requires first argument (the element)") // actually we don't pass el to super init lel :p
+		if (!this.die) console.warn(`ion with no .die function was initialized: ${this.constructor.name}`)
 		switch (this._phase) {
 			case "init": 
 				throw new Error("consecutive .init() instead of using .update() after")
@@ -69,6 +73,7 @@ class SetIon extends Ion {
 			if (arg[key] !== set) 
 				el[key] = arg[key]
 	}
+	die() {}
 }
 
 class TextIon extends Ion{
@@ -90,16 +95,14 @@ class TextIon extends Ion{
 	}
 }
 
-// we can generalize this to any ion array. 
-// just add a text node after the given text node.
-// pins = [] and pins[i] ||= createTextNode
-// then we can easily pass the el.
-// so we will have n text nodes just for n elemented array :/
-// or the best way is to use .element of the previous ion. 
-// not sure if it's the best but anyways. array should
-// only contain out Ions. they're currently just Velo and TextIons.
-// so just have .element on them.
-
+// I don't think using ions .element is a better idea.
+// we would need to .pop them to ions[i]'s element to 
+// be at the correct place. if we ions[5].die() then 
+// ions[6]'s element is at 5. and how can we insert to be
+// at 5? we should ions.splice(5,0,1) but hits performance
+// and kinda more to think about and keep trace of.
+// but ions[5] just being null and having an exact pin in 
+// the document is straightforward
 class VresArrayIon extends Ion {
 	static out = true
 	ions = []
@@ -107,13 +110,6 @@ class VresArrayIon extends Ion {
 	init(arg) {
 		const { el } = this
 		super.initCheck()
-		// let curr = el
-		// for (const item of arg) {
-		// 	const velo = new Velo()
-		// 	velo.init(el,item)
-		// 	curr = velo.element
-		// 	this.ions.push(velo)
-		// }
 		this.update(el, arg)
 	}
 	diff(arg) {
@@ -135,8 +131,6 @@ class VresArrayIon extends Ion {
 				break
 			}
 			if (!this.ions[i]) {
-				console.log(this.pins, i, this.pins[i], this.pins.length, this.ions.length) //fix iiiiiiiiiiiiiiit
-
 				this.ions[i] = new Velo(this.pins[i])
 				this.ions[i].init(vres)
 				break
@@ -151,7 +145,10 @@ class VresArrayIon extends Ion {
 		}
 	}
 	die() {
-		console.log('todo: kill array')
+		for (const ion of this.ions) ion?.die()
+		for (const pin of this.pins) pin.remove()
+		this.ions = []
+		this.pins = []
 	}
 }
 
@@ -164,6 +161,7 @@ class OnIon extends Ion{
 			if (arg[key] !== on)
 				el.addEventListener(key, arg[key])
 	}
+	die() {}
 }
 
 function ionic(arg) {
@@ -302,7 +300,10 @@ const arca = () =>
 		div`that's div 1`,
 		div`and that's ${Math.random()+'k'} moder flipcker`,
 		p`and even a p`
-	] : [
+	] 
+		// : randb() ? 
+		// "fasadistu"
+	: [
 		div`twooo`,
 		div`yaaa`
 	]
@@ -331,6 +332,6 @@ console.log(...mark(mydiver()))
 const myVelo = new Velo(document.querySelector("#app"))
 myVelo.init(mydiver())
 document.body.appendChild(myVelo.element)
-setInterval(()=>myVelo.update(mydiver()), 1000)
+setInterval(()=>myVelo.update(mydiver()), 300)
 console.log(myVelo.element)
 
