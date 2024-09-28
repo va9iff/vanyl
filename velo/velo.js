@@ -257,8 +257,8 @@ export class Velo extends Ion {
 		const vres = arg
 		console.assert(this.vres.strings.length == vres.strings.length, "different vres", this.vres.strings, arg.strings)
 		for (const [i, pin] of this.pins.entries()) {
-			const ionClass = ionic(this.vres.args[i]) 
 			const arg = vres.args[i]
+			const ionClass = ionic(arg)  ////// ohhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
 			if (this.ions[i].constructor == ionClass 
 				&& !this.ions[i].diff?.(arg)) {
 				this.ions[i].update?.(arg)
@@ -303,7 +303,7 @@ const profile = fn(state => div`
 	`)
 
 const arca = () =>  
-	// randb() ? "fasadistannnnnnnnnnnnnnnnnnnnNN" :
+	randb() ? "uffishuuuuuuuu" :
 	randb() ? [
 		div`that's div 1`,
 		div`and that's ${Math.random()+'k'} moder flipcker`,
@@ -334,6 +334,9 @@ const mydiver = () => div`
 	<h3>now it's time to test statefuls</h3>
 	${profile({count: 99})}
 	<h3>cool. now arrays []</h3>
+	<hr>
+	${randb() ? div`a vres` : "a string"}
+	<hr>
 	${arca()}
 	`
 
