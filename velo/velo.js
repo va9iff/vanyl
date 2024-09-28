@@ -103,6 +103,7 @@ class TextIon extends Ion{
 class VresArrayIon extends Ion {
 	static out = true
 	ions = []
+	pins = []
 	init(arg) {
 		const { el } = this
 		super.initCheck()
@@ -119,10 +120,13 @@ class VresArrayIon extends Ion {
 		return !Array.isArray(arg)
 	}
 	update(arg) {
-		const { el } = this
-		console.log('update Array')
 		super.updateCheck()
-		var last = el
+		const { el } = this
+		while (this.pins.length < arg.length) {
+			const pin = document.createTextNode("")
+			el.before(pin)
+			this.pins.push(pin)
+		}
 		for (let i = 0; i < Math.max(this.ions.length, arg.length); i++) {
 			const vres = arg[i]
 			if (!arg[i]) {
@@ -131,24 +135,19 @@ class VresArrayIon extends Ion {
 				break
 			}
 			if (!this.ions[i]) {
-				console.log(i, arg[i], this.ions[i])
-				this.ions[i] = new Velo(last)
+				console.log(this.pins, i, this.pins[i], this.pins.length, this.ions.length) //fix iiiiiiiiiiiiiiit
+
+				this.ions[i] = new Velo(this.pins[i])
 				this.ions[i].init(vres)
-				last = this.ions[i].element
 				break
 			}
 			if (this.ions[i].diff(vres)) {
 				this.ions[i].die()
-				this.ions[i] = new Velo(last)
+				this.ions[i] = new Velo(this.pins[i])
 				this.ions[i].init(vres)
 			} else {
 				this.ions[i].update(vres)
 			}
-			// if (this.ions[i].diff(arg[i])) {
-			// 	this.ions[i].die()
-			// 	this.ions[i] = new Velo()
-			// 	this.ions[i].init(last, arg)
-			// }
 		}
 	}
 	die() {
@@ -292,45 +291,11 @@ class Fn extends Velo {
 	}
 }
 
+// -----------------------------------------
+
 const profile = fn(state => div`
 	<button ${{ on, click: e => state.count = state.count ? state.count+1: 9}}>u${state.count} just wait a little after click</button>
 	`)
-
-// idk how to do it. new Fn instance on all args looks bad.
-// cuz Fn inherits from Velo which allocates arrays on construction
-// profile({ name: "VI" }) // -> Fn with this.vres 
-
-// or like this
-// profile({ name: "Hi" }) // Fnn that just constructs Velo when needed
-// class Fnn extends Ion {
-// 	state = {}
-// 	init(el, arg) {
-// 		this.velo = new Velo()
-// 		this.velo.init(el, arg)
-// 		               // idk it got much flaws. it can't determine when it should die
-// 	}
-// 	update(el) {
-// 		this.velo.update(el, this.html(this.state))
-// 	}
-// 	die(el, arg) {
-// 		this.velo.die(el, arg)
-// 	}
-// 	refresh() {
-// 		this.update(null, this.html(this.state))
-// 	}
-// }
-//
-// // wtf is this
-// function app(elOrSelector, fun) {
-// 	const el = typeof elOrSelector == "string"
-// 		? document.querySelector(`#${elOrSelector}`) 
-// 		: elOrSelector
-// 	const textNode = document.createTextNode("")
-// 	el.appendChild(textNode)
-// 	const velo = new Velo()
-// 	velo.init(textNode, fun())
-//
-// }
 
 const arca = () => 
 	randb() ? [
