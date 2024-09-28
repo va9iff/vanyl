@@ -84,7 +84,7 @@ class TextIon extends Ion{
 		super.updateCheck()
 		this.element.nodeValue = arg
 	}
-	die(el) {
+	die() {
 		super.dieCheck()
 		this.element.remove()
 	}
@@ -126,7 +126,7 @@ class VresArrayIon extends Ion {
 		for (let i = 0; i < Math.max(this.ions.length, arg.length); i++) {
 			const vres = arg[i]
 			if (!arg[i]) {
-				this.ions[i]?.die(last, vres)
+				this.ions[i]?.die()
 				this.ions[i] = null
 				break
 			}
@@ -138,14 +138,14 @@ class VresArrayIon extends Ion {
 				break
 			}
 			if (this.ions[i].diff(vres)) {
-				this.ions[i].die(last, vres)
+				this.ions[i].die()
 				this.ions[i] = new Velo(last)
 				this.ions[i].init(vres)
 			} else {
 				this.ions[i].update(vres)
 			}
 			// if (this.ions[i].diff(arg[i])) {
-			// 	this.ions[i].die(el, arg)
+			// 	this.ions[i].die()
 			// 	this.ions[i] = new Velo()
 			// 	this.ions[i].init(last, arg)
 			// }
@@ -232,7 +232,7 @@ export class Velo extends Ion {
 		this.#render(arg)
 		el.after(this.element)
 	}
-	die(el, arg) {
+	die() {
 		super.dieCheck()
 		this.element.remove()
 	}
@@ -259,7 +259,7 @@ export class Velo extends Ion {
 				&& !this.ions[i].diff?.(arg)) {
 				this.ions[i].update?.(arg)
 			} else {
-				this.ions[i].die?.(pin, arg)
+				this.ions[i].die?.()
 				this.ions[i] = new ionClass(pin)
 				this.ions[i].init?.(arg)
 			}
