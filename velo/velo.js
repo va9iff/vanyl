@@ -48,7 +48,7 @@ class Ion {
 		}
 		this._phase = "update"
 	}
-	dieCheck(el, arg) {
+	dieCheck() {
 		switch(this._phase) {
 			case "none":
 				throw new Error(".die() on a non-initialized ion")
@@ -56,6 +56,11 @@ class Ion {
 				throw new Error(".die() on a dead ion")
 		}
 		this._phase = "die"
+	}
+	// update, or replace if it's a different kind of ion's arg.
+	// return null if updated, new ion if killed and inited own.
+		// or no
+	tick(arg) {
 	}
 }
 
@@ -110,7 +115,7 @@ class VresArrayIon extends Ion {
 	init(arg) {
 		const { el } = this
 		super.initCheck()
-		this.update(el, arg)
+		this.update(arg)
 	}
 	diff(arg) {
 		return !Array.isArray(arg)
@@ -130,14 +135,15 @@ class VresArrayIon extends Ion {
 				this.ions[i] = null
 				break
 			}
+			const ionClass = ionic(vres)
 			if (!this.ions[i]) {
-				this.ions[i] = new Velo(this.pins[i])
+				this.ions[i] = new ionClass(this.pins[i])
 				this.ions[i].init(vres)
 				break
 			}
-			if (this.ions[i].diff(vres)) {
+			if (this.ions[i].constructor != ionClass || this.ions[i].diff?.(vres)) {
 				this.ions[i].die()
-				this.ions[i] = new Velo(this.pins[i])
+				this.ions[i] = new ionClass(this.pins[i])
 				this.ions[i].init(vres)
 			} else {
 				this.ions[i].update(vres)
@@ -221,11 +227,12 @@ export class Velo extends Ion {
 		this.vres = vres
 	}
 	static out = true
+	// just the interface to be used in other ions
 	init(arg) {
 		const { el } = this
 		console.assert(isVres(arg), "Velo init expects vres, not ", arg)
 		super.initCheck()
-		console.log('inited a new one' + Math.random())
+		// console.log('inited a new one' + Math.random())
 		this.#render(arg)
 		el.after(this.element)
 	}
@@ -241,7 +248,7 @@ export class Velo extends Ion {
 		for(let i = 0; i < this.vres.strings.length; i++) {
 			if (this.vres.strings[i] != arg.strings[i]) return true
 		}
-		console.log("SAME")
+		// console.log("SAME")
 	}
 	update(arg) {
 		const { el } = this
@@ -295,10 +302,12 @@ const profile = fn(state => div`
 	<button ${{ on, click: e => state.count = state.count ? state.count+1: 9}}>u${state.count} just wait a little after click</button>
 	`)
 
-const arca = () => 
+const arca = () =>  
+	// randb() ? "fasadistannnnnnnnnnnnnnnnnnnnNN" :
 	randb() ? [
 		div`that's div 1`,
 		div`and that's ${Math.random()+'k'} moder flipcker`,
+		"shakaaaaa",
 		p`and even a p`
 	] 
 		// : randb() ? 
