@@ -14,10 +14,15 @@ const elem = new Proxy({}, {
 const isVres = arg => arg?.tag && arg?.strings && arg?.args
 
 class Ion {
+	constructor(el) {
+		this.el = el
+		// 	and init should expect only the arg
+	}
 	// static out = false // ? put a <wbr> and query that : else query the element
 	// ?element: is the element that this Ion is associated with
 	_phase = "none"
-	init(el, arg) {
+	init(arg) {
+		const { el } = this
 		// if (!el) throw new Error(".init requires first argument (the element)") // actually we don't pass el to super init lel :p
 		switch (this._phase) {
 			case "init": 
@@ -51,7 +56,8 @@ class Ion {
 
 const set = Symbol()
 class SetIon extends Ion {
-	init(el, arg) {
+	init(arg) {
+		const { el } = this
 		super.init()
 		this.update(el, arg)
 	}
@@ -65,7 +71,8 @@ class SetIon extends Ion {
 
 class TextIon extends Ion{
 	static out = true
-	init(el, arg) {
+	init(arg) {
+		const { el } = this
 		super.init()
 		this.element = document.createTextNode(arg)
 		el.after(this.element)
@@ -93,7 +100,8 @@ class TextIon extends Ion{
 class VresArrayIon extends Ion {
 	static out = true
 	ions = []
-	init(el, arg) {
+	init(arg) {
+		const { el } = this
 		super.init()
 		// let curr = el
 		// for (const item of arg) {
@@ -120,15 +128,15 @@ class VresArrayIon extends Ion {
 			}
 			if (!this.ions[i]) {
 				console.log(i, arg[i], this.ions[i])
-				this.ions[i] = new Velo()
-				this.ions[i].init(last, vres)
+				this.ions[i] = new Velo(last)
+				this.ions[i].init(vres)
 				last = this.ions[i].element
 				break
 			}
 			if (this.ions[i].diff(vres)) {
 				this.ions[i].die(last, vres)
-				this.ions[i] = new Velo()
-				this.ions[i].init(last, vres)
+				this.ions[i] = new Velo(last)
+				this.ions[i].init(vres)
 			} else {
 				this.ions[i].update(last, vres)
 			}
@@ -146,7 +154,8 @@ class VresArrayIon extends Ion {
 
 const on = Symbol()
 class OnIon extends Ion{
-	init(el, arg) {
+	init(arg) {
+		const { el } = this
 		super.init()
 		for (const key in arg)
 			if (arg[key] !== on)
@@ -202,16 +211,17 @@ export class Velo extends Ion {
 				el = textNode
 			}
 			console.assert(el, `broken html: couldn't query v${i} \n`, html)
-			const ion = new IonClass()
+			const ion = new IonClass(el)
 			// todo is -- ion.elment = el somehow. maybe in constructor
 			this.ions.push(ion)
 			this.pins.push(el)
-			this.ions[i].init?.(el, args[i])
+			this.ions[i].init?.(args[i])
 		}
 		this.vres = vres
 	}
 	static out = true
-	init(el, arg) {
+	init(arg) {
+		const { el } = this
 		console.assert(isVres(arg), "Velo init expects vres, not ", arg)
 		super.init()
 		console.log('inited a new one' + Math.random())
@@ -245,8 +255,8 @@ export class Velo extends Ion {
 				this.ions[i].update?.(pin, arg)
 			} else {
 				this.ions[i].die?.(pin, arg)
-				this.ions[i] = new ionClass()
-				this.ions[i].init?.(pin, arg)
+				this.ions[i] = new ionClass(pin)
+				this.ions[i].init?.(arg)
 			}
 		}
 	}
@@ -259,10 +269,11 @@ function fn(fun) {
 }
 class Fn extends Velo {
 	state = {}
-	init(el, arg) {
+	init(arg) {
+		const { el } = this
 		this.state = arg.props || {}
 		this.html = arg.fun
-		super.init(el, arg.fun(this.state))
+		super.init(arg.fun(this.state))
 	}
 	update(el, arg) {
 		if (arg?.fun) this.html = arg.fun
@@ -347,8 +358,8 @@ const mydiver = () => div`
 	`
 
 console.log(...mark(mydiver()))
-const myVelo = new Velo()
-myVelo.init(document.querySelector("#app"), mydiver())
+const myVelo = new Velo(document.querySelector("#app"))
+myVelo.init(mydiver())
 document.body.appendChild(myVelo.element)
 setInterval(()=>myVelo.update(null, mydiver()), 1000)
 console.log(myVelo.element)
