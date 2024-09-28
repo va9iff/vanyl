@@ -14,11 +14,11 @@ const elem = new Proxy({}, {
 const isVres = arg => arg?.tag && arg?.strings && arg?.args
 
 class Ion {
-	// out = false // ? put a <wbr> and query that : else query the element
+	// static out = false // ? put a <wbr> and query that : else query the element
 	// ?element: is the element that this Ion is associated with
 	_phase = "none"
 	init(el, arg) {
-		if (!el) throw new Error(".init requires first argument (the element)")
+		// if (!el) throw new Error(".init requires first argument (the element)") // actually we don't pass el to super init lel :p
 		switch (this._phase) {
 			case "init": 
 				throw new Error("consecutive .init() instead of using .update() after")
@@ -64,7 +64,7 @@ class SetIon extends Ion {
 }
 
 class TextIon extends Ion{
-	out = true
+	static out = true
 	init(el, arg) {
 		super.init()
 		this.element = document.createTextNode(arg)
@@ -91,7 +91,7 @@ class TextIon extends Ion{
 // so just have .element on them.
 
 class VresArrayIon extends Ion {
-	out = true
+	static out = true
 	ions = []
 	init(el, arg) {
 		super.init()
@@ -175,15 +175,14 @@ function ionic(arg) {
 
 function mark({ strings, args }) {
 	let htmlString = ""
-	const ions = []
+	const ionClasses = []
 	for (let i = 0; i < strings.length - 1; i++) {
 		const ionClass = ionic(args[i])
-		const ion = new ionClass()
-		ions.push(ion)
-		htmlString += strings[i] + (ion.out ? `<wbr v${i}>` : `v${i}`)
+		ionClasses.push(ionClass)
+		htmlString += strings[i] + (ionClass.out ? `<wbr v${i}>` : `v${i}`)
 	}
 	htmlString += strings[strings.length - 1]
-	return [htmlString, ions]
+	return [htmlString, ionClasses]
 }
 
 export class Velo extends Ion {
@@ -191,24 +190,27 @@ export class Velo extends Ion {
 	pins = []
 	#render(vres) {
 		const { strings, args, tag } = vres
+		this.ions = []
 		this.element = document.createElement(tag)
-		const [html, ions] = mark(vres)
+		const [html, ionClasses] = mark(vres)
 		this.element.innerHTML = html
-		this.ions = ions
-		for (let i = 0; i < strings.length - 1; i++) {
+		for (const [i, IonClass] of ionClasses.entries()) {
 			let el = this.element.querySelector(`[v${i}]`)
-			console.assert(el, `broken html: couldn't query v${i} \n`, html)
-			if (this.ions[i].out) {
+			if (IonClass.out) {
 				const textNode = document.createTextNode("")
 				el.replaceWith(textNode)
 				el = textNode
 			}
+			console.assert(el, `broken html: couldn't query v${i} \n`, html)
+			const ion = new IonClass()
+			// todo is -- ion.elment = el somehow. maybe in constructor
+			this.ions.push(ion)
 			this.pins.push(el)
 			this.ions[i].init?.(el, args[i])
 		}
 		this.vres = vres
 	}
-	out = true
+	static out = true
 	init(el, arg) {
 		console.assert(isVres(arg), "Velo init expects vres, not ", arg)
 		super.init()
