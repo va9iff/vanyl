@@ -34,7 +34,8 @@ class Ion {
 		}
 		this._phase = "init"
 	}
-	update(el, arg) {
+	update(arg) {
+		const { el } = this
 		switch (this._phase) {
 			case "none": 
 				throw new Error(".update() requires .init() to be called before")
@@ -59,9 +60,10 @@ class SetIon extends Ion {
 	init(arg) {
 		const { el } = this
 		super.init()
-		this.update(el, arg)
+		this.update(arg)
 	}
-	update(el, arg) {
+	update(arg) {
+		const { el } = this
 		super.update()
 		for (const key in arg) 
 			if (arg[key] !== set) 
@@ -77,7 +79,8 @@ class TextIon extends Ion{
 		this.element = document.createTextNode(arg)
 		el.after(this.element)
 	}
-	update(el, arg) {
+	update(arg) {
+		const { el } = this
 		super.update()
 		this.element.nodeValue = arg
 	}
@@ -115,7 +118,8 @@ class VresArrayIon extends Ion {
 	diff(arg) {
 		return !Array.isArray(arg)
 	}
-	update(el, arg) {
+	update(arg) {
+		const { el } = this
 		console.log('update Array')
 		super.update()
 		var last = el
@@ -138,7 +142,7 @@ class VresArrayIon extends Ion {
 				this.ions[i] = new Velo(last)
 				this.ions[i].init(vres)
 			} else {
-				this.ions[i].update(last, vres)
+				this.ions[i].update(vres)
 			}
 			// if (this.ions[i].diff(arg[i])) {
 			// 	this.ions[i].die(el, arg)
@@ -242,7 +246,8 @@ export class Velo extends Ion {
 		}
 		console.log("SAME")
 	}
-	update(el, arg) {
+	update(arg) {
+		const { el } = this
 		console.assert(isVres(arg), "Velo update expects vres, but got", arg)
 		super.update()
 		const vres = arg
@@ -252,7 +257,7 @@ export class Velo extends Ion {
 			const arg = vres.args[i]
 			if (this.ions[i].constructor == ionClass 
 				&& !this.ions[i].diff?.(arg)) {
-				this.ions[i].update?.(pin, arg)
+				this.ions[i].update?.(arg)
 			} else {
 				this.ions[i].die?.(pin, arg)
 				this.ions[i] = new ionClass(pin)
@@ -275,9 +280,9 @@ class Fn extends Velo {
 		this.html = arg.fun
 		super.init(arg.fun(this.state))
 	}
-	update(el, arg) {
+	update(arg) {
 		if (arg?.fun) this.html = arg.fun
-		super.update(el, this.html(this.state))
+		super.update(this.html(this.state))
 	}
 	diff(arg) {
 		super.diff(arg?.fun?.(this.state))
@@ -361,6 +366,6 @@ console.log(...mark(mydiver()))
 const myVelo = new Velo(document.querySelector("#app"))
 myVelo.init(mydiver())
 document.body.appendChild(myVelo.element)
-setInterval(()=>myVelo.update(null, mydiver()), 1000)
+setInterval(()=>myVelo.update(mydiver()), 1000)
 console.log(myVelo.element)
 
