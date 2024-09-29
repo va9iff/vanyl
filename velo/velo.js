@@ -117,9 +117,9 @@ class VresArrayIon extends Ion {
 		super.initCheck()
 		this.update(arg)
 	}
-	diff(arg) {
-		return !Array.isArray(arg)
-	}
+	// diff(arg) {
+	// 	return !Array.isArray(arg)
+	// }
 	update(arg) {
 		super.updateCheck()
 		const { el } = this
@@ -141,7 +141,7 @@ class VresArrayIon extends Ion {
 				this.ions[i].init(vres)
 				break
 			}
-			if (this.ions[i].constructor != ionClass || this.ions[i].diff?.(vres)) {
+			if (this.ions[i].constructor != ionClass) {
 				this.ions[i].die()
 				this.ions[i] = new ionClass(this.pins[i])
 				this.ions[i].init(vres)
@@ -206,6 +206,7 @@ export class Velo extends Ion {
 	pins = []
 	#render(vres) {
 		const { strings, args, tag } = vres
+		this.pins = []
 		this.ions = []
 		this.element = document.createElement(tag)
 		const [html, ionClasses] = mark(vres)
@@ -235,28 +236,36 @@ export class Velo extends Ion {
 		// console.log('inited a new one' + Math.random())
 		this.#render(arg)
 		el.after(this.element)
+		this.vres = arg
 	}
 	die() {
 		super.dieCheck()
 		this.element.remove()
 	}
-	diff(arg) {
-		console.assert(isVres(arg), "Velo diff expects vres")
-		if (!arg) return true
-		if (this.vres.strings.length != arg.strings.length) return true
-		if (this.vres.args.length != arg.args.length) return true
+	isSame(vres) {
+		console.assert(isVres(vres), "Velo diff expects vres")
+		if (this.vres.strings.length != vres.strings.length) return false
+		// if (this.vres.args.length != vres.args.length) return false
 		for(let i = 0; i < this.vres.strings.length; i++) {
-			if (this.vres.strings[i] != arg.strings[i]) return true
+			if (this.vres.strings[i] != vres.strings[i]) return false
 		}
-		// console.log("SAME")
+		return true
 	}
+	// diff(arg) {
+	// 	if (!arg) return true
+	// 	// console.log("SAME")
+	// }
 	update(arg) {
 		const { el } = this
 		console.assert(isVres(arg), "Velo update expects vres, but got", arg)
 		super.updateCheck()
 		const vres = arg
-		console.assert(this.vres.strings.length == vres.strings.length, "different vres", this.vres.strings, arg.strings)
-		for (const [i, pin] of this.pins.entries()) {
+		// console.assert(!this.isSame(arg), "different vres", this.vres.strings, arg.strings)
+		if (!this.isSame(arg)) {
+			this.element.remove()
+			this.#render(arg)
+			el.after(this.element)
+		} else for (const [i, pin] of this.pins.entries()) {
 			const arg = vres.args[i]
 			const ionClass = ionic(arg)  ////// ohhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
 			if (this.ions[i].constructor == ionClass 
@@ -268,6 +277,7 @@ export class Velo extends Ion {
 				this.ions[i].init?.(arg)
 			}
 		}
+		this.vres = arg
 	}
 }
 
@@ -289,7 +299,7 @@ class Fn extends Velo {
 		super.update(this.html(this.state))
 	}
 	diff(arg) {
-		super.diff(arg?.fun?.(this.state))
+		return super.diff?.(arg?.fun?.(this.state))
 	}
 	refresh() {
 		this.update('not necessary', this.html(this.state))
@@ -303,18 +313,19 @@ const profile = fn(state => div`
 	`)
 
 const arca = () =>  
-	randb() ? "uffishuuuuuuuu" :
+	// randb() ? "uffishuuuuuuuu" :
 	randb() ? [
-		div`that's div 1`,
-		div`and that's ${Math.random()+'k'} moder flipcker`,
-		"shakaaaaa",
-		p`and even a p`
+		div`1 that's div 1`,
+		div`2 and that's ${Math.random()+'k'} moder flipcker`,
+		div`3t sh${2}akaaaaa`,
+		div`4 and eve${281}n a p`,
+		div`5 mabama${22}m,madsflkajsdmflaksdjfk`
 	] 
 		// : randb() ? 
 		// "fasadistu"
 	: [
-		div`twooo`,
-		div`yaaa`
+		div`1 twooo`,
+		div`2 yaaa`
 	]
 
 const { div, p } = elem
@@ -322,28 +333,31 @@ const anodiver = () => div`
 	<h1>this is another div${"hi"} alksfdj ${"bye"} sflkjh ${"fa"+8}</h1>
 `
 const randb = () => Math.random() > 0.5
-const mydiver = () => div`
+const mydiver = () => randb() ? 
+	div`
 	<h1>jf</h1> jflkasf 
 	<button 
 		${{ set, disabled: randb() }}
 		${{ on, click: e => alert('hi')}}>didi 
 			${Math.random() + 'k'} limo
 	</button>
-	<h1>here another</h1>
+	<h3>here another</h3>
 	${randb() ? div`that's one` : div`and the other ${"hi"} ${Math.random()}`}
 	<h3>now it's time to test statefuls</h3>
+	<hr>
 	${profile({count: 99})}
-	<h3>cool. now arrays []</h3>
 	<hr>
 	${randb() ? div`a vres` : "a string"}
-	<hr>
-	${arca()}
+	` : div`
+		kyut ${"litl"} kedy
 	`
+
+	// ${arca()}
 
 console.log(...mark(mydiver()))
 const myVelo = new Velo(document.querySelector("#app"))
 myVelo.init(mydiver())
 document.body.appendChild(myVelo.element)
-setInterval(()=>myVelo.update(mydiver()), 300)
+setInterval(()=>myVelo.update(mydiver()), 1000)
 console.log(myVelo.element)
 
