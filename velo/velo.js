@@ -133,13 +133,13 @@ class VresArrayIon extends Ion {
 			if (!arg[i]) {
 				this.ions[i]?.die()
 				this.ions[i] = null
-				break
+				continue
 			}
 			const ionClass = ionic(vres)
 			if (!this.ions[i]) {
 				this.ions[i] = new ionClass(this.pins[i])
 				this.ions[i].init(vres)
-				break
+				continue
 			}
 			if (this.ions[i].constructor != ionClass) {
 				this.ions[i].die()
@@ -333,7 +333,7 @@ const anodiver = () => div`
 	<h1>this is another div${"hi"} alksfdj ${"bye"} sflkjh ${"fa"+8}</h1>
 `
 const randb = () => Math.random() > 0.5
-const mydiver = () => randb() ? 
+const mydiver = () => randb() || 1 ? 
 	div`
 	<h1>jf</h1> jflkasf 
 	<button 
@@ -344,20 +344,20 @@ const mydiver = () => randb() ?
 	<h3>here another</h3>
 	${randb() ? div`that's one` : div`and the other ${"hi"} ${Math.random()}`}
 	<h3>now it's time to test statefuls</h3>
-	<hr>
 	${profile({count: 99})}
+	<hr>
+	// ${arca()}
 	<hr>
 	${randb() ? div`a vres` : "a string"}
 	` : div`
 		kyut ${"litl"} kedy
 	`
 
-	// ${arca()}
 
 console.log(...mark(mydiver()))
 const myVelo = new Velo(document.querySelector("#app"))
 myVelo.init(mydiver())
 document.body.appendChild(myVelo.element)
-setInterval(()=>myVelo.update(mydiver()), 1000)
+setInterval(()=>myVelo.update(mydiver()), 300)
 console.log(myVelo.element)
 
