@@ -117,9 +117,6 @@ class VresArrayIon extends Ion {
 		super.initCheck()
 		this.update(arg)
 	}
-	// diff(arg) {
-	// 	return !Array.isArray(arg)
-	// }
 	update(arg) {
 		super.updateCheck()
 		const { el } = this
@@ -228,7 +225,6 @@ export class Velo extends Ion {
 		this.vres = vres
 	}
 	static out = true
-	// just the interface to be used in other ions
 	init(arg) {
 		const { el } = this
 		console.assert(isVres(arg), "Velo init expects vres, not ", arg)
@@ -251,16 +247,11 @@ export class Velo extends Ion {
 		}
 		return true
 	}
-	// diff(arg) {
-	// 	if (!arg) return true
-	// 	// console.log("SAME")
-	// }
 	update(arg) {
 		const { el } = this
 		console.assert(isVres(arg), "Velo update expects vres, but got", arg)
 		super.updateCheck()
 		const vres = arg
-		// console.assert(!this.isSame(arg), "different vres", this.vres.strings, arg.strings)
 		if (!this.isSame(arg)) {
 			this.element.remove()
 			this.#render(arg)
@@ -268,8 +259,7 @@ export class Velo extends Ion {
 		} else for (const [i, pin] of this.pins.entries()) {
 			const arg = vres.args[i]
 			const ionClass = ionic(arg)  ////// ohhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-			if (this.ions[i].constructor == ionClass 
-				&& !this.ions[i].diff?.(arg)) {
+			if (this.ions[i].constructor == ionClass) {
 				this.ions[i].update?.(arg)
 			} else {
 				this.ions[i].die?.()
@@ -298,9 +288,6 @@ class Fn extends Velo {
 		if (arg?.fun) this.html = arg.fun
 		super.update(this.html(this.state))
 	}
-	diff(arg) {
-		return super.diff?.(arg?.fun?.(this.state))
-	}
 	refresh() {
 		this.update('not necessary', this.html(this.state))
 	}
@@ -321,8 +308,8 @@ const arca = () =>
 		div`4 and eve${281}n a p`,
 		div`5 mabama${22}m,madsflkajsdmflaksdjfk`
 	] 
-		// : randb() ? 
-		// "fasadistu"
+		: randb() ? 
+		"fasadistu"
 	: [
 		div`1 twooo`,
 		div`2 yaaa`
