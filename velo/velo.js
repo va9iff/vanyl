@@ -100,14 +100,6 @@ class TextIon extends Ion{
 	}
 }
 
-// I don't think using ions .element is a better idea.
-// we would need to .pop them to ions[i]'s element to 
-// be at the correct place. if we ions[5].die() then 
-// ions[6]'s element is at 5. and how can we insert to be
-// at 5? we should ions.splice(5,0,1) but hits performance
-// and kinda more to think about and keep trace of.
-// but ions[5] just being null and having an exact pin in 
-// the document is straightforward
 class VresArrayIon extends Ion {
 	static out = true
 	ions = []
@@ -120,6 +112,7 @@ class VresArrayIon extends Ion {
 	update(arg) {
 		super.updateCheck()
 		const { el } = this
+		console.log(this.ions.length)
 		while (this.pins.length < arg.length) {
 			const pin = document.createTextNode("")
 			el.before(pin)
@@ -146,6 +139,13 @@ class VresArrayIon extends Ion {
 				this.ions[i].update(vres)
 			}
 		}
+		// no need to .pop the pins. they just sit in the document 
+		// and we just get them if we have and need more. but ions makes 
+		// ions make us iterate more even arg has less items. so we have to
+		// cut the unnecessary parts of ions (the nulls at the end)
+		// (when a small lengthed arg comes, the arg[i] == null .dies and =null)
+		while (this.ions.length && !this.ions.at(-1)) this.ions.pop()
+		el.nodeValue = this.ions.length
 	}
 	die() {
 		for (const ion of this.ions) ion?.die()
@@ -181,7 +181,7 @@ function ionic(arg) {
 		if (val == Fn) return Fn
 	}
 	if (isVres(arg)) return Velo
-	if (isVres(arg[0])) return VresArrayIon
+	if (Array.isArray(arg)) return VresArrayIon
 	console.log(arg)
 	throw new Error("coulndn't find a ion for that argument ")
 }
@@ -309,7 +309,13 @@ const arca = () =>
 		div`5 mabama${22}m,madsflkajsdmflaksdjfk`
 	] 
 		: randb() ? 
-		"fasadistu"
+		// "fasadistu"
+		[
+			div`jui`,
+			div`juui`,
+			div`jitsu`
+		] : randb() ? 
+	[]
 	: [
 		div`1 twooo`,
 		div`2 yaaa`
@@ -345,6 +351,6 @@ console.log(...mark(mydiver()))
 const myVelo = new Velo(document.querySelector("#app"))
 myVelo.init(mydiver())
 document.body.appendChild(myVelo.element)
-setInterval(()=>myVelo.update(mydiver()), 300)
+setInterval(()=>myVelo.update(mydiver()), 400)
 console.log(myVelo.element)
 
