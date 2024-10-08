@@ -167,12 +167,30 @@ class OnIon extends Ion{
 	die() {}
 }
 
+class FunctionIon extends Ion {
+	init(arg) {
+		// this.repeat = arg(this.el)
+		arg(this.el)
+	}
+	update(arg) {
+		// what if we pass new function but since 
+		// the arg type is the same, update is gonna get called
+		// and since the repeat is false, the new function won't get called
+		// if (this.repeat) this.repeat = arg(this.el)
+
+		// let's not have a repeatable function and force to use ion's update for that
+	}
+}
+
+// const ISION = Symbol()
 function ionic(arg) {
 	switch(typeof arg) {
 		case "number":
 		case "string":
 		case "undefined":
 			return TextIon
+		case "function": 
+			return FunctionIon
 	}
 	for (const key in arg) {
 		const val = arg[key]
@@ -182,6 +200,9 @@ function ionic(arg) {
 	}
 	if (isVres(arg)) return Velo
 	if (Array.isArray(arg)) return VresArrayIon
+	// if (arg.ion.ISION == ISION) return arg.ion
+	// // ${{ ion: MyClass, then: "the args" }}
+	// // init and update are defined in MyClass
 	console.log(arg)
 	throw new Error("coulndn't find a ion for that argument ")
 }
@@ -332,7 +353,9 @@ const arca = () =>
 const mydiver = () => div`
 	<button 
 		${{ set, disabled: randb() }}
-		${{ on, click: e => alert('hi')}}>didi 
+		${{ on, click: e => alert('hi')}}
+		${btn => console.log(btn)}
+		>didi 
 			${Math.random() + 'k'} limo
 	</button>
 	${randb() ? div`that's one` : div`and the other ${"hi"} ${Math.random()}`}
