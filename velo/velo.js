@@ -199,8 +199,6 @@ function mark({ strings, args }) {
 }
 
 export class Velo extends Ion {
-	element = null
-	pins = []
 	#render(vres) {
 		const { strings, args, tag } = vres
 		this.pins = []
@@ -209,43 +207,18 @@ export class Velo extends Ion {
 		const [html, ionClasses] = mark(vres)
 		this.element.innerHTML = html
 		for (const [i, IonClass] of ionClasses.entries()) {
-			let el = this.element.querySelector(`[v${i}]`)
+			let pin = this.element.querySelector(`[v${i}]`)
 			if (IonClass.out) {
 				const textNode = document.createTextNode("")
-				el.replaceWith(textNode)
-				el = textNode
+				pin.replaceWith(textNode)
+				pin = textNode
 			}
-			console.assert(el, `broken html: couldn't query v${i} \n`, html)
-			const ion = new IonClass(el)
-			// todo is -- ion.elment = el somehow. maybe in constructor
+			console.assert(pin, `broken html: couldn't query v${i} \n`, html)
+			const ion = new IonClass(pin)
+			ion.init?.(args[i])
 			this.ions.push(ion)
-			this.pins.push(el)
-			this.ions[i].init?.(args[i])
+			this.pins.push(pin)
 		}
-		this.vres = vres
-	}
-	static out = true
-	init(arg) {
-		const { el } = this
-		console.assert(isVres(arg), "Velo init expects vres, not ", arg)
-		super.initCheck()
-		// console.log('inited a new one' + Math.random())
-		this.#render(arg)
-		el.after(this.element)
-		this.vres = arg
-	}
-	die() {
-		super.dieCheck()
-		this.element.remove()
-	}
-	isSame(vres) {
-		console.assert(isVres(vres), "Velo diff expects vres")
-		if (this.vres.strings.length != vres.strings.length) return false
-		// if (this.vres.args.length != vres.args.length) return false
-		for(let i = 0; i < this.vres.strings.length; i++) {
-			if (this.vres.strings[i] != vres.strings[i]) return false
-		}
-		return true
 	}
 	update(arg) {
 		const { el } = this
@@ -267,7 +240,31 @@ export class Velo extends Ion {
 				this.ions[i].init?.(arg)
 			}
 		}
-		this.vres = arg
+		this.last = arg
+	}
+
+	static out = true
+	init(arg) {
+		const { el } = this
+		// console.assert(isVres(arg), "Velo init expects vres, not ", arg)
+		// this init is already decided from arg in ionic, what's the point of checking the arg?
+		super.initCheck()
+		this.#render(arg)
+		el.after(this.element)
+		this.last = arg
+	}
+	die() {
+		super.dieCheck()
+		this.element.remove()
+	}
+	isSame(vres) {
+		console.assert(isVres(vres), "Velo diff expects vres")
+		if (this.last.strings.length != vres.strings.length) return false
+		// if (this.last.args.length != vres.args.length) return false
+		for(let i = 0; i < this.last.strings.length; i++) {
+			if (this.last.strings[i] != vres.strings[i]) return false
+		}
+		return true
 	}
 }
 
