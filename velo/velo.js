@@ -293,64 +293,65 @@ class Fn extends Velo {
 	}
 }
 
+
 // -----------------------------------------
+const { div, p } = elem
 
-const profile = fn(state => div`
-	<button ${{ on, click: e => state.count = state.count ? state.count+1: 9}}>u${state.count} just wait a little after click</button>
-	`)
+// local is the argument that passed to profile()
+// so mutating this is kinda dangerous
+// that would be better. fn((props, local) => {
+const profile = fn(props => {
+	props.count ??= 0
+	return div`
+	<button ${{ on, click: e => props.count++ }} >
+		u${props.count} just wait a little after click
+	</button>
+	`})
 
+
+
+const randb = () => Math.random() > 0.5
 const arca = () =>  
 	// randb() ? "uffishuuuuuuuu" :
-	randb() ? [
-		div`1 that's div 1`,
-		div`2 and that's ${Math.random()+'k'} moder flipcker`,
-		div`3t sh${2}akaaaaa`,
-		div`4 and eve${281}n a p`,
-		div`5 mabama${22}m,madsflkajsdmflaksdjfk`
-	] 
-		: randb() ? 
-		// "fasadistu"
-		[
-			div`jui`,
-			div`juui`,
-			div`jitsu`
-		] : randb() ? 
-	[]
-	: [
-		div`1 twooo`,
-		div`2 yaaa`
-	]
+		randb() 
+		? [
+			div`la 1--------`,
+			div`la 2-------- susoaf${Math.random()+'k'} moder flipcker`,
+			div`la 3--------`,
+			div`la 4-------- jajalo${281}`,
+			div`la 5-------- kaka${22}`
+		] : randb() 
+		? [
+			div`la 1---------jui`,
+			div`la 2---------juui`,
+			div`la 3---------jitsu`
+		] : randb() 
+		? []
+		: [
+			div`la 1---------twooo`,
+			div`la 2---------yaaa`
+		]
 
-const { div, p } = elem
-const anodiver = () => div`
-	<h1>this is another div${"hi"} alksfdj ${"bye"} sflkjh ${"fa"+8}</h1>
-`
-const randb = () => Math.random() > 0.5
-const mydiver = () => randb() || 1 ? 
-	div`
-	<h1>jf</h1> jflkasf 
+const mydiver = () => div`
 	<button 
 		${{ set, disabled: randb() }}
 		${{ on, click: e => alert('hi')}}>didi 
 			${Math.random() + 'k'} limo
 	</button>
-	<h3>here another</h3>
 	${randb() ? div`that's one` : div`and the other ${"hi"} ${Math.random()}`}
-	<h3>now it's time to test statefuls</h3>
 	${profile({count: 99})}
+	${profile({count: 9})}
 	<hr>
-	// ${arca()}
+	${arca()}
 	<hr>
 	${randb() ? div`a vres` : "a string"}
-	` : div`
-		kyut ${"litl"} kedy
-	`
+`
 
+// const myVelo = new Velo(document.querySelector("#app"))
+// myVelo.init(mydiver())
+// const update = () => myVelo.update(mydiver())
+// setInterval(update, 400)
 
-console.log(...mark(mydiver()))
-const myVelo = new Velo(document.querySelector("#app"))
-myVelo.init(mydiver())
-document.body.appendChild(myVelo.element)
-setInterval(()=>myVelo.update(mydiver()), 400)
-console.log(myVelo.element)
-
+const myVelo = new Fn(document.querySelector("#app"))
+myVelo.init(fn(mydiver)())
+setInterval(()=>myVelo.update(fn(mydiver)()), 400)
