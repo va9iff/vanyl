@@ -1,6 +1,10 @@
+// predefine array lengths lke new Array(arg.strings.length) to avoid reallocations
+
+
 const elem = new Proxy({}, {
 	get(_, prop) {
 		return function (strings, ...args) {
+			// that's called a vres
 			return {
 				tag: prop,
 				strings,
@@ -12,43 +16,103 @@ const elem = new Proxy({}, {
 
 const isVres = arg => arg?.tag && arg?.strings && arg?.args
 
+class Ion {
+	constructor(el) {
+		this.el = el || console.warn("no element was givne")
+		// 	and init expects only the arg
+	}
+	// static out = false // ? put a <wbr> and query that : else query the element
+	// ?element: is the element that this Ion is associated with
+	_phase = "none"
+	initCheck(arg) {
+		const { el } = this
+		// if (!el) throw new Error(".init requires first argument (the element)") // actually we don't pass el to super init lel :p
+		if (!this.die) console.warn(`ion with no .die function was initialized: ${this.constructor.name}`)
+		switch (this._phase) {
+			case "init": 
+				throw new Error("consecutive .init() instead of using .update() after")
+			case "update":
+				throw new Error(".init() on an already initialized ion")
+			case "die":
+				throw new Error(".init() on a dead ion")
+		}
+		this._phase = "init"
+	}
+	updateCheck(arg) {
+		const { el } = this
+		switch (this._phase) {
+			case "none": 
+				throw new Error(".update() requires .init() to be called before")
+			case "die":
+				throw new Error(".update() on a dead ion")
+		}
+		this._phase = "update"
+	}
+	dieCheck() {
+		switch(this._phase) {
+			case "none":
+				throw new Error(".die() on a non-initialized ion")
+			case "die": 
+				throw new Error(".die() on a dead ion")
+		}
+		this._phase = "die"
+	}
+	// update, or replace if it's a different kind of ion's arg.
+	// return null if updated, new ion if killed and inited own.
+		// or no
+	tick(arg) {
+	}
+}
+
 const set = Symbol()
-class SetIon  {
-	init(arg, el) {
-		this.el = el
-		this.update(arg)
-	}
-	update(arg) {
-		for (const key in arg) 
-			if (arg[key] !== set) 
-				this.el[key] = arg[key]
-	}
-}
-
-class TextIon {
-	static out = true
-	init(arg, el) {
-		this.element = document.createTextNode(arg)
-		el.after(this.element)
-	}
-	update(arg) {
-		this.element.nodeValue = arg
-	}
-	die() {
-		this.element.remove()
-	}
-}
-
-class VresArrayIon  {
-	static out = true
-	ions = []
-	pins = []
-	init(arg, el) {
-		this.el = el
+class SetIon extends Ion {
+	init(arg) {
+		const { el } = this
+		super.initCheck()
 		this.update(arg)
 	}
 	update(arg) {
 		const { el } = this
+		super.updateCheck()
+		for (const key in arg) 
+			if (arg[key] !== set) 
+				el[key] = arg[key]
+	}
+	die() {}
+}
+
+class TextIon extends Ion{
+	static out = true
+	init(arg) {
+		const { el } = this
+		super.initCheck()
+		this.element = document.createTextNode(arg)
+		el.after(this.element)
+	}
+	update(arg) {
+		const { el } = this
+		super.updateCheck()
+		this.element.nodeValue = arg
+	}
+	die() {
+		super.dieCheck()
+		this.element.remove()
+	}
+}
+
+class VresArrayIon extends Ion {
+	static out = true
+	ions = []
+	pins = []
+	init(arg) {
+		const { el } = this
+		super.initCheck()
+		this.update(arg)
+	}
+	update(arg) {
+		super.updateCheck()
+		const { el } = this
+		console.log(this.ions.length)
 		while (this.pins.length < arg.length) {
 			const pin = document.createTextNode("")
 			el.before(pin)
@@ -63,18 +127,23 @@ class VresArrayIon  {
 			}
 			const ionClass = ionic(vres)
 			if (!this.ions[i]) {
-				this.ions[i] = new ionClass()
-				this.ions[i].init(vres, this.pins[i])
+				this.ions[i] = new ionClass(this.pins[i])
+				this.ions[i].init(vres)
 				continue
 			}
 			if (this.ions[i].constructor != ionClass) {
 				this.ions[i].die()
-				this.ions[i] = new ionClass()
-				this.ions[i].init(vres, this.pins[i])
+				this.ions[i] = new ionClass(this.pins[i])
+				this.ions[i].init(vres)
 			} else {
 				this.ions[i].update(vres)
 			}
 		}
+		// no need to .pop the pins. they just sit in the document 
+		// and we just get them if we have and need more. but ions makes 
+		// ions make us iterate more even arg has less items. so we have to
+		// cut the unnecessary parts of ions (the nulls at the end)
+		// (when a small lengthed arg comes, the arg[i] == null .dies and =null)
 		while (this.ions.length && !this.ions.at(-1)) this.ions.pop()
 		el.nodeValue = this.ions.length
 	}
@@ -87,8 +156,10 @@ class VresArrayIon  {
 }
 
 const on = Symbol()
-class OnIon {
-	init(arg, el) {
+class OnIon extends Ion{
+	init(arg) {
+		const { el } = this
+		super.initCheck()
 		for (const key in arg)
 			if (arg[key] !== on)
 				el.addEventListener(key, arg[key])
@@ -96,8 +167,8 @@ class OnIon {
 	die() {}
 }
 
-class FunctionIon  {
-	init(arg, el) {
+class FunctionIon extends Ion {
+	init(arg) {
 		// this.repeat = arg(this.el)
 		arg(this.el)
 	}
@@ -148,7 +219,7 @@ function mark({ strings, args }) {
 	return [htmlString, ionClasses]
 }
 
-export class Velo  {
+export class Velo extends Ion {
 	#render(vres) {
 		const { strings, args, tag } = vres
 		this.pins = []
@@ -164,8 +235,8 @@ export class Velo  {
 				pin = textNode
 			}
 			console.assert(pin, `broken html: couldn't query v${i} \n`, html)
-			const ion = new IonClass()
-			ion.init?.(args[i], pin)
+			const ion = new IonClass(pin)
+			ion.init?.(args[i])
 			this.ions.push(ion)
 			this.pins.push(pin)
 		}
@@ -173,6 +244,7 @@ export class Velo  {
 	update(arg) {
 		const { el } = this
 		console.assert(isVres(arg), "Velo update expects vres, but got", arg)
+		super.updateCheck()
 		const vres = arg
 		if (!this.isSame(arg)) {
 			this.element.remove()
@@ -185,23 +257,25 @@ export class Velo  {
 				this.ions[i].update?.(arg)
 			} else {
 				this.ions[i].die?.()
-				this.ions[i] = new ionClass()
-				this.ions[i].init?.(arg, pin)
+				this.ions[i] = new ionClass(pin)
+				this.ions[i].init?.(arg)
 			}
 		}
 		this.last = arg
 	}
 
 	static out = true
-	init(arg, el) {
-		this.el = el
+	init(arg) {
+		const { el } = this
 		// console.assert(isVres(arg), "Velo init expects vres, not ", arg)
 		// this init is already decided from arg in ionic, what's the point of checking the arg?
+		super.initCheck()
 		this.#render(arg)
 		el.after(this.element)
 		this.last = arg
 	}
 	die() {
+		super.dieCheck()
 		this.element.remove()
 	}
 	isSame(vres) {
@@ -222,10 +296,11 @@ function fn(fun) {
 }
 class Fn extends Velo {
 	state = {}
-	init(arg, el) {
+	init(arg) {
+		const { el } = this
 		this.state = arg.props || {}
 		this.html = arg.fun
-		super.init(arg.fun(this.state), el)
+		super.init(arg.fun(this.state))
 	}
 	update(arg) {
 		if (arg?.fun) this.html = arg.fun
@@ -297,6 +372,6 @@ const mydiver = () => div`
 // const update = () => myVelo.update(mydiver())
 // setInterval(update, 400)
 
-const myVelo = new Fn()
-myVelo.init(fn(mydiver)(), document.querySelector("#app"))
+const myVelo = new Fn(document.querySelector("#app"))
+myVelo.init(fn(mydiver)())
 setInterval(()=>myVelo.update(fn(mydiver)()), 400)
