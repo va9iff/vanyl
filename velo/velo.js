@@ -27,7 +27,7 @@ export class Velo  {
 			this.el.after(this.element)
 		} else for (const [i, pin] of this.pins.entries()) {
 			const arg = vres.args[i]
-			const ionClass = ionic(arg)
+			const ionClass = getClass(arg)
 			if (this.ions[i].constructor == ionClass) {
 				this.ions[i].update?.(arg)
 			} else {
@@ -80,7 +80,7 @@ class VresArrayIon  {
 				this.ions[i] = null
 				continue
 			}
-			const ionClass = ionic(vres)
+			const ionClass = getClass(vres)
 			if (!this.ions[i]) {
 				this.ions[i] = new ionClass()
 				this.ions[i].init(vres, this.pins[i])
@@ -111,7 +111,7 @@ function mark(strings, ...args) {
 	let htmlString = ""
 	const ionClasses = []
 	for (let i = 0; i < strings.length - 1; i++) {
-		const ionClass = ionic(args[i])
+		const ionClass = getClass(args[i])
 		ionClasses.push(ionClass)
 		htmlString += strings[i] + (ionClass.out ? `<wbr v${i}>` : `v${i}`)
 	}
@@ -120,7 +120,7 @@ function mark(strings, ...args) {
 }
 
 
-function ionic(arg) {
+function getClass(arg) {
 	switch(typeof arg) {
 		case "number":
 		case "string":
