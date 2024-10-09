@@ -1,60 +1,65 @@
-const elem = new Proxy({}, {
-	get(_, prop) {
-		return function (strings, ...args) {
-			return {
-				tag: prop,
-				strings,
-				args,
+export class Velo  {
+	#render(vres) {
+		const { strings, args, tag } = vres
+		this.pins = []
+		this.ions = []
+		this.element = document.createElement(tag)
+		const [html, ionClasses] = mark(vres)
+		this.element.innerHTML = html
+		for (const [i, IonClass] of ionClasses.entries()) {
+			let pin = this.element.querySelector(`[v${i}]`)
+			if (IonClass.out) {
+				const textNode = document.createTextNode("")
+				pin.replaceWith(textNode)
+				pin = textNode
 			}
+			console.assert(pin, `broken html: couldn't query v${i} \n`, html)
+			const ion = new IonClass()
+			ion.init?.(args[i], pin)
+			this.ions.push(ion)
+			this.pins.push(pin)
 		}
 	}
-})
+	update(arg) {
+		const { el } = this
+		const vres = arg
+		if (!this.isSame(arg)) {
+			this.element.remove()
+			this.#render(arg)
+			el.after(this.element)
+		} else for (const [i, pin] of this.pins.entries()) {
+			const arg = vres.args[i]
+			const ionClass = ionic(arg)  ////// ohhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+			if (this.ions[i].constructor == ionClass) {
+				this.ions[i].update?.(arg)
+			} else {
+				this.ions[i].die?.()
+				this.ions[i] = new ionClass()
+				this.ions[i].init?.(arg, pin)
+			}
+		}
+		this.last = arg
+	}
 
-const isVres = arg => arg?.tag && arg?.strings && arg?.args
-
-class TextIon {
 	static out = true
 	init(arg, el) {
-		this.element = document.createTextNode(arg)
+		this.el = el
+		this.#render(arg)
 		el.after(this.element)
-	}
-	update(arg) {
-		this.element.nodeValue = arg
+		this.last = arg
 	}
 	die() {
 		this.element.remove()
 	}
-}
-
-class set {
-	static ion = true // so it is usable in an object like ${{ set, value: 1 }}
-	init(arg, el) {
-		this.el = el
-		this.update(arg)
-	}
-	update(arg) {
-		for (const key in arg) 
-			if (arg[key] !== set) 
-				this.el[key] = arg[key]
+	isSame(vres) {
+		if (this.last.strings.length != vres.strings.length) return false
+		// if (this.last.args.length != vres.args.length) return false
+		for(let i = 0; i < this.last.strings.length; i++) {
+			if (this.last.strings[i] != vres.strings[i]) return false
+		}
+		return true
 	}
 }
-
-class on {
-	static ion = true
-	init(arg, el) {
-		for (const key in arg)
-			if (arg[key] !== on)
-				el.addEventListener(key, arg[key])
-	}
-	die() {}
-}
-
-class FunctionIon  {
-	init(arg, el) {
-		arg(this.el)
-	}
-}
-
 
 class VresArrayIon  {
 	static out = true
@@ -104,6 +109,20 @@ class VresArrayIon  {
 }
 
 
+
+function mark({ strings, args }) {
+	let htmlString = ""
+	const ionClasses = []
+	for (let i = 0; i < strings.length - 1; i++) {
+		const ionClass = ionic(args[i])
+		ionClasses.push(ionClass)
+		htmlString += strings[i] + (ionClass.out ? `<wbr v${i}>` : `v${i}`)
+	}
+	htmlString += strings[strings.length - 1]
+	return [htmlString, ionClasses]
+}
+
+
 function ionic(arg) {
 	switch(typeof arg) {
 		case "number":
@@ -118,96 +137,16 @@ function ionic(arg) {
 				if (typeof val == "function" && val.ion) return val
 			}
 	}
-	if (isVres(arg)) return Velo
+	if (arg?.tag && arg?.strings && arg?.args) return Velo
 	if (Array.isArray(arg)) return VresArrayIon
 	console.log(arg)
 	throw new Error("coulndn't find a ion for that argument ")
 }
 
-function mark({ strings, args }) {
-	let htmlString = ""
-	const ionClasses = []
-	for (let i = 0; i < strings.length - 1; i++) {
-		const ionClass = ionic(args[i])
-		ionClasses.push(ionClass)
-		htmlString += strings[i] + (ionClass.out ? `<wbr v${i}>` : `v${i}`)
-	}
-	htmlString += strings[strings.length - 1]
-	return [htmlString, ionClasses]
-}
+// simpler ions
 
-export class Velo  {
-	#render(vres) {
-		const { strings, args, tag } = vres
-		this.pins = []
-		this.ions = []
-		this.element = document.createElement(tag)
-		const [html, ionClasses] = mark(vres)
-		this.element.innerHTML = html
-		for (const [i, IonClass] of ionClasses.entries()) {
-			let pin = this.element.querySelector(`[v${i}]`)
-			if (IonClass.out) {
-				const textNode = document.createTextNode("")
-				pin.replaceWith(textNode)
-				pin = textNode
-			}
-			console.assert(pin, `broken html: couldn't query v${i} \n`, html)
-			const ion = new IonClass()
-			ion.init?.(args[i], pin)
-			this.ions.push(ion)
-			this.pins.push(pin)
-		}
-	}
-	update(arg) {
-		const { el } = this
-		console.assert(isVres(arg), "Velo update expects vres, but got", arg)
-		const vres = arg
-		if (!this.isSame(arg)) {
-			this.element.remove()
-			this.#render(arg)
-			el.after(this.element)
-		} else for (const [i, pin] of this.pins.entries()) {
-			const arg = vres.args[i]
-			const ionClass = ionic(arg)  ////// ohhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-			if (this.ions[i].constructor == ionClass) {
-				this.ions[i].update?.(arg)
-			} else {
-				this.ions[i].die?.()
-				this.ions[i] = new ionClass()
-				this.ions[i].init?.(arg, pin)
-			}
-		}
-		this.last = arg
-	}
-
-	static out = true
-	init(arg, el) {
-		this.el = el
-		// console.assert(isVres(arg), "Velo init expects vres, not ", arg)
-		// this init is already decided from arg in ionic, what's the point of checking the arg?
-		this.#render(arg)
-		el.after(this.element)
-		this.last = arg
-	}
-	die() {
-		this.element.remove()
-	}
-	isSame(vres) {
-		console.assert(isVres(vres), "Velo diff expects vres")
-		if (this.last.strings.length != vres.strings.length) return false
-		// if (this.last.args.length != vres.args.length) return false
-		for(let i = 0; i < this.last.strings.length; i++) {
-			if (this.last.strings[i] != vres.strings[i]) return false
-		}
-		return true
-	}
-}
-
-function fn(fun) {
-	return function (props){
-		return { fun, Fn, props }
-	}
-}
+const fn = fun => props => ({ fun, Fn, props })
+// fn(fun)(props) -> fun(props) // with state
 class Fn extends Velo {
 	static ion = true
 	state = {}
@@ -225,7 +164,65 @@ class Fn extends Velo {
 	}
 }
 
+class TextIon {
+	static out = true
+	init(arg, el) {
+		this.element = document.createTextNode(arg)
+		el.after(this.element)
+	}
+	update(arg) {
+		this.element.nodeValue = arg
+	}
+	die() {
+		this.element.remove()
+	}
+}
 
+class FunctionIon  {
+	init(arg, el) {
+		arg(this.el)
+	}
+}
+
+class set {
+	static ion = true 
+	init(arg, el) {
+		this.el = el
+		this.update(arg)
+	}
+	update(arg) {
+		for (const key in arg) 
+			if (arg[key] !== set) 
+				this.el[key] = arg[key]
+	}
+}
+
+class on {
+	static ion = true
+	init(arg, el) {
+		for (const key in arg)
+			if (arg[key] !== on)
+				el.addEventListener(key, arg[key])
+	}
+	die() {}
+}
+
+// setup parts
+
+const elem = new Proxy({}, {
+	get(_, prop) {
+		return function (strings, ...args) {
+			return {
+				tag: prop,
+				strings,
+				args,
+			}
+		}
+	}
+})
+
+
+//               test
 // -----------------------------------------
 const { div, p } = elem
 
