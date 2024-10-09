@@ -110,8 +110,8 @@ class VresArrayIon  {
 function mark(strings, ...args) {
 	let htmlString = ""
 	const ionClasses = []
-	for (let i = 0; i < strings.length - 1; i++) {
-		const ionClass = getClass(args[i])
+	for (const [i, arg] of args.entries()) {
+		const ionClass = getClass(arg)
 		ionClasses.push(ionClass)
 		htmlString += strings[i] + (ionClass.out ? `<wbr v${i}>` : `v${i}`)
 	}
