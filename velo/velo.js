@@ -1,10 +1,9 @@
 export class Velo  {
-	#render(vres) {
-		const { strings, args, tag } = vres
+	#render({ strings, args, tag }) {
 		this.pins = []
 		this.ions = []
 		this.element = document.createElement(tag)
-		const [html, ionClasses] = mark(vres)
+		const [html, ionClasses] = mark(strings, ...args)
 		this.element.innerHTML = html
 		for (const [i, IonClass] of ionClasses.entries()) {
 			let pin = this.element.querySelector(`[v${i}]`)
@@ -108,7 +107,7 @@ class VresArrayIon  {
 
 
 
-function mark({ strings, args }) {
+function mark(strings, ...args) {
 	let htmlString = ""
 	const ionClasses = []
 	for (let i = 0; i < strings.length - 1; i++) {
