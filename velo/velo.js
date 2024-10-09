@@ -1,4 +1,5 @@
 export class Velo  {
+	static ion = true
 	#render({ strings, args, tag }) {
 		this.pins = []
 		this.ions = []
@@ -134,7 +135,6 @@ function getClass(arg) {
 				if (typeof val == "function" && val.ion) return val
 			}
 	}
-	if (arg?.tag && arg?.strings && arg?.args) return Velo
 	if (Array.isArray(arg)) return VresArrayIon
 	console.log(arg)
 	throw new Error("coulndn't find a ion for that argument ")
@@ -210,6 +210,7 @@ const elem = new Proxy({}, {
 	get(_, prop) {
 		return function (strings, ...args) {
 			return {
+				Velo,
 				tag: prop,
 				strings,
 				args,
