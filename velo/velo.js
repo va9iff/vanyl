@@ -1,11 +1,11 @@
 export class Velo  {
 	static embedded = true
 	#render({ strings, args, tag }) {
+		const [html, ionClasses] = mark(strings, ...args)
+		this.element = document.createElement(tag)
+		this.element.innerHTML = html
 		this.pins = []
 		this.ions = []
-		this.element = document.createElement(tag)
-		const [html, ionClasses] = mark(strings, ...args)
-		this.element.innerHTML = html
 		for (const [i, IonClass] of ionClasses.entries()) {
 			let pin = this.element.querySelector(`[v${i}]`)
 			if (IonClass.out) {
@@ -20,11 +20,10 @@ export class Velo  {
 			this.pins.push(pin)
 		}
 	}
-	update(arg) {
-		const vres = arg
-		if (!this.isSame(arg)) {
+	update(vres) {
+		if (!this.isSame(vres)) {
 			this.element.remove()
-			this.#render(arg)
+			this.#render(vres)
 			this.el.after(this.element)
 		} else for (const [i, pin] of this.pins.entries()) {
 			const arg = vres.args[i]
@@ -37,7 +36,7 @@ export class Velo  {
 				this.ions[i].init?.(arg, pin)
 			}
 		}
-		this.last = arg
+		this.last = vres
 	}
 
 	static out = true
