@@ -12,19 +12,6 @@ const elem = new Proxy({}, {
 
 const isVres = arg => arg?.tag && arg?.strings && arg?.args
 
-const set = Symbol()
-class SetIon  {
-	init(arg, el) {
-		this.el = el
-		this.update(arg)
-	}
-	update(arg) {
-		for (const key in arg) 
-			if (arg[key] !== set) 
-				this.el[key] = arg[key]
-	}
-}
-
 class TextIon {
 	static out = true
 	init(arg, el) {
@@ -38,6 +25,36 @@ class TextIon {
 		this.element.remove()
 	}
 }
+
+class set {
+	static ion = true // so it is usable in an object like ${{ set, value: 1 }}
+	init(arg, el) {
+		this.el = el
+		this.update(arg)
+	}
+	update(arg) {
+		for (const key in arg) 
+			if (arg[key] !== set) 
+				this.el[key] = arg[key]
+	}
+}
+
+class on {
+	static ion = true
+	init(arg, el) {
+		for (const key in arg)
+			if (arg[key] !== on)
+				el.addEventListener(key, arg[key])
+	}
+	die() {}
+}
+
+class FunctionIon  {
+	init(arg, el) {
+		arg(this.el)
+	}
+}
+
 
 class VresArrayIon  {
 	static out = true
@@ -86,32 +103,7 @@ class VresArrayIon  {
 	}
 }
 
-const on = Symbol()
-class OnIon {
-	init(arg, el) {
-		for (const key in arg)
-			if (arg[key] !== on)
-				el.addEventListener(key, arg[key])
-	}
-	die() {}
-}
 
-class FunctionIon  {
-	init(arg, el) {
-		// this.repeat = arg(this.el)
-		arg(this.el)
-	}
-	update(arg) {
-		// what if we pass new function but since 
-		// the arg type is the same, update is gonna get called
-		// and since the repeat is false, the new function won't get called
-		// if (this.repeat) this.repeat = arg(this.el)
-
-		// let's not have a repeatable function and force to use ion's update for that
-	}
-}
-
-// const ISION = Symbol()
 function ionic(arg) {
 	switch(typeof arg) {
 		case "number":
@@ -120,18 +112,14 @@ function ionic(arg) {
 			return TextIon
 		case "function": 
 			return FunctionIon
-	}
-	for (const key in arg) {
-		const val = arg[key]
-		if (val == set) return SetIon
-		if (val == on) return OnIon
-		if (val == Fn) return Fn
+		case "object":
+			for (const key in arg) {
+				const val = arg[key]
+				if (typeof val == "function" && val.ion) return val
+			}
 	}
 	if (isVres(arg)) return Velo
 	if (Array.isArray(arg)) return VresArrayIon
-	// if (arg.ion.ISION == ISION) return arg.ion
-	// // ${{ ion: MyClass, then: "the args" }}
-	// // init and update are defined in MyClass
 	console.log(arg)
 	throw new Error("coulndn't find a ion for that argument ")
 }
@@ -221,6 +209,7 @@ function fn(fun) {
 	}
 }
 class Fn extends Velo {
+	static ion = true
 	state = {}
 	init(arg, el) {
 		this.state = arg.props || {}
@@ -290,7 +279,15 @@ const mydiver = () => div`
 	${arca()}
 	<hr>
 	${randb() ? div`a vres` : "a string"}
+	${{	log, stuff: "like that" }}
 `
+class log {
+	static ion = true
+	static out = true
+	init(arg, el) {
+		console.log(el, arg.stuff)
+	}
+}
 
 // const myVelo = new Velo(document.querySelector("#app"))
 // myVelo.init(mydiver())
