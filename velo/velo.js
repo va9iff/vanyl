@@ -21,15 +21,14 @@ export class Velo  {
 		}
 	}
 	update(arg) {
-		const { el } = this
 		const vres = arg
 		if (!this.isSame(arg)) {
 			this.element.remove()
 			this.#render(arg)
-			el.after(this.element)
+			this.el.after(this.element)
 		} else for (const [i, pin] of this.pins.entries()) {
 			const arg = vres.args[i]
-			const ionClass = ionic(arg)  ////// ohhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+			const ionClass = ionic(arg)
 			if (this.ions[i].constructor == ionClass) {
 				this.ions[i].update?.(arg)
 			} else {
@@ -45,7 +44,7 @@ export class Velo  {
 	init(arg, el) {
 		this.el = el
 		this.#render(arg)
-		el.after(this.element)
+		this.el.after(this.element)
 		this.last = arg
 	}
 	die() {
@@ -70,10 +69,9 @@ class VresArrayIon  {
 		this.update(arg)
 	}
 	update(arg) {
-		const { el } = this
 		while (this.pins.length < arg.length) {
 			const pin = document.createTextNode("")
-			el.before(pin)
+			this.el.before(pin)
 			this.pins.push(pin)
 		}
 		for (let i = 0; i < Math.max(this.ions.length, arg.length); i++) {
@@ -98,7 +96,7 @@ class VresArrayIon  {
 			}
 		}
 		while (this.ions.length && !this.ions.at(-1)) this.ions.pop()
-		el.nodeValue = this.ions.length
+		this.el.nodeValue = this.ions.length
 	}
 	die() {
 		for (const ion of this.ions) ion?.die()
@@ -180,7 +178,7 @@ class TextIon {
 
 class FunctionIon  {
 	init(arg, el) {
-		arg(this.el)
+		arg(el)
 	}
 }
 
