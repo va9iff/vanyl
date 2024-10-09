@@ -1,5 +1,5 @@
 export class Velo  {
-	static ion = true
+	static embedded = true
 	#render({ strings, args, tag }) {
 		this.pins = []
 		this.ions = []
@@ -132,7 +132,7 @@ function getClass(arg) {
 		case "object":
 			for (const key in arg) {
 				const val = arg[key]
-				if (typeof val == "function" && val.ion) return val
+				if (typeof val == "function" && val.embedded) return val
 			}
 	}
 	if (Array.isArray(arg)) return VresArrayIon
@@ -143,9 +143,9 @@ function getClass(arg) {
 // simpler ions
 
 const fn = fun => props => ({ fun, Fn, props })
-// fn(fun)(props) -> fun(props) // with state
+// fn(fun)(props) -> fun(props) // re-entering the props that were given in init
 class Fn extends Velo {
-	static ion = true
+	static embedded = true
 	state = {}
 	init(arg, el) {
 		this.state = arg.props || {}
@@ -182,7 +182,7 @@ class FunctionIon  {
 }
 
 class set {
-	static ion = true 
+	static embedded = true 
 	init(arg, el) {
 		this.el = el
 		this.update(arg)
@@ -195,7 +195,7 @@ class set {
 }
 
 class on {
-	static ion = true
+	static embedded = true
 	init(arg, el) {
 		for (const key in arg)
 			if (arg[key] !== on)
@@ -277,7 +277,7 @@ const mydiver = () => div`
 	${{	log, stuff: "like that" }}
 `
 class log {
-	static ion = true
+	static embedded = true
 	static out = true
 	init(arg, el) {
 		console.log(el, arg.stuff)
