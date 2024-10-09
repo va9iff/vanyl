@@ -59,7 +59,7 @@ export class Velo  {
 	}
 }
 
-class VresArrayIon  {
+class ArrayIon  {
 	static out = true
 	ions = []
 	pins = []
@@ -67,31 +67,31 @@ class VresArrayIon  {
 		this.el = el
 		this.update(arg)
 	}
-	update(arg) {
-		while (this.pins.length < arg.length) {
+	update(array) {
+		while (this.pins.length < array.length) {
 			const pin = document.createTextNode("")
 			this.el.before(pin)
 			this.pins.push(pin)
 		}
-		for (let i = 0; i < Math.max(this.ions.length, arg.length); i++) {
-			const vres = arg[i]
-			if (!arg[i]) {
+		for (let i = 0; i < Math.max(this.ions.length, array.length); i++) {
+			const arg = array[i]
+			if (!array[i]) {
 				this.ions[i]?.die()
 				this.ions[i] = null
 				continue
 			}
-			const ionClass = getClass(vres)
+			const ionClass = getClass(arg)
 			if (!this.ions[i]) {
 				this.ions[i] = new ionClass()
-				this.ions[i].init(vres, this.pins[i])
+				this.ions[i].init(arg, this.pins[i])
 				continue
 			}
 			if (this.ions[i].constructor != ionClass) {
 				this.ions[i].die()
 				this.ions[i] = new ionClass()
-				this.ions[i].init(vres, this.pins[i])
+				this.ions[i].init(arg, this.pins[i])
 			} else {
-				this.ions[i].update(vres)
+				this.ions[i].update(arg)
 			}
 		}
 		while (this.ions.length && !this.ions.at(-1)) this.ions.pop()
@@ -134,7 +134,7 @@ function getClass(arg) {
 				if (typeof val == "function" && val.embedded) return val
 			}
 	}
-	if (Array.isArray(arg)) return VresArrayIon
+	if (Array.isArray(arg)) return ArrayIon
 	console.log(arg)
 	throw new Error("coulndn't find a ion for that argument ")
 }
