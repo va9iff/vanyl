@@ -1,4 +1,5 @@
 export class Velo  {
+	static out = true
 	static embedded = true
 	#render({ strings, args, tag }) {
 		const [html, ionClasses] = mark(strings, ...args)
@@ -27,7 +28,7 @@ export class Velo  {
 			this.el.after(this.element)
 		} else for (const [i, pin] of this.pins.entries()) {
 			const arg = vres.args[i]
-			const ionClass = getClass(arg)
+			const ionClass = getClassFor(arg)
 			if (this.ions[i].constructor == ionClass) {
 				this.ions[i].update?.(arg)
 			} else {
@@ -38,8 +39,6 @@ export class Velo  {
 		}
 		this.last = vres
 	}
-
-	static out = true
 	init(arg, el) {
 		this.el = el
 		this.#render(arg)
@@ -80,7 +79,7 @@ class ArrayIon  {
 				this.ions[i] = null
 				continue
 			}
-			const ionClass = getClass(arg)
+			const ionClass = getClassFor(arg)
 			if (!this.ions[i]) {
 				this.ions[i] = new ionClass()
 				this.ions[i].init(arg, this.pins[i])
@@ -107,11 +106,11 @@ class ArrayIon  {
 
 
 
-function mark(strings, ...args) {
+export function mark(strings, ...args) {
 	let htmlString = ""
 	const ionClasses = []
 	for (const [i, arg] of args.entries()) {
-		const ionClass = getClass(arg)
+		const ionClass = getClassFor(arg)
 		ionClasses.push(ionClass)
 		htmlString += strings[i] + (ionClass.out ? `<wbr v${i}>` : `v${i}`)
 	}
@@ -120,7 +119,7 @@ function mark(strings, ...args) {
 }
 
 
-function getClass(arg) {
+function getClassFor(arg) {
 	switch(typeof arg) {
 		case "number":
 		case "string":
@@ -241,9 +240,9 @@ const arca = () =>
 	// randb() ? "uffishuuuuuuuu" :
 		randb() 
 		? [
-			div`la 1--------`,
+			div`la 1--------kj`,
 			div`la 2-------- susoaf${Math.random()+'k'} moder flipcker`,
-			div`la 3--------`,
+			div`la 3--------p`,
 			div`la 4-------- jajalo${281}`,
 			div`la 5-------- kaka${22}`
 		] : randb() 
