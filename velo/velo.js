@@ -146,16 +146,13 @@ class Fn extends Velo {
 	static embedded = true
 	state = {}
 	init(arg, el) {
-		this.state = arg.props || {}
+		this.state = {}
 		this.html = arg.fun
-		super.init(arg.fun(this.state), el)
+		super.init(this.html(arg.props, this.state), el)
 	}
 	update(arg) {
 		if (arg?.fun) this.html = arg.fun
-		super.update(this.html(this.state))
-	}
-	refresh() {
-		this.update('not necessary', this.html(this.state))
+		super.update(this.html(arg.props, this.state))
 	}
 }
 
@@ -225,11 +222,12 @@ const { div, p } = elem
 // local is the argument that passed to profile()
 // so mutating this is kinda dangerous
 // that would be better. fn((props, local) => {
-const profile = fn(props => {
+const profile = fn((props, state) => {
 	props.count ??= 0
+	state.count ??= props.count
 	return div`
-	<button ${{ on, click: e => props.count++ }} >
-		u${props.count} just wait a little after click
+	<button ${{ on, click: e => state.count++ }} >
+		u${props.count} ${state.count} just wait a little after click
 	</button>
 	`})
 
