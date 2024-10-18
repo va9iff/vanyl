@@ -190,15 +190,15 @@ const fn = fun => props => ({ fun, Fn, props })
 // fn(fun)(props) -> fun(props) // re-entering the props that were given in init
 class Fn extends Velo {
 	static embedded = true
-	state = {}
+	local = {}
 	init(arg, el) {
-		this.state = {}
+		this.local = {}
 		this.html = arg.fun
-		super.init(this.html(arg.props, this.state), el)
+		super.init(this.html(arg.props, this.local), el)
 	}
 	update(arg) {
 		if (arg?.fun) this.html = arg.fun
-		super.update(this.html(arg.props, this.state))
+		super.update(this.html(arg.props, this.local))
 	}
 }
 
@@ -276,17 +276,14 @@ const elem = new Proxy({}, {
 
 //               test
 // -----------------------------------------
-const { div, p } = elem
+export const { div, li, span, b, i, p, h1, h2, h3, h4, h5, h6 } = elem
 
-// local is the argument that passed to profile()
-// so mutating this is kinda dangerous
-// that would be better. fn((props, local) => {
-const profile = fn((props, state) => {
+const profile = fn((props, local) => {
 	props.count ??= 0
-	state.count ??= props.count
+	local.count ??= props.count
 	return div`
-	<button ${{ on, click: e => state.count++ }} >
-		u${props.count} ${state.count} just wait a little after click
+	<button ${{ on, click: e => local.count++ }} >
+		u${props.count} ${local.count} just wait a little after click
 	</button>
 	`})
 
