@@ -106,6 +106,51 @@ class ArrayIon  {
 
 
 
+// not testeddddd
+class OrderlessArrayIon {
+	static out = true
+	live = {}
+	init(arg, el) {
+		this.el = el
+		this.update(arg)
+	}
+	update({ array, fun, key }) {
+		key ||= key
+		for (const [i, obj] of array.entries()) {
+			const arg = fun(obj)
+			if (array[i]) {
+				const ionClass = getClassFor(arg)
+				if (this.live[obj[key]]) {
+					if (this.live[obj[key]].constructor != ionClass) {
+						this.live[obj[key]].die()
+						this.live[obj[key]] = new ionClass()
+						this.live[obj[key]].init(arg, this.el)
+					} else {
+						this.live[obj[key]].update(arg)
+					}
+				} else {
+					this.live[obj[key]] = new (getClassFor(arg))
+					this.live[obj[key]].init(arg, this.el)
+					// console.log(arg)
+				}
+			}
+			if (!array[i]) {
+				this.live[arg.key]?.die()
+			}
+		}
+		this.el.nodeValue = this.live.length
+	}
+	die() {
+		for (const ion of Object.values(this.live)) ion?.die()
+	}
+}
+const orderless = (array, fun, key = "key") => {
+	console.log(array)
+	return { array, fun, key } 
+}
+
+
+
 export function mark(strings, ...args) {
 	let htmlString = ""
 	const ionClasses = []
@@ -134,6 +179,7 @@ function getClassFor(arg) {
 			}
 	}
 	if (Array.isArray(arg)) return ArrayIon
+	if (Array.isArray(arg.array)) return OrderlessArrayIon
 	console.log(arg)
 	throw new Error("coulndn't find a ion for that argument ")
 }
@@ -255,7 +301,21 @@ const arca = () =>
 			div`la 2---------yaaa`
 		]
 
+window.ora = [
+	{
+		key: 1,
+		count: 22
+	}, {
+		key: 2,
+		count: 8,
+	}, {
+		key: 44,
+		count: "jaja"
+	}
+]
 const mydiver = () => div`
+	${orderless(window.ora, profile)}
+	<hr>
 	<button 
 		${{ set, disabled: randb() }}
 		${{ on, click: e => alert('hi')}}
