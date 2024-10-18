@@ -202,6 +202,19 @@ class Fn extends Velo {
 	}
 }
 
+const apps = []
+const state = {} // global state
+function app(selector, fun) {
+	if (typeof selector == "string") selector = document.querySelector(selector)
+	const ion = new Fn()
+	apps.push(ion)
+	ion.init({ fun, props: state }, selector)
+}
+// update all Fn components that are defined with app()
+function update() {
+	for (const app of apps) app.update({ props: state})
+}
+
 class TextIon {
 	static out = true
 	init(arg, el) {
@@ -345,6 +358,9 @@ class log {
 // const update = () => myVelo.update(mydiver())
 // setInterval(update, 400)
 
-const myVelo = new Fn()
-myVelo.init(fn(mydiver)(), document.querySelector("#app"))
-setInterval(()=>myVelo.update(fn(mydiver)()), 400)
+// const myVelo = new Fn()
+// myVelo.init(fn(mydiver)(), document.querySelector("#app"))
+// setInterval(()=>myVelo.update(fn(mydiver)()), 400)
+
+const myVelo = app("#app", mydiver)
+setInterval(update, 400)
