@@ -343,6 +343,24 @@ class style {
 	}
 }
 
+class Put {
+	static embedded = true
+	static out = true
+	prev = null
+	init({ arg }, el) {
+		this.el = el
+		this.update(arg)
+	}
+	update({ arg }) {
+		if (arg == this.prev) return 
+		this.prev?.remove()
+		this.el.after(arg)
+		this.prev = arg
+
+	}
+}
+const put = arg => ({ Put, arg })
+
 // setup parts
 
 const elem = new Proxy({}, {
@@ -411,9 +429,16 @@ window.ora = [
 
 state.gnum = 15
 
+const iput = document.createElement("div")
+const eput = document.createElement("div")
+iput.innerHTML = "<input>I put it <b>here</b>"
+eput.innerHTML = "<input>eeeeeeeeeeeeee"
+
 const mydiver = () => div`
 	<button ${{ onn, click: e => state.gnum++ }}>g+</button>
 	<button ${{ onn, click: e => state.gnum-- }}>g-</button>
+
+	${put(state.gnum > 19 ? iput : eput)}
 
 	<h1 ${{ style, fontSize: state.gnum + "px"}} ${{ cls, border: ! (state.gnum % 2), color: ! (state.gnum % 3) }}>globus ${state.gnum}</h1>
 	<details ${{ ottr, open: state.gnum >= 20 }}>
