@@ -145,7 +145,6 @@ class OrderlessArrayIon {
 	}
 }
 const orderless = (array, fun, key = "key") => {
-	console.log(array)
 	return { array, fun, key } 
 }
 
@@ -213,6 +212,7 @@ function app(selector, fun) {
 // update all Fn components that are defined with app()
 function update() {
 	for (const app of apps) app.update({ props: state})
+	return true
 }
 
 class TextIon {
@@ -255,7 +255,47 @@ class on {
 			if (arg[key] !== on)
 				el.addEventListener(key, arg[key])
 	}
-	die() {}
+}
+
+let uptodate = false
+const schedule = () => {
+	uptodate = false
+	setTimeout(()=>{
+		if (uptodate) return
+		update()
+		uptodate = true
+	})
+}
+
+class onn {
+	static embedded = true
+	init(arg, el) {
+		for (const key in arg) {
+			if (arg[key] !== on) {
+				el.addEventListener(key, () => {
+					arg[key]()
+					schedule() // update
+				})
+			}
+		}
+	}
+}
+
+const none = Symbol()
+class attr {
+	static embedded = true 
+	init(arg, el) {
+		this.el = el
+		this.update(arg)
+	}
+	update(arg) {
+		for (const key in arg) {
+			if (arg[key] == attr) continue
+			else if (arg[key] == none) this.el.removeAttribute(key)
+			else this.el.setAttribute(key, arg[key])
+		}
+				
+	}
 }
 
 // setup parts
@@ -323,7 +363,14 @@ window.ora = [
 		count: "jaja"
 	}
 ]
+
+state.gnum = 15
+
 const mydiver = () => div`
+	<h1>globus ${state.gnum}</h1>
+	<button ${{ onn, click: e => state.gnum++ }}>g+</button>
+	<button ${{ onn, click: e => state.gnum-- }}>g-</button>
+	<img ${{ attr, src: state.gnum >= 18 ? "./red.png" : state.gnum >= 10 ? "./blue.png" : none }} alt="imigi">
 	${orderless(window.ora, profile)}
 	<hr>
 	<button 
@@ -360,4 +407,4 @@ class log {
 // setInterval(()=>myVelo.update(fn(mydiver)()), 400)
 
 const myVelo = app("#app", mydiver)
-setInterval(update, 400)
+setInterval(update, 800)
