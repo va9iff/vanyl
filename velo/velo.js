@@ -314,6 +314,20 @@ class ottr {
 	}
 }
 
+class cls {
+	static embedded = true 
+	init(arg, el) {
+		this.el = el
+		this.update(arg)
+	}
+	update(arg) {
+		for (const key in arg) {
+			if (arg[key] == cls) continue
+			else if (arg[key]) this.el.classList.add(key)
+			else this.el.classList.remove(key)
+		}
+	}
+}
 
 // setup parts
 
@@ -384,15 +398,16 @@ window.ora = [
 state.gnum = 15
 
 const mydiver = () => div`
-	<h1>globus ${state.gnum}</h1>
+	<button ${{ onn, click: e => state.gnum++ }}>g+</button>
+	<button ${{ onn, click: e => state.gnum-- }}>g-</button>
+
+	<h1 ${{ cls, border: ! (state.gnum % 2), color: ! (state.gnum % 3) }}>globus ${state.gnum}</h1>
 	<details ${{ ottr, open: state.gnum >= 20 }}>
 	lalala
 		<summary>
 			detaylar
 		</summary>
 	</details>
-	<button ${{ onn, click: e => state.gnum++ }}>g+</button>
-	<button ${{ onn, click: e => state.gnum-- }}>g-</button>
 	<img ${{ attr, src: state.gnum >= 18 ? "./red.png" : state.gnum >= 10 ? "./blue.png" : none }} alt="imigi">
 	${orderless(window.ora, profile)}
 	<hr>
@@ -411,6 +426,14 @@ const mydiver = () => div`
 	<hr>
 	${randb() ? div`a vres` : "a string"}
 	${{	log, stuff: "like that" }}
+	<style>
+	.border {
+		border: 2px solid red
+	}
+	.color {
+		color: red;
+	}
+	</style>
 `
 class log {
 	static embedded = true
