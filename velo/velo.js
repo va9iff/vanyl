@@ -298,6 +298,23 @@ class attr {
 	}
 }
 
+class ottr {
+	static embedded = true 
+	init(arg, el) {
+		this.el = el
+		this.update(arg)
+	}
+	update(arg) {
+		for (const key in arg) {
+			if (arg[key] == ottr) continue
+			else if (arg[key]) this.el.setAttribute(key, "")
+			else this.el.removeAttribute(key)
+		}
+				
+	}
+}
+
+
 // setup parts
 
 const elem = new Proxy({}, {
@@ -368,6 +385,12 @@ state.gnum = 15
 
 const mydiver = () => div`
 	<h1>globus ${state.gnum}</h1>
+	<details ${{ ottr, open: state.gnum >= 20 }}>
+	lalala
+		<summary>
+			detaylar
+		</summary>
+	</details>
 	<button ${{ onn, click: e => state.gnum++ }}>g+</button>
 	<button ${{ onn, click: e => state.gnum-- }}>g-</button>
 	<img ${{ attr, src: state.gnum >= 18 ? "./red.png" : state.gnum >= 10 ? "./blue.png" : none }} alt="imigi">
