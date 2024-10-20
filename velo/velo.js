@@ -235,19 +235,6 @@ class FunctionIon  {
 	}
 }
 
-class set {
-	static embedded = true 
-	init(arg, el) {
-		this.el = el
-		this.update(arg)
-	}
-	update(arg) {
-		for (const key in arg) 
-			if (arg[key] !== set) 
-				this.el[key] = arg[key]
-	}
-}
-
 class on {
 	static embedded = true
 	init(arg, el) {
@@ -281,67 +268,55 @@ class onn {
 	}
 }
 
+
+class KeysLooper {
+	static embedded = true 
+	init(arg, el) {
+		this.el = el
+		this.update(arg)
+	}
+	update(arg) {
+		for (const key in arg) 
+			if (arg[key] !== this.constructor) 
+				this.loop(key, arg[key])
+	}
+	loop(key, val) {}
+}
+
+class set extends KeysLooper{
+	loop(key, val) {
+		this.el[key] = val
+	}
+}
+
+class ottr extends KeysLooper {
+	loop(key, val) {
+		if (val) this.el.setAttribute(key, "")
+		else this.el.removeAttribute(key)
+	}
+}
+
+class cls extends KeysLooper {
+	loop(key, val) {
+		if (val) this.el.classList.add(key)
+		else this.el.classList.remove(key)
+	}
+}
+
+class style extends KeysLooper {
+	loop(key, val) {
+		this.el.style[key] = val
+	}
+}
+
 const none = Symbol()
-class attr {
-	static embedded = true 
-	init(arg, el) {
-		this.el = el
-		this.update(arg)
-	}
-	update(arg) {
-		for (const key in arg) {
-			if (arg[key] == attr) continue
-			else if (arg[key] == none) this.el.removeAttribute(key)
-			else this.el.setAttribute(key, arg[key])
-		}
-				
+class attr extends KeysLooper{
+	loop(key, val){
+		if (val == none) return this.el.removeAttribute(key)
+		this.el.setAttribute(key, val)
 	}
 }
 
-class ottr {
-	static embedded = true 
-	init(arg, el) {
-		this.el = el
-		this.update(arg)
-	}
-	update(arg) {
-		for (const key in arg) {
-			if (arg[key] == ottr) continue
-			else if (arg[key]) this.el.setAttribute(key, "")
-			else this.el.removeAttribute(key)
-		}
-				
-	}
-}
-
-class cls {
-	static embedded = true 
-	init(arg, el) {
-		this.el = el
-		this.update(arg)
-	}
-	update(arg) {
-		for (const key in arg) {
-			if (arg[key] == cls) continue
-			else if (arg[key]) this.el.classList.add(key)
-			else this.el.classList.remove(key)
-		}
-	}
-}
-
-class style {
-	static embedded = true 
-	init(arg, el) {
-		this.el = el
-		this.update(arg)
-	}
-	update(arg) {
-		for (const key in arg) {
-			if (arg[key] == style) continue
-			this.el.style[key] = arg[key]
-		}
-	}
-}
 
 class Put {
 	static embedded = true
