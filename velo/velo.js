@@ -104,9 +104,7 @@ class ArrayIon  {
 	}
 }
 
-
-
-// not testeddddd
+const orderless = (array, fun, key = "key") => ({ array, fun, key })
 class OrderlessArrayIon {
 	static out = true
 	live = {}
@@ -144,49 +142,8 @@ class OrderlessArrayIon {
 		for (const ion of Object.values(this.live)) ion?.die()
 	}
 }
-const orderless = (array, fun, key = "key") => {
-	return { array, fun, key } 
-}
-
-
-
-export function mark(strings, ...args) {
-	let htmlString = ""
-	const ionClasses = []
-	for (const [i, arg] of args.entries()) {
-		const ionClass = getClassFor(arg)
-		ionClasses.push(ionClass)
-		htmlString += strings[i] + (ionClass.out ? `<wbr v${i}>` : `v${i}`)
-	}
-	htmlString += strings[strings.length - 1]
-	return [htmlString, ionClasses]
-}
-
-
-function getClassFor(arg) {
-	switch(typeof arg) {
-		case "number":
-		case "string":
-		case "undefined":
-			return TextIon
-		case "function": 
-			return FunctionIon
-		case "object":
-			for (const key in arg) {
-				const val = arg[key]
-				if (typeof val == "function" && val.embedded) return val
-			}
-	}
-	if (Array.isArray(arg)) return ArrayIon
-	if (Array.isArray(arg.array)) return OrderlessArrayIon
-	console.log(arg)
-	throw new Error("coulndn't find a ion for that argument ")
-}
-
-// simpler ions
 
 const fn = fun => props => ({ fun, Fn, props })
-// fn(fun)(props) -> fun(props) // re-entering the props that were given in init
 class Fn extends Velo {
 	static embedded = true
 	local = {}
@@ -199,20 +156,6 @@ class Fn extends Velo {
 		if (arg?.fun) this.html = arg.fun
 		super.update(this.html(arg.props, this.local))
 	}
-}
-
-const apps = []
-const state = {} // global state
-function app(selector, fun) {
-	if (typeof selector == "string") selector = document.querySelector(selector)
-	const ion = new Fn()
-	apps.push(ion)
-	ion.init({ fun, props: state }, selector)
-}
-// update all Fn components that are defined with app()
-function update() {
-	for (const app of apps) app.update({ props: state})
-	return true
 }
 
 class TextIon {
@@ -242,16 +185,6 @@ class on {
 			if (arg[key] !== on)
 				el.addEventListener(key, arg[key])
 	}
-}
-
-let uptodate = false
-const schedule = () => {
-	uptodate = false
-	setTimeout(()=>{
-		if (uptodate) return
-		update()
-		uptodate = true
-	})
 }
 
 class onn {
@@ -318,6 +251,7 @@ class attr extends KeysLooper{
 }
 
 
+const put = arg => ({ Put, arg })
 class Put {
 	static embedded = true
 	static out = true
@@ -334,7 +268,41 @@ class Put {
 
 	}
 }
-const put = arg => ({ Put, arg })
+
+export function mark(strings, ...args) {
+	let htmlString = ""
+	const ionClasses = []
+	for (const [i, arg] of args.entries()) {
+		const ionClass = getClassFor(arg)
+		ionClasses.push(ionClass)
+		htmlString += strings[i] + (ionClass.out ? `<wbr v${i}>` : `v${i}`)
+	}
+	htmlString += strings[strings.length - 1]
+	return [htmlString, ionClasses]
+}
+
+
+function getClassFor(arg) {
+	switch(typeof arg) {
+		case "number":
+		case "string":
+		case "undefined":
+			return TextIon
+		case "function": 
+			return FunctionIon
+		case "object":
+			for (const key in arg) {
+				const val = arg[key]
+				if (typeof val == "function" && val.embedded) return val
+			}
+	}
+	if (Array.isArray(arg)) return ArrayIon
+	if (Array.isArray(arg.array)) return OrderlessArrayIon
+	console.log(arg)
+	throw new Error("coulndn't find a ion for that argument ")
+}
+
+
 
 // setup parts
 
@@ -351,6 +319,30 @@ const elem = new Proxy({}, {
 	}
 })
 
+
+const apps = []
+const state = {} 
+function app(selector, fun) {
+	if (typeof selector == "string") selector = document.querySelector(selector)
+	const ion = new Fn()
+	apps.push(ion)
+	ion.init({ fun, props: state }, selector)
+}
+// update all Fn components that are defined with app()
+function update() {
+	for (const app of apps) app.update({ props: state})
+	return true
+}
+
+let uptodate = false
+const schedule = () => {
+	uptodate = false
+	setTimeout(()=>{
+		if (uptodate) return
+		update()
+		uptodate = true
+	})
+}
 
 //               test
 // -----------------------------------------
