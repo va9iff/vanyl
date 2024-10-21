@@ -1,14 +1,13 @@
 export class Velo  {
 	static out = true
 	static embedded = true
-	#render({ strings, args, tag }) {
+	#render({ strings, args }, container) {
 		const [html, ionClasses] = mark(strings, ...args)
-		this.element = document.createElement(tag)
-		this.element.innerHTML = html
+		container.innerHTML = html
 		this.pins = []
 		this.ions = []
 		for (const [i, IonClass] of ionClasses.entries()) {
-			let pin = this.element.querySelector(`[v${i}]`)
+			let pin = container.querySelector(`[v${i}]`)
 			if (IonClass.out) {
 				const textNode = document.createTextNode("")
 				pin.replaceWith(textNode)
@@ -20,12 +19,12 @@ export class Velo  {
 			this.ions.push(ion)
 			this.pins.push(pin)
 		}
+		return container
 	}
 	update(vres) {
 		if (!this.isSame(vres)) {
-			this.element.remove()
-			this.#render(vres)
-			this.el.after(this.element)
+			this.die()
+			this.fresh(vres)
 		} else for (const [i, pin] of this.pins.entries()) {
 			const arg = vres.args[i]
 			const ionClass = getClassFor(arg)
@@ -41,7 +40,10 @@ export class Velo  {
 	}
 	init(arg, el) {
 		this.el = el
-		this.#render(arg)
+		this.fresh(arg)
+	}
+	fresh(arg) {
+		this.element = this.#render(arg, document.createElement(arg.tag))
 		this.el.after(this.element)
 		this.last = arg
 	}
