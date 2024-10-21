@@ -1,13 +1,17 @@
 export class Velo  {
 	static out = true
 	static embedded = true
-	#render({ strings, args }, container) {
+	query(container, i) {
+		// cuz V wants to container.content.querySelector()
+		return container.querySelector(`[v${i}]`)
+	}
+	render({ strings, args }, container) {
 		const [html, ionClasses] = mark(strings, ...args)
 		container.innerHTML = html
 		this.pins = []
 		this.ions = []
 		for (const [i, IonClass] of ionClasses.entries()) {
-			let pin = container.querySelector(`[v${i}]`)
+			let pin = this.query(container, i)
 			if (IonClass.out) {
 				const textNode = document.createTextNode("")
 				pin.replaceWith(textNode)
@@ -43,7 +47,7 @@ export class Velo  {
 		this.fresh(arg)
 	}
 	fresh(arg) {
-		this.element = this.#render(arg, document.createElement(arg.tag))
+		this.element = this.render(arg, document.createElement(arg.tag))
 		this.el.after(this.element)
 		this.last = arg
 	}
@@ -57,6 +61,32 @@ export class Velo  {
 			if (this.last.strings[i] != vres.strings[i]) return false
 		}
 		return true
+	}
+}
+
+const v = (strings, ...args) => ({ strings, args, V})
+class V extends Velo {
+	query(container, i) {
+		return container.content.querySelector(`[v${i}]`)
+	}
+	fresh(arg) {
+		this.tmp = this.render(arg, document.createElement("template"))
+		this.nodes = []
+		console.log(this.tmp.content.children)
+		for (const child of this.tmp.content.children) {
+			this.nodes.push(child)
+			console.log(child, child.innerHTML)
+		}
+		for (const child of this.nodes) {
+			this.el.before(child)
+		}
+		this.last = arg
+	}
+	die() {
+		for (const child of this.nodes) {
+			child.remove()
+		}
+		this.nodes = []
 	}
 }
 
@@ -403,7 +433,16 @@ const eput = document.createElement("div")
 iput.innerHTML = "<input>I put it <b>here</b>"
 eput.innerHTML = "<input>eeeeeeeeeeeeee"
 
+const vavala = () => v`
+	<h1 ${{ style, color: "red" }}>haha</h1>
+	<h2>vaval</h2>
+	<h2>vaval</h2>
+	<h1>ja1</h1>
+`
+
 const mydiver = () => div`
+	${randb() ? vavala() : "here da mada"}
+	<hr>
 	<button ${{ onn, click: e => state.gnum++ }}>g+</button>
 	<button ${{ onn, click: e => state.gnum-- }}>g-</button>
 
