@@ -210,6 +210,35 @@ class FunctionIon  {
 	}
 }
 
+class custom {
+	static embedded = true
+	init(arg, el) {
+		arg.init?.(el)
+		this.el = el
+	}
+	update(arg) {
+		arg.update?.(this.el)
+	}
+	die(arg) {
+		arg.die?.(this.el)
+	}
+}
+
+// discoruged cuz still makes the element updates, just doesn't show.
+// instead use ${condition && component()} syntax or ternary
+// ${ condition ? component() : placeholder }
+class IfIon {
+	init(arg, el) {
+		this.el = el
+		this.update(arg)
+	}
+	update(arg) {
+		this.el.hidden = !arg.if
+	}
+	
+}
+
+
 class on {
 	static embedded = true
 	init(arg, el) {
@@ -331,6 +360,7 @@ function getClassFor(arg) {
 	if (Array.isArray(arg)) return ArrayIon
 	if (Array.isArray(arg.array)) return OrderlessArrayIon
 	console.log(arg)
+	if (arg?.hasOwnProperty?.("if") && Object.keys(arg).length == 1) return IfIon
 	throw new Error("coulndn't find a ion for that argument ")
 }
 
@@ -434,17 +464,26 @@ iput.innerHTML = "<input>I put it <b>here</b>"
 eput.innerHTML = "<input>eeeeeeeeeeeeee"
 
 const vavala = () => v`
-	<h1 ${{ style, color: "red" }}>haha</h1>
-	<h2>vaval</h2>
-	<h2>vaval</h2>
-	<h1>ja1</h1>
+	<span ${{ style, color: "red" }}>haha</span>
+	<span>vaval</span>
+	<span>vaval</span>
+	<span>ja1</span>
 `
 
-const mydiver = () => div`
-	${randb() ? vavala() : "here da mada"}
-	<hr>
+
+const mydiver = () => {
+	const even = !(state.gnum % 2)
+	return div`
 	<button ${{ onn, click: e => state.gnum++ }}>g+</button>
 	<button ${{ onn, click: e => state.gnum-- }}>g-</button>
+	<div style="display: flex; overflow: scroll">
+		<input> <input> <input> <input> <input> <input> <input> <input> <input> <input>
+		<input ${{ custom, update: inp => even && inp.scrollIntoView() }} ${{set, value: 99}}>
+		<input> <input> <input> <input>
+	</div>
+	<hr>
+	<div ${{ if: state.gnum % 2 }}>is visible</div>
+	${randb() ? vavala() : "here da mada"}
 
 	${put(state.gnum > 19 ? iput : eput)}
 
@@ -482,6 +521,7 @@ const mydiver = () => div`
 	}
 	</style>
 `
+}
 class log {
 	static embedded = true
 	static out = true
