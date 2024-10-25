@@ -67,6 +67,8 @@ const vavala = () => v`
 const mydiver = () => {
 	const even = !(state.gnum % 2)
 	return div`
+	${state.getClassFor}
+	${state.mark}
 	<button ${{ onn, click: e => state.gnum++ }}>g+</button>
 	<button ${{ onn, click: e => state.gnum-- }}>g-</button>
 	<div style="display: flex; overflow: scroll">

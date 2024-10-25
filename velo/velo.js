@@ -330,6 +330,10 @@ class Put {
 	}
 }
 
+// export const parent = Symbol()
+// actually we don't need parent. we can
+// v`<button ${{ on, click: alert("see") }}></button>`
+
 export function mark(strings, ...args) {
 	let htmlString = ""
 	const ionClasses = []
