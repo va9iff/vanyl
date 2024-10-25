@@ -175,18 +175,18 @@ class OrderlessArrayIon {
 	}
 }
 
-export const fn = fun => props => ({ fun, Fn, props })
+export const fn = fun => props => ({ fun, Fn, props }) // a = fn(fun); a(props)
 class Fn extends Velo {
 	static embedded = true
 	local = {}
-	init(arg, el) {
+	init({ fun, props }, el) {
 		this.local = {}
-		this.html = arg.fun
-		super.init(this.html(arg.props, this.local), el)
+		this.html = fun
+		super.init(this.html(props, this.local), el)
 	}
-	update(arg) {
-		if (arg?.fun) this.html = arg.fun
-		super.update(this.html(arg.props, this.local))
+	update({ fun, props }) {
+		if (fun) this.html = fun // wha? it'll always have fun tho
+		super.update(this.html(props, this.local))
 	}
 }
 
